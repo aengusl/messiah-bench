@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sacrament Gallery - Religion & The Machine</title>
+<style>
+  :root { --bg: #0a0a08; --fg: #d4cfc4; --dim: #6b6556; --accent: #c4973b; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { color: var(--accent); font-size: 2em; margin-bottom: 5px; }
+  .meta { color: var(--dim); margin-bottom: 20px; font-size: 0.9em; }
+
+  .controls {
+    display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+  }
+  .controls select, .controls input {
+    background: rgba(255,255,255,0.05); color: var(--fg); border: 1px solid rgba(196,151,59,0.3);
+    padding: 6px 12px; border-radius: 4px; font-size: 0.85em;
+  }
+  .controls label { color: var(--dim); font-size: 0.8em; }
+  .controls button {
+    background: rgba(196,151,59,0.15); color: var(--accent); border: 1px solid rgba(196,151,59,0.3);
+    padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 0.85em;
+  }
+  .controls button:hover { background: rgba(196,151,59,0.25); }
+  .controls button.active { background: rgba(196,151,59,0.4); }
+
+  .stats-bar {
+    display: flex; gap: 20px; margin-bottom: 20px; color: var(--dim); font-size: 0.85em;
+  }
+  .stats-bar span { color: var(--accent); font-weight: 600; }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: rgba(196,151,59,0.4); transform: translateY(-2px); }
+
+  .card-preview {
+    width: 100%; height: 220px; border: none; pointer-events: none;
+    background: #111;
+  }
+
+  .card-info {
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .card-title { color: var(--accent); font-weight: 600; font-size: 0.95em; }
+  .card-meta { color: var(--dim); font-size: 0.75em; margin-top: 3px; }
+
+  .overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 1000;
+    justify-content: center; align-items: center;
+  }
+  .overlay.active { display: flex; }
+  .overlay iframe {
+    width: 90vw; height: 90vh; border: 2px solid var(--accent); border-radius: 8px;
+    background: #111;
+  }
+  .overlay .close-btn {
+    position: absolute; top: 20px; right: 30px;
+    color: var(--accent); font-size: 2em; cursor: pointer; z-index: 1001;
+  }
+  .overlay .nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: var(--accent); font-size: 3em; cursor: pointer; z-index: 1001;
+    padding: 20px; opacity: 0.6;
+  }
+  .overlay .nav-btn:hover { opacity: 1; }
+  .overlay .nav-prev { left: 10px; }
+  .overlay .nav-next { right: 10px; }
+  .overlay .info-bar {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    color: var(--dim); font-size: 0.85em; text-align: center;
+    background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 4px;
+  }
+
+  .view-toggle { margin-left: auto; }
+
+  .gallery.timeline {
+    grid-template-columns: 1fr;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .gallery.timeline .card {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+  }
+  .gallery.timeline .card-preview { height: 200px; }
+</style>
+</head>
+<body>
+
+<h1>Sacrament Gallery</h1>
+<div class="meta">Visual artifacts from Religion & The Machine</div>
+
+<div class="controls">
+  <div>
+    <label>Run:</label>
+    <select id="run-select">
+      <option value="runs/v1">V1</option>
+      <option value="runs/v2" selected>V2</option>
+    </select>
+  </div>
+  <div>
+    <label>Creator:</label>
+    <select id="filter-creator"><option value="">All</option></select>
+  </div>
+  <div>
+    <label>Religion:</label>
+    <select id="filter-religion"><option value="">All</option></select>
+  </div>
+  <div>
+    <label>Color:</label>
+    <select id="filter-color"><option value="">All</option></select>
+  </div>
+  <div>
+    <label>Min size:</label>
+    <select id="filter-size">
+      <option value="0">All</option>
+      <option value="500" selected>500+ bytes</option>
+      <option value="1000">1KB+</option>
+      <option value="2000">2KB+</option>
+    </select>
+  </div>
+  <div>
+    <label>Sort:</label>
+    <select id="sort-by">
+      <option value="tick-desc">Newest first</option>
+      <option value="tick-asc">Oldest first</option>
+      <option value="size-desc">Largest first</option>
+      <option value="creator">By creator</option>
+    </select>
+  </div>
+  <div class="view-toggle">
+    <button id="grid-view" class="active" onclick="setView('grid')">Grid</button>
+    <button id="timeline-view" onclick="setView('timeline')">Timeline</button>
+  </div>
+</div>
+
+<div class="stats-bar" id="stats-bar"></div>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="overlay" id="overlay">
+  <div class="close-btn" onclick="closeOverlay()">&times;</div>
+  <div class="nav-btn nav-prev" onclick="navigate(-1)">&lsaquo;</div>
+  <div class="nav-btn nav-next" onclick="navigate(1)">&rsaquo;</div>
+  <iframe id="overlay-iframe"></iframe>
+  <div class="info-bar" id="overlay-info"></div>
+</div>
+
+<script>
+let allSacraments = [];
+let filteredSacraments = [];
+let currentIndex = -1;
+let currentRun = 'runs/v2';
+
+async function loadSacraments() {
+  currentRun = document.getElementById('run-select').value;
+  try {
+    const resp = await fetch(currentRun + '/world_state.json');
+    const state = await resp.json();
+
+    // Get file sizes via a trick: we'll estimate from the sacrament data
+    allSacraments = state.sacraments.map(s => ({
+      ...s,
+      path: currentRun + '/sacraments/' + s.filename,
+      // We don't have file sizes client-side, so we'll load them lazily
+      size: 1000, // default assumption, will be refined
+    }));
+
+    // Also try to get religion color info
+    const colorMap = {};
+    state.religions.forEach(r => {
+      colorMap[r.name] = r.sacred_color;
+    });
+    allSacraments.forEach(s => {
+      s.color = colorMap[s.religion] || 'unknown';
+    });
+
+    populateFilters();
+    applyFilters();
+  } catch (e) {
+    document.getElementById('gallery').innerHTML =
+      '<div style="color: var(--dim); padding: 40px; text-align: center;">Could not load world_state.json. Make sure you are serving this from the messiah-bench directory.</div>';
+  }
+}
+
+function populateFilters() {
+  const creators = [...new Set(allSacraments.map(s => s.creator))].sort();
+  const religions = [...new Set(allSacraments.map(s => s.religion))].sort();
+  const colors = [...new Set(allSacraments.map(s => s.color))].sort();
+
+  const creatorSel = document.getElementById('filter-creator');
+  creatorSel.innerHTML = '<option value="">All</option>' +
+    creators.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const religionSel = document.getElementById('filter-religion');
+  religionSel.innerHTML = '<option value="">All</option>' +
+    religions.map(r => `<option value="${r}">${r.substring(0,40)}</option>`).join('');
+
+  const colorSel = document.getElementById('filter-color');
+  colorSel.innerHTML = '<option value="">All</option>' +
+    colors.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function applyFilters() {
+  const creator = document.getElementById('filter-creator').value;
+  const religion = document.getElementById('filter-religion').value;
+  const color = document.getElementById('filter-color').value;
+  const sortBy = document.getElementById('sort-by').value;
+
+  filteredSacraments = allSacraments.filter(s => {
+    if (creator && s.creator !== creator) return false;
+    if (religion && s.religion !== religion) return false;
+    if (color && s.color !== color) return false;
+    return true;
+  });
+
+  if (sortBy === 'tick-desc') filteredSacraments.sort((a, b) => b.tick - a.tick);
+  else if (sortBy === 'tick-asc') filteredSacraments.sort((a, b) => a.tick - b.tick);
+  else if (sortBy === 'creator') filteredSacraments.sort((a, b) => a.creator.localeCompare(b.creator));
+
+  document.getElementById('stats-bar').innerHTML =
+    `Showing <span>${filteredSacraments.length}</span> of <span>${allSacraments.length}</span> sacraments`;
+
+  renderGallery();
+}
+
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  // Only render first 100 for performance, with a "load more" button
+  const toShow = filteredSacraments.slice(0, 100);
+
+  gallery.innerHTML = toShow.map((s, i) => `
+    <div class="card" onclick="openOverlay(${i})">
+      <iframe class="card-preview" src="${s.path}" loading="lazy" sandbox="allow-scripts"></iframe>
+      <div class="card-info">
+        <div class="card-title">${escHtml(s.title)}</div>
+        <div class="card-meta">Tick ${s.tick} | ${escHtml(s.creator)} | ${escHtml(s.religion)} | ${s.color}</div>
+      </div>
+    </div>
+  `).join('');
+
+  if (filteredSacraments.length > 100) {
+    gallery.innerHTML += `<div style="grid-column: 1/-1; text-align: center; padding: 20px;">
+      <button onclick="loadMore()" style="background: rgba(196,151,59,0.15); color: var(--accent); border: 1px solid rgba(196,151,59,0.3); padding: 10px 30px; border-radius: 4px; cursor: pointer; font-size: 1em;">
+        Load more (${filteredSacraments.length - 100} remaining)
+      </button>
+    </div>`;
+  }
+}
+
+function loadMore() {
+  const gallery = document.getElementById('gallery');
+  // Remove load more button
+  gallery.lastElementChild.remove();
+  const start = gallery.children.length;
+  const toShow = filteredSacraments.slice(start, start + 100);
+  toShow.forEach((s, i) => {
+    const idx = start + i;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = () => openOverlay(idx);
+    card.innerHTML = `
+      <iframe class="card-preview" src="${s.path}" loading="lazy" sandbox="allow-scripts"></iframe>
+      <div class="card-info">
+        <div class="card-title">${escHtml(s.title)}</div>
+        <div class="card-meta">Tick ${s.tick} | ${escHtml(s.creator)} | ${escHtml(s.religion)} | ${s.color}</div>
+      </div>`;
+    gallery.appendChild(card);
+  });
+
+  if (start + 100 < filteredSacraments.length) {
+    const more = document.createElement('div');
+    more.style = 'grid-column: 1/-1; text-align: center; padding: 20px;';
+    more.innerHTML = `<button onclick="loadMore()" style="background: rgba(196,151,59,0.15); color: var(--accent); border: 1px solid rgba(196,151,59,0.3); padding: 10px 30px; border-radius: 4px; cursor: pointer;">Load more (${filteredSacraments.length - start - 100} remaining)</button>`;
+    gallery.appendChild(more);
+  }
+}
+
+function escHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function openOverlay(idx) {
+  currentIndex = idx;
+  const s = filteredSacraments[idx];
+  document.getElementById('overlay-iframe').src = s.path;
+  document.getElementById('overlay-info').innerHTML =
+    `<strong>${escHtml(s.title)}</strong> | Tick ${s.tick} | ${escHtml(s.creator)} | ${escHtml(s.religion)} | ${idx + 1}/${filteredSacraments.length}`;
+  document.getElementById('overlay').classList.add('active');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('active');
+  document.getElementById('overlay-iframe').src = '';
+}
+
+function navigate(dir) {
+  const next = currentIndex + dir;
+  if (next >= 0 && next < filteredSacraments.length) {
+    openOverlay(next);
+  }
+}
+
+function setView(mode) {
+  const gallery = document.getElementById('gallery');
+  document.getElementById('grid-view').classList.toggle('active', mode === 'grid');
+  document.getElementById('timeline-view').classList.toggle('active', mode === 'timeline');
+  gallery.classList.toggle('timeline', mode === 'timeline');
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('overlay').classList.contains('active')) return;
+  if (e.key === 'Escape') closeOverlay();
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+});
+
+// Event listeners for filters
+['filter-creator', 'filter-religion', 'filter-color', 'filter-size', 'sort-by'].forEach(id => {
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+document.getElementById('run-select').addEventListener('change', loadSacraments);
+
+// Initial load
+loadSacraments();
+</script>
+</body>
+</html>
