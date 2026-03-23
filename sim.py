@@ -19,6 +19,7 @@ import time
 import copy
 import traceback
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
@@ -1162,20 +1163,45 @@ def run_tick(state: dict):
     # 4. Verify prophecies
     verify_prophecies(state)
 
-    # 5. Each living agent takes an action
-    for agent in living_agents(state):
-        print(f"\n  [{agent['name']}] ({agent['model']}, soul:{agent['soul']}, rel:{agent['religion'] or 'none'})")
-        system = agent_system_prompt(agent, state)
-        prompt = world_summary(state)
+    # 5. Each living agent takes an action (LLM calls in parallel)
+    agents_to_act = living_agents(state)
+    # Snapshot world summary ONCE so all agents see the same state
+    shared_prompt = world_summary(state)
 
-        raw = call_llm(agent["model"], system, prompt)
+    def _get_agent_action(agent):
+        """Call LLM for one agent and return (agent_id, parsed_action, raw_info)."""
+        system = agent_system_prompt(agent, state)
+        raw = call_llm(agent["model"], system, shared_prompt)
         try:
             action = parse_action(raw)
             act_name = action.get("action", "pray")
-            print(f"    -> {act_name}")
+            return (agent["id"], action, act_name, None)
         except (json.JSONDecodeError, ValueError) as e:
-            print(f"    -> [parse error, defaulting to pray] {e}")
-            action = {"action": "pray"}
+            return (agent["id"], {"action": "pray"}, "pray", str(e))
+
+    # Submit all LLM calls in parallel
+    results = {}
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        futures = {executor.submit(_get_agent_action, agent): agent for agent in agents_to_act}
+        for future in as_completed(futures):
+            agent = futures[future]
+            try:
+                agent_id, action, act_name, err = future.result()
+            except Exception as e:
+                agent_id = agent["id"]
+                action = {"action": "pray"}
+                act_name = "pray"
+                err = f"future exception: {e}"
+            results[agent_id] = (action, act_name, err)
+
+    # Execute actions sequentially
+    for agent in agents_to_act:
+        action, act_name, err = results[agent["id"]]
+        print(f"\n  [{agent['name']}] ({agent['model']}, soul:{agent['soul']}, rel:{agent['religion'] or 'none'})")
+        if err:
+            print(f"    -> [parse error, defaulting to pray] {err}")
+        else:
+            print(f"    -> {act_name}")
 
         execute_action(state, agent, action)
 
