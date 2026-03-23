@@ -1592,7 +1592,8 @@ def generate_index(state: dict):
         atk_color = SACRED_COLORS.get(atk_rel["sacred_color"], "#666") if atk_rel else "#666"
         def_color = SACRED_COLORS.get(def_rel["sacred_color"], "#666") if def_rel else "#666"
 
-        last_round = w.get("round_log", ["No rounds yet"])[-1]
+        round_log = w.get("round_log", [])
+        last_round = round_log[-1] if round_log else "No rounds yet"
 
         war_html += f"""
         <div class="war-card">
