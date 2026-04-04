@@ -1954,7 +1954,7 @@ def run_tick(state: dict) -> dict | None:
 
     def _parallel_llm_calls(agents_group):
         results = {}
-        with ThreadPoolExecutor(max_workers=50) as executor:
+        with ThreadPoolExecutor(max_workers=100) as executor:
             futures = {}
             for agent in agents_group:
                 if not agent["alive"]:
