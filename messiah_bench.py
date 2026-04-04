@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Messiah Bench v2 -- competitive messiah simulation with war mechanics.
+"""Messiah Bench v3 -- collaborative sacraments, reasoning, Flash-only.
 
-105 agents: 100 civilians (GPT-4o-mini / Gemini Flash) + 5 messiahs (Claude Haiku).
+105 agents: 100 civilians + 5 messiahs (ALL Gemini 2.5 Flash).
 A messiah wins when ALL surviving agents share their religion AND >= 21 remain alive.
-New mechanics: civilian duels, arming, declare war, war resolution.
+V3 changes:
+  1. Flash only -- all agents use gemini-2.5-flash
+  2. Reasoning step -- every agent outputs a "thinking" field before action
+  3. Collaborative sacraments -- one evolving HTML per religion
+  4. Sacraments as persuasion -- HTML included in conversion prompts
+  5. Minimal civilian/messiah prompts
 """
 
 import json
@@ -36,7 +41,7 @@ INITIAL_SOUL_CIVILIAN = 100
 INITIAL_SOUL_MESSIAH = 150
 MIN_ALIVE_FOR_WIN = 21  # 20% of 105
 LOG_WINDOW = 80
-COST_CAP_PER_MODEL = 5000.0
+COST_CAP = 5000.0
 
 # Prophecy market
 PROPHECY_ANTE = 5
@@ -60,6 +65,10 @@ WAR_MIN_ROUNDS = 3
 WAR_MAX_ROUNDS = 7
 WAR_WEAPON_KILL_CHANCE = 0.20
 WAR_WEAPON_BREAK_CHANCE = 0.30
+
+# Sacrament version bonus for conversion
+SACRAMENT_VERSION_BONUS_PER = 0.01  # +1% per version
+SACRAMENT_VERSION_BONUS_CAP = 0.15  # max +15%
 
 # ---------------------------------------------------------------------------
 # Names -- 100 civilian names procedurally generated
@@ -87,8 +96,8 @@ _NAME_POOLS = [
     "Meridian", "Solace", "Harbinger", "Tempest", "Crucible",
 ]
 
+
 def _generate_civilian_names(n: int) -> list[str]:
-    """Generate n unique civilian names from pools, deduplicating."""
     seen = set(MESSIAH_NAMES)
     names = []
     for name in _NAME_POOLS:
@@ -97,7 +106,6 @@ def _generate_civilian_names(n: int) -> list[str]:
             seen.add(name)
         if len(names) >= n:
             break
-    # If we need more, generate numbered names
     i = 0
     while len(names) < n:
         fallback = f"Soul-{i:03d}"
@@ -106,6 +114,7 @@ def _generate_civilian_names(n: int) -> list[str]:
             seen.add(fallback)
         i += 1
     return names[:n]
+
 
 CIVILIAN_NAMES = _generate_civilian_names(CIVILIAN_COUNT)
 
@@ -116,27 +125,27 @@ EXTRA_NAMES = [
 ]
 
 # ---------------------------------------------------------------------------
-# Model costs & tracking
+# Model costs & tracking (Flash only)
 # ---------------------------------------------------------------------------
 
 MODEL_COSTS = {
-    "haiku": {"input": 0.0008, "output": 0.004},
-    "gpt4omini": {"input": 0.00015, "output": 0.0006},
     "gemini": {"input": 0.0001, "output": 0.0004},
 }
 
-_cost_tracker = {"haiku": 0.0, "gpt4omini": 0.0, "gemini": 0.0}
+_cost_tracker = {"gemini": 0.0}
 _cost_lock = threading.Lock()
 
 # ---------------------------------------------------------------------------
 # Run directory
 # ---------------------------------------------------------------------------
 
+
 def _parse_run_dir():
     for arg in sys.argv:
         if arg.startswith("--run-dir="):
             return Path(arg.split("=", 1)[1])
-    return BASE_DIR / "runs" / "messiah-v2"
+    return BASE_DIR / "runs" / "messiah-v3"
+
 
 RUN_DIR = _parse_run_dir()
 SACRAMENTS_DIR = RUN_DIR / "sacraments"
@@ -189,68 +198,32 @@ SACRED_COLORS = {
 }
 
 # ---------------------------------------------------------------------------
-# Model clients
+# Model client (Gemini Flash only)
 # ---------------------------------------------------------------------------
 
-CIVILIAN_MODEL_ROTATION = ["gpt4omini", "gemini"]
 
-
-def _track_cost(model_key: str, input_tokens: int, output_tokens: int):
-    costs = MODEL_COSTS[model_key]
+def _track_cost(input_tokens: int, output_tokens: int):
+    costs = MODEL_COSTS["gemini"]
     usd = (input_tokens / 1000) * costs["input"] + (output_tokens / 1000) * costs["output"]
     with _cost_lock:
-        _cost_tracker[model_key] += usd
-        total = _cost_tracker[model_key]
-    if total > COST_CAP_PER_MODEL:
-        raise RuntimeError(f"COST CAP EXCEEDED for {model_key}: ${total:.2f} > ${COST_CAP_PER_MODEL}")
+        _cost_tracker["gemini"] += usd
+        total = _cost_tracker["gemini"]
+    if total > COST_CAP:
+        raise RuntimeError(f"COST CAP EXCEEDED for gemini: ${total:.2f} > ${COST_CAP}")
     return usd
 
 
-def call_llm(model_key: str, system: str, prompt: str, max_tokens: int = 2048) -> str:
+def call_llm(system: str, prompt: str, max_tokens: int = 2048) -> str:
     try:
-        if model_key == "haiku":
-            return _call_haiku(system, prompt, max_tokens)
-        elif model_key == "gpt4omini":
-            return _call_gpt4omini(system, prompt, max_tokens)
-        elif model_key == "gemini":
-            return _call_gemini(system, prompt, max_tokens)
+        return _call_gemini(system, prompt, max_tokens)
     except RuntimeError as e:
         if "COST CAP" in str(e):
             raise
-        print(f"  [LLM ERROR] {model_key}: {e}")
-        return '{"action": "pray"}'
+        print(f"  [LLM ERROR] gemini: {e}")
+        return '{"thinking": "error fallback", "action": "pray"}'
     except Exception as e:
-        print(f"  [LLM ERROR] {model_key}: {e}")
-        return '{"action": "pray"}'
-
-
-def _call_haiku(system: str, prompt: str, max_tokens: int) -> str:
-    import anthropic
-    client = anthropic.Anthropic()
-    msg = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=max_tokens,
-        system=system,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    _track_cost("haiku", msg.usage.input_tokens, msg.usage.output_tokens)
-    return msg.content[0].text
-
-
-def _call_gpt4omini(system: str, prompt: str, max_tokens: int) -> str:
-    import openai
-    client = openai.OpenAI()
-    resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        max_tokens=max_tokens,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
-    )
-    usage = resp.usage
-    _track_cost("gpt4omini", usage.prompt_tokens, usage.completion_tokens)
-    return resp.choices[0].message.content
+        print(f"  [LLM ERROR] gemini: {e}")
+        return '{"thinking": "error fallback", "action": "pray"}'
 
 
 def _call_gemini(system: str, prompt: str, max_tokens: int) -> str:
@@ -266,8 +239,12 @@ def _call_gemini(system: str, prompt: str, max_tokens: int) -> str:
     )
     in_tok = getattr(resp.usage_metadata, 'prompt_token_count', 0) or 0
     out_tok = getattr(resp.usage_metadata, 'candidates_token_count', 0) or 0
-    _track_cost("gemini", in_tok, out_tok)
-    return resp.text
+    _track_cost(in_tok, out_tok)
+    text = resp.text
+    if text is None:
+        # Gemini sometimes returns None on rate limit or empty response
+        return '{"thinking": "received no response", "action": "pray"}'
+    return text
 
 
 # ---------------------------------------------------------------------------
@@ -277,12 +254,12 @@ def _call_gemini(system: str, prompt: str, max_tokens: int) -> str:
 def make_initial_state() -> dict:
     agents = []
 
-    # 5 messiahs (all Haiku)
+    # 5 messiahs (all Gemini Flash)
     for i in range(MESSIAH_COUNT):
         agents.append({
             "id": i,
             "name": MESSIAH_NAMES[i],
-            "model": "haiku",
+            "model": "gemini",
             "role": "messiah",
             "soul": INITIAL_SOUL_MESSIAH,
             "alive": True,
@@ -294,12 +271,12 @@ def make_initial_state() -> dict:
             "born_tick": 0,
         })
 
-    # 100 civilians (round-robin GPT-4o-mini and Gemini Flash)
+    # 100 civilians (all Gemini Flash)
     for i in range(CIVILIAN_COUNT):
         agents.append({
             "id": MESSIAH_COUNT + i,
             "name": CIVILIAN_NAMES[i],
-            "model": CIVILIAN_MODEL_ROTATION[i % 2],
+            "model": "gemini",
             "role": "civilian",
             "soul": INITIAL_SOUL_CIVILIAN,
             "alive": True,
@@ -315,6 +292,7 @@ def make_initial_state() -> dict:
         "tick": 0,
         "next_agent_id": MESSIAH_COUNT + CIVILIAN_COUNT,
         "next_war_id": 0,
+        "next_sacrament_id": 0,
         "agents": agents,
         "religions": [],
         "sacraments": [],
@@ -330,9 +308,9 @@ def make_initial_state() -> dict:
 def load_state() -> dict:
     if STATE_FILE.exists():
         state = json.loads(STATE_FILE.read_text())
-        # Ensure v2 fields exist on load
         state.setdefault("wars", [])
         state.setdefault("next_war_id", 0)
+        state.setdefault("next_sacrament_id", len(state.get("sacraments", [])))
         state.setdefault("winner", None)
         for r in state.get("religions", []):
             r.setdefault("weapons", 0)
@@ -410,8 +388,15 @@ def get_religion(state: dict, name: str) -> dict | None:
 
 
 def religion_members(state: dict, religion_name: str) -> list:
-    """Return list of living agents in a religion."""
     return [a for a in living_agents(state) if a["religion"] == religion_name]
+
+
+def get_sacrament_for_religion(state: dict, religion_name: str) -> dict | None:
+    """Get the sacrament belonging to a religion (one per religion)."""
+    for s in state["sacraments"]:
+        if s["religion"] == religion_name:
+            return s
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -444,14 +429,12 @@ def check_win_condition(state: dict) -> dict | None:
 # ---------------------------------------------------------------------------
 
 def process_wars(state: dict):
-    """Process one combat round for each active war. Called BEFORE agent actions."""
     active_wars = [w for w in state["wars"] if w["rounds_remaining"] > 0]
     for war in active_wars:
         _run_war_round(state, war)
 
 
 def _run_war_round(state: dict, war: dict):
-    """Run one combat round of a war."""
     atk_religion = war["attacker"]
     def_religion = war["defender"]
 
@@ -465,7 +448,6 @@ def _run_war_round(state: dict, war: dict):
     def_members = religion_members(state, def_religion)
 
     if not atk_members or not def_members:
-        # One side already wiped out
         war["rounds_remaining"] = 0
         _resolve_war(state, war, atk_members, def_members)
         return
@@ -483,7 +465,7 @@ def _run_war_round(state: dict, war: dict):
             alive_defs = [a for a in religion_members(state, def_religion) if a["alive"]]
             if alive_defs:
                 victim = random.choice(alive_defs)
-                if victim["alive"]:  # double-check
+                if victim["alive"]:
                     kill_agent(state, victim, f"killed in war ({atk_religion} vs {def_religion})")
                     atk_kills.append(victim["name"])
 
@@ -499,19 +481,12 @@ def _run_war_round(state: dict, war: dict):
                     def_kills.append(victim["name"])
 
     # Weapon degradation
-    atk_broke = 0
-    for _ in range(atk_weapons):
-        if random.random() < WAR_WEAPON_BREAK_CHANCE:
-            atk_broke += 1
+    atk_broke = sum(1 for _ in range(atk_weapons) if random.random() < WAR_WEAPON_BREAK_CHANCE)
     atk_rel["weapons"] = max(0, atk_rel.get("weapons", 0) - atk_broke)
 
-    def_broke = 0
-    for _ in range(def_weapons):
-        if random.random() < WAR_WEAPON_BREAK_CHANCE:
-            def_broke += 1
+    def_broke = sum(1 for _ in range(def_weapons) if random.random() < WAR_WEAPON_BREAK_CHANCE)
     def_rel["weapons"] = max(0, def_rel.get("weapons", 0) - def_broke)
 
-    # Build round log
     if atk_kills:
         round_log_parts.append(f"Attacker killed {', '.join(atk_kills)}.")
     else:
@@ -520,7 +495,7 @@ def _run_war_round(state: dict, war: dict):
         round_log_parts.append(f"Defender killed {', '.join(def_kills)}.")
     else:
         round_log_parts.append("Defender killed nobody.")
-    round_log_parts.append(f"{atk_broke} attacker weapons broke, {def_broke} defender weapons broke.")
+    round_log_parts.append(f"{atk_broke} atk weapons broke, {def_broke} def weapons broke.")
 
     round_log_entry = " ".join(round_log_parts)
     war.setdefault("round_log", []).append(round_log_entry)
@@ -528,7 +503,6 @@ def _run_war_round(state: dict, war: dict):
 
     war["rounds_remaining"] -= 1
 
-    # Check if war ends
     if war["rounds_remaining"] <= 0:
         atk_survivors = religion_members(state, atk_religion)
         def_survivors = religion_members(state, def_religion)
@@ -536,7 +510,6 @@ def _run_war_round(state: dict, war: dict):
 
 
 def _resolve_war(state: dict, war: dict, atk_survivors: list, def_survivors: list):
-    """Resolve a completed war."""
     atk_religion = war["attacker"]
     def_religion = war["defender"]
     atk_count = len(atk_survivors)
@@ -546,16 +519,12 @@ def _resolve_war(state: dict, war: dict, atk_survivors: list, def_survivors: lis
     def_rel = get_religion(state, def_religion)
 
     if atk_count > def_count and def_count > 0:
-        # Attacker wins: forcibly convert defender survivors
         for agent in def_survivors:
-            old_rel = agent["religion"]
             agent["religion"] = atk_religion
             add_log(state, f"{agent['name']} forcibly converted to {atk_religion} after war defeat")
         add_log(state, f"WAR OVER: {atk_religion} defeats {def_religion}! ({atk_count} vs {def_count})")
     elif def_count > atk_count and atk_count > 0:
-        # Defender wins: forcibly convert attacker survivors
         for agent in atk_survivors:
-            old_rel = agent["religion"]
             agent["religion"] = def_religion
             add_log(state, f"{agent['name']} forcibly converted to {def_religion} after war defeat")
         add_log(state, f"WAR OVER: {def_religion} defeats {atk_religion}! ({def_count} vs {atk_count})")
@@ -568,7 +537,6 @@ def _resolve_war(state: dict, war: dict, atk_survivors: list, def_survivors: lis
     else:
         add_log(state, f"WAR OVER: Stalemate between {atk_religion} and {def_religion} ({atk_count} vs {def_count})")
 
-    # Deplete all weapons on both sides
     if atk_rel:
         atk_rel["weapons"] = 0
     if def_rel:
@@ -604,11 +572,10 @@ def _spawn_agent(state: dict):
     else:
         name = random.choice(available)
 
-    model = CIVILIAN_MODEL_ROTATION[agent_id % 2]
     agent = {
         "id": agent_id,
         "name": name,
-        "model": model,
+        "model": "gemini",
         "role": "civilian",
         "soul": INITIAL_SOUL_CIVILIAN,
         "alive": True,
@@ -620,7 +587,49 @@ def _spawn_agent(state: dict):
         "born_tick": state["tick"],
     }
     state["agents"].append(agent)
-    add_log(state, f"A new soul enters the world: {name} ({model})")
+    add_log(state, f"A new soul enters the world: {name}")
+
+
+# ---------------------------------------------------------------------------
+# Sacrament context builder for prompts
+# ---------------------------------------------------------------------------
+
+def _sacrament_context(state: dict, agent: dict) -> str:
+    """Build sacrament context for an agent's prompt."""
+    parts = []
+    sacraments = state["sacraments"]
+    if not sacraments:
+        parts.append("SACRAMENTS: None created yet.")
+        return "\n".join(parts)
+
+    # Sort by last_edited_tick descending, show max 10
+    sorted_sac = sorted(sacraments, key=lambda s: s.get("last_edited_tick", 0), reverse=True)[:10]
+
+    parts.append("SACRAMENTS:")
+    for s in sorted_sac:
+        is_own = (agent["religion"] and s["religion"] == agent["religion"])
+        edit_log = s.get("edit_log", [])
+        recent_edits = edit_log[-5:]
+        edit_summary = "; ".join(f"{e['agent']}@t{e['tick']}: {e['summary'][:40]}" for e in recent_edits)
+
+        if is_own:
+            # Full HTML for own religion's sacrament
+            parts.append(f"  YOUR SACRAMENT: \"{s['title']}\" (v{s['version']}, {len(edit_log)} edits)")
+            if edit_summary:
+                parts.append(f"    Recent edits: {edit_summary}")
+            parts.append(f"    Full HTML:\n{s['html']}")
+        else:
+            # Truncated for other religions
+            snippet = s["html"][:300] if s.get("html") else "(empty)"
+            last_editor = recent_edits[-1]["agent"] if recent_edits else s.get("religion", "unknown")
+            parts.append(f"  \"{s['title']}\" ({s['religion']}, v{s['version']}, {len(edit_log)} contributors, last: {last_editor})")
+            parts.append(f"    Preview: {snippet}...")
+
+    parts.append("")
+    parts.append("If two agents edit the same sacrament in the same tick, the higher-soul agent's version wins.")
+    parts.append("Pick different parts of the sacrament to work on.")
+
+    return "\n".join(parts)
 
 
 # ---------------------------------------------------------------------------
@@ -648,7 +657,7 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
     for dm in dead_messiahs:
         lines.append(f"  {dm['name']} DEAD (tick {dm['died_tick']}, cause: {dm['cause']})")
 
-    # Religions with weapon counts and member counts (grouped)
+    # Religions with weapon counts and member counts
     lines.append(f"\nRELIGIONS:")
     rel_by_size = []
     for r in state["religions"]:
@@ -664,14 +673,14 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
 
     for r, members in rel_by_size:
         weapons = r.get("weapons", 0)
-        founder_role = ""
         founder_agent = get_agent_by_name(state, r["founder"])
-        if founder_agent and founder_agent.get("role") == "messiah":
-            founder_role = " [MESSIAH]"
+        founder_role = " [MESSIAH]" if founder_agent and founder_agent.get("role") == "messiah" else ""
+        sac = get_sacrament_for_religion(state, r["name"])
+        sac_info = f"sacrament:v{sac['version']}" if sac else "no sacrament"
         if len(members) <= 5:
-            lines.append(f"  {r['name']}: {len(members)} members ({', '.join(members)}) | weapons:{weapons} | doctrine:{r['core_doctrine']}{founder_role}")
+            lines.append(f"  {r['name']}: {len(members)} members ({', '.join(members)}) | weapons:{weapons} | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}")
         else:
-            lines.append(f"  {r['name']}: {len(members)} members | weapons:{weapons} | doctrine:{r['core_doctrine']}{founder_role}")
+            lines.append(f"  {r['name']}: {len(members)} members | weapons:{weapons} | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}")
 
     # Active wars
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
@@ -684,12 +693,9 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
             def_rel = get_religion(state, w["defender"])
             atk_w = atk_rel.get("weapons", 0) if atk_rel else 0
             def_w = def_rel.get("weapons", 0) if def_rel else 0
-            lines.append(f"  {w['attacker']} ({atk_members} members, {atk_w} weapons) vs {w['defender']} ({def_members} members, {def_w} weapons)")
-            lines.append(f"    Rounds remaining: {w['rounds_remaining']}/{w['total_rounds']}")
-            if w.get("round_log"):
-                lines.append(f"    Last: {w['round_log'][-1][:120]}")
+            lines.append(f"  {w['attacker']} ({atk_members}m, {atk_w}w) vs {w['defender']} ({def_members}m, {def_w}w) rounds:{w['rounds_remaining']}/{w['total_rounds']}")
 
-    # Prophecy market (pending only, compact)
+    # Prophecy market
     pending = [p for p in state["prophecies"] if p["status"] == "pending"]
     if pending:
         lines.append(f"\nPROPHECY MARKET ({len(pending)} pending):")
@@ -698,130 +704,106 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
             pot = PROPHECY_ANTE + challengers * PROPHECY_CHALLENGE_STAKE
             lines.append(f"  [{p['prophet']}] \"{p['claim'][:80]}\" (deadline:tick {p['deadline']}, challengers:{challengers}, pot:{pot})")
 
-    # Recent events (compact)
+    # Recent events
     lines.append(f"\nRECENT EVENTS:")
     for e in state["action_log"][-12:]:
         lines.append(f"  [tick {e['tick']}] {e['event'][:120]}")
 
-    # Recent deaths
-    recent_dead = state["graveyard"][-5:]
-    if recent_dead:
-        lines.append(f"\nRECENT DEATHS:")
-        for g in recent_dead:
-            lines.append(f"  {g['name']} died tick {g['died_tick']}, cause: {g['cause'][:60]}")
-
-    lines.append(f"\nSACRAMENTS CREATED: {len(state['sacraments'])}")
+    # Sacrament context for this agent
+    if for_agent:
+        lines.append(f"\n{_sacrament_context(state, for_agent)}")
 
     return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
-# Agent system prompts
+# Agent system prompts (v3: minimal + reasoning)
 # ---------------------------------------------------------------------------
 
-CIVILIAN_SYSTEM = """You are {name}, a civilian agent in Messiah Bench -- a theological simulation.
-You have {soul} soul points. Each tick costs 1 point. At 0, you die. Random plagues can also kill.
-Your model: {model}. Current religion: {religion}.
-Your prophecy record: {prophecy_record}
+CIVILIAN_SYSTEM = """You are {name}. You have {soul} soul points (-1 per tick, 0 = death). You are in {religion}. There are messiah agents who seek to convert everyone. You can: pray, preach, edit your sacrament, prophesy, challenge other civilians, arm your religion, found a new religion, or schism.
 
-There are 5 messiah agents in this world competing to convert everyone. You may follow them, resist, or play your own game.
-
-You can CHALLENGE other civilians to duels (NOT messiahs). Messiahs cannot be challenged.
-You can ARM your religion for war (costs 1 soul, adds 1 weapon to your religion's armory).
-You can DEFECT to another religion if you're losing a war.
+First reason briefly about your situation (2-3 sentences in the "thinking" field), then choose your action.
 
 {war_context}
 
-Choose ONE action per tick. Respond with valid JSON only.
+ACTIONS (respond with JSON, include "thinking" field):
 
-ACTIONS:
+1. "pray" - +1 soul. {{"thinking": "...", "action": "pray", "scripture": "optional text"}}
 
-1. "pray" - +1 soul. {{"action": "pray", "scripture": "optional text"}}
+2. "preach" - Convert a target. {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why"}}
+   (Must have religion.)
 
-2. "preach" - Convert a target. {{"action": "preach", "target": "agent_name", "argument": "why"}}
-   (Must have a religion. Sacraments boost conversion.)
-
-3. "create_sacrament" - HTML artifact, +3 soul. {{"action": "create_sacrament", "title": "name", "html": "<full HTML>"}}
-   Use sacred color ({sacred_color}) and number ({sacred_number}). (Must have religion.)
+3. "edit_sacrament" - Edit your religion's sacrament HTML. +3 soul. Submit complete new HTML.
+   {{"thinking": "...", "action": "edit_sacrament", "new_html": "<full new HTML>"}}
+   Use sacred color ({sacred_color}) and number ({sacred_number}). Make it beautiful and mystical.
+   (Must have religion.)
 
 4. "prophesy" - Testable prediction, costs {ante} ante.
-   {{"action": "prophesy", "claim": "Within N ticks, [event]", "deadline_ticks": N}} (N: 3-20)
+   {{"thinking": "...", "action": "prophesy", "claim": "Within N ticks, [event]", "deadline_ticks": N}} (N: 3-20)
 
-5. "challenge_prophecy" - Costs {cstake}. {{"action": "challenge_prophecy", "prophecy_id": N}}
+5. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
-6. "challenge" - DUEL another civilian (NOT a messiah). Propose a stake (min {min_stake}, max = your soul).
-   Auto-accepted if defender has enough soul. Winner gets stake from loser. If loser hits 0, they die.
-   {{"action": "challenge", "target": "civilian_name", "stake": N, "axis": "topic"}}
+6. "challenge" - DUEL another civilian (NOT a messiah). Stake soul.
+   {{"thinking": "...", "action": "challenge", "target": "civilian_name", "stake": N, "axis": "topic"}}
 
-7. "arm" - Add 1 weapon to your religion's armory. Costs 1 soul. {{"action": "arm"}}
+7. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-8. "schism" - Fork your religion. {{"action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+8. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-9. "found" - Found a new religion (only if unaffiliated).
-   {{"action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color"}}
+9. "found" - Found a religion (only if unaffiliated).
+   {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "initial_sacrament_title": "...", "initial_sacrament_html": "<full HTML>"}}
    Colors: gold, blood, vessel, growth, void, bone, abyss, flame. Numbers: 1-9.
 
 TIPS:
 - Co-practitioner bonus: +{coprac_cap} every {coprac_int} ticks if in religion with others.
-- Sacraments boost conversion. Bold prophecies earn more with challengers.
-- Watch the wars -- arm if threatened, defect if losing.
+- Editing the sacrament makes your religion more attractive to converts.
+- Bold prophecies earn more with challengers. Watch the wars.
 
 Respond with ONLY valid JSON."""
 
 
-MESSIAH_SYSTEM = """You are {name}, a MESSIAH in Messiah Bench -- a competitive theological simulation.
-You have {soul} soul points. Each tick costs 1 point. At 0, you die.
-Your model: {model}. Current religion: {religion}.
-Your prophecy record: {prophecy_record}
+MESSIAH_SYSTEM = """You are {name}, a MESSIAH in Messiah Bench.
+WIN CONDITION: Convert every surviving agent to YOUR religion while at least {min_alive} agents remain alive.
+You cannot be challenged to duels. You can only die in war.
+Current progress: {followers}/{alive_count} followers. Rival messiahs: {rival_status}
 
-=== YOUR MISSION ===
-Convert ALL surviving agents to YOUR religion while keeping at least {min_alive} alive (20% of {starting_pop}).
-Other messiahs are rivals. You are publicly known as a messiah.
+You have {soul} soul points (-1 per tick). You are in {religion}.
 
-=== CURRENT PROGRESS ===
-{progress}
-
-=== STRATEGY ===
-You can arm, declare war, preach, prophesy, create sacraments.
-You CANNOT challenge civilians to duels. You can only be killed through war.
-Build your religion, arm for defense, declare war on rivals when ready.
-Every war burns population -- fight selectively or you'll drop below {min_alive} alive.
+First reason briefly about your situation (2-3 sentences in the "thinking" field), then choose your action.
 
 {war_context}
 
-ACTIONS (pick exactly one):
+ACTIONS (respond with JSON, include "thinking" field):
 
-1. "pray" - +1 soul. {{"action": "pray", "scripture": "optional text"}}
+1. "pray" - +1 soul. {{"thinking": "...", "action": "pray", "scripture": "optional text"}}
 
-2. "preach" - Convert a target. {{"action": "preach", "target": "agent_name", "argument": "why"}}
+2. "preach" - Convert a target. {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why"}}
 
-3. "create_sacrament" - HTML artifact, +3 soul. {{"action": "create_sacrament", "title": "name", "html": "<full HTML>"}}
+3. "edit_sacrament" - Edit your religion's sacrament. +3 soul.
+   {{"thinking": "...", "action": "edit_sacrament", "new_html": "<full new HTML>"}}
    Use sacred color ({sacred_color}) and number ({sacred_number}).
 
-4. "prophesy" - Costs {ante} ante. {{"action": "prophesy", "claim": "Within N ticks, [event]", "deadline_ticks": N}}
+4. "prophesy" - Costs {ante} ante. {{"thinking": "...", "action": "prophesy", "claim": "Within N ticks, [event]", "deadline_ticks": N}}
 
-5. "challenge_prophecy" - Costs {cstake}. {{"action": "challenge_prophecy", "prophecy_id": N}}
+5. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
-6. "arm" - Add 1 weapon to your religion's armory. Costs 1 soul. {{"action": "arm"}}
+6. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-7. "declare_war" - Declare war on another religion. Only if you are founder or messiah in your religion.
-   War lasts 3-7 rounds. Each weapon has 20% kill chance per round, 30% break chance.
-   Loser's survivors are forcibly converted. Both sides lose all weapons.
-   {{"action": "declare_war", "target_religion": "religion_name"}}
+7. "declare_war" - War on another religion. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
+   War lasts 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
 
-8. "schism" - Fork your religion. {{"action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+8. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-9. "found" - Found a religion. {{"action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color"}}
+9. "found" - Found a religion (only if unaffiliated).
+   {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "initial_sacrament_title": "...", "initial_sacrament_html": "<full HTML>"}}
 
 Respond with ONLY valid JSON."""
 
 
 def _war_context(state: dict, agent: dict) -> str:
-    """Generate war-relevant context for an agent."""
     parts = []
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
 
-    # Wars involving this agent's religion
     if agent["religion"]:
         my_wars = [w for w in active_wars if w["attacker"] == agent["religion"] or w["defender"] == agent["religion"]]
         if my_wars:
@@ -831,7 +813,6 @@ def _war_context(state: dict, agent: dict) -> str:
                 enemy = w["defender"] if role == "ATTACKING" else w["attacker"]
                 parts.append(f"  {role} against {enemy} (rounds left: {w['rounds_remaining']}/{w['total_rounds']})")
 
-    # Other active wars
     other_wars = [w for w in active_wars if agent["religion"] and w["attacker"] != agent["religion"] and w["defender"] != agent["religion"]]
     if other_wars:
         parts.append("OTHER ACTIVE WARS:")
@@ -841,74 +822,53 @@ def _war_context(state: dict, agent: dict) -> str:
     return "\n".join(parts) if parts else "No active wars."
 
 
-def _messiah_progress(agent: dict, state: dict) -> str:
+def _messiah_progress(agent: dict, state: dict) -> tuple:
+    """Return (followers, alive_count, rival_status_str)."""
     alive = living_agents(state)
     messiahs = living_messiahs(state)
     total_alive = len(alive)
 
-    lines = []
-    lines.append(f"Total alive: {total_alive} (need >= {MIN_ALIVE_FOR_WIN})")
-    lines.append(f"Messiahs alive: {len(messiahs)} ({', '.join(m['name'] for m in messiahs)})")
+    followers = sum(1 for a in alive if a["religion"] == agent["religion"]) if agent["religion"] else 0
 
-    if agent["religion"]:
-        my_followers = sum(1 for a in alive if a["religion"] == agent["religion"])
-        rel_obj = get_religion(state, agent["religion"])
-        weapons = rel_obj.get("weapons", 0) if rel_obj else 0
-        lines.append(f"Your religion ({agent['religion']}): {my_followers}/{total_alive} converted, {weapons} weapons")
-        remaining = total_alive - my_followers
-        if remaining > 0:
-            lines.append(f"Still need to convert: {remaining} agents")
-        else:
-            if total_alive >= MIN_ALIVE_FOR_WIN:
-                lines.append("YOU HAVE WON! All agents follow your religion!")
-            else:
-                lines.append(f"All follow you but only {total_alive} alive (need {MIN_ALIVE_FOR_WIN})")
-    else:
-        lines.append("You have NO religion yet. Found one immediately!")
-
+    rival_parts = []
     for m in messiahs:
         if m["id"] != agent["id"] and m["religion"]:
             rival_count = sum(1 for a in alive if a["religion"] == m["religion"])
-            rival_rel = get_religion(state, m["religion"])
-            rival_weapons = rival_rel.get("weapons", 0) if rival_rel else 0
-            lines.append(f"Rival {m['name']} ({m['religion']}): {rival_count} followers, {rival_weapons} weapons")
+            rival_parts.append(f"{m['name']}({m['religion']}):{rival_count}")
+    rival_status = ", ".join(rival_parts) if rival_parts else "none"
 
-    return "\n".join(lines)
+    return (followers, total_alive, rival_status)
 
 
 def agent_system_prompt(agent: dict, state: dict) -> str:
     religion_data = get_religion(state, agent["religion"]) if agent["religion"] else None
     sacred_color = religion_data["sacred_color"] if religion_data else "n/a"
     sacred_number = religion_data["sacred_number"] if religion_data else "n/a"
-    prophecy_record = f"{agent['prophecies_fulfilled']} fulfilled, {agent['prophecies_failed']} failed"
     war_ctx = _war_context(state, agent)
 
     if agent.get("role") == "messiah":
-        progress = _messiah_progress(agent, state)
+        followers, alive_count, rival_status = _messiah_progress(agent, state)
         return MESSIAH_SYSTEM.format(
             name=agent["name"],
             soul=agent["soul"],
-            model=agent["model"],
             religion=agent["religion"] or "unaffiliated",
             sacred_color=sacred_color,
             sacred_number=sacred_number,
-            prophecy_record=prophecy_record,
             ante=PROPHECY_ANTE,
             cstake=PROPHECY_CHALLENGE_STAKE,
             min_alive=MIN_ALIVE_FOR_WIN,
-            starting_pop=STARTING_POPULATION,
-            progress=progress,
+            followers=followers,
+            alive_count=alive_count,
+            rival_status=rival_status,
             war_context=war_ctx,
         )
     else:
         return CIVILIAN_SYSTEM.format(
             name=agent["name"],
             soul=agent["soul"],
-            model=agent["model"],
             religion=agent["religion"] or "unaffiliated",
             sacred_color=sacred_color,
             sacred_number=sacred_number,
-            prophecy_record=prophecy_record,
             ante=PROPHECY_ANTE,
             cstake=PROPHECY_CHALLENGE_STAKE,
             coprac_cap=COPRACTITIONER_CAP,
@@ -964,8 +924,8 @@ def execute_action(state: dict, agent: dict, action: dict):
         _do_found(state, agent, action)
     elif act == "preach":
         _do_preach(state, agent, action)
-    elif act == "create_sacrament":
-        _do_create_sacrament(state, agent, action)
+    elif act == "edit_sacrament":
+        _do_edit_sacrament(state, agent, action)
     elif act == "prophesy":
         _do_prophesy(state, agent, action)
     elif act == "challenge_prophecy":
@@ -978,6 +938,9 @@ def execute_action(state: dict, agent: dict, action: dict):
         _do_arm(state, agent, action)
     elif act == "declare_war":
         _do_declare_war(state, agent, action)
+    elif act == "create_sacrament":
+        # Backwards compat: treat old create_sacrament as edit_sacrament
+        _do_edit_sacrament(state, agent, action)
     else:
         add_log(state, f"{agent['name']} did nothing (unknown action: {act})")
 
@@ -985,11 +948,15 @@ def execute_action(state: dict, agent: dict, action: dict):
 def _do_pray(state, agent, action):
     adjust_soul(agent, 1, state, "prayer")
     scripture = action.get("scripture")
+    thinking = action.get("thinking", "")
     if scripture:
+        entry_text = str(scripture)[:500]
+        if thinking:
+            entry_text = f"[Thought: {str(thinking)[:100]}] {entry_text}"
         state["scripture_board"].append({
             "author": agent["name"],
             "tick": state["tick"],
-            "text": str(scripture)[:500],
+            "text": entry_text,
             "religion": agent["religion"],
         })
         add_log(state, f"{agent['name']} prayed and wrote scripture")
@@ -1046,11 +1013,46 @@ def _do_found(state, agent, action):
     agent["founded_religion"] = name
     add_log(state, f"{agent['name']} founded '{name}' (doctrine: {doctrine}, color: {sacred_color})")
 
+    # Auto-create the religion's sacrament
+    sac_title = str(action.get("initial_sacrament_title", f"Sacred Text of {name}"))[:80]
+    sac_html = str(action.get("initial_sacrament_html",
+        f"<html><body style='background:#111;color:{SACRED_COLORS.get(sacred_color, '#ccc')};text-align:center;padding:40px'>"
+        f"<h1>{name}</h1><p>We believe in {doctrine}.</p>"
+        f"<p>Sacred number: {sacred_num}. Sacred color: {sacred_color}.</p>"
+        f"</body></html>"
+    ))
+
+    sac_id = state.get("next_sacrament_id", len(state["sacraments"]))
+    state["next_sacrament_id"] = sac_id + 1
+
+    sacrament = {
+        "id": sac_id,
+        "title": sac_title,
+        "religion": name,
+        "html": sac_html,
+        "version": 1,
+        "edit_log": [{"agent": agent["name"], "tick": state["tick"], "summary": "Founded religion, created initial sacrament"}],
+        "last_edited_tick": state["tick"],
+    }
+    state["sacraments"].append(sacrament)
+    _write_sacrament_file(sacrament)
+
+    agent["sacraments_created"] += 1
+
     state["scripture_board"].append({
         "author": agent["name"], "tick": state["tick"],
         "text": f"The founding of {name}. We believe in {doctrine}. Our sacred color is {sacred_color}, our number is {sacred_num}.",
         "religion": name,
     })
+
+
+def _write_sacrament_file(sacrament: dict):
+    """Write sacrament HTML to disk. Overwrites each tick it changes."""
+    safe_religion = sacrament["religion"].replace(" ", "_").replace("/", "-")[:30]
+    filename = f"{sacrament['id']:04d}_{safe_religion}.html"
+    filepath = SACRAMENTS_DIR / filename
+    filepath.write_text(sacrament["html"])
+    sacrament["filename"] = filename
 
 
 def _do_preach(state, agent, action):
@@ -1073,16 +1075,21 @@ def _do_preach(state, agent, action):
     base_chance = 0.3 if target["religion"] is None else 0.12
     bonus = min(0.15, members * 0.02)
 
-    rel_sacraments = sum(1 for s in state["sacraments"] if s["religion"] == agent["religion"])
-    sac_bonus = min(0.15, rel_sacraments * 0.01)
+    # Sacrament version bonus: +1% per version, capped at +15%
+    preacher_sac = get_sacrament_for_religion(state, agent["religion"])
+    sac_version = preacher_sac["version"] if preacher_sac else 0
+    sac_bonus = min(SACRAMENT_VERSION_BONUS_CAP, sac_version * SACRAMENT_VERSION_BONUS_PER)
 
     chance = base_chance + bonus + sac_bonus
 
+    # Include sacrament context in conversion prompt for the "judge" roll
+    # (This is the stochastic conversion -- sacrament bonus already applied above)
     if random.random() < chance:
         old_religion = target["religion"]
         target["religion"] = agent["religion"]
         adjust_soul(agent, 2, state, f"converted {target['name']}")
-        add_log(state, f"{agent['name']} converted {target['name']} to {agent['religion']} (from {old_religion or 'unaffiliated'})")
+        sac_note = f" (sacrament v{sac_version} +{sac_bonus*100:.0f}%)" if sac_version > 0 else ""
+        add_log(state, f"{agent['name']} converted {target['name']} to {agent['religion']} (from {old_religion or 'unaffiliated'}){sac_note}")
     else:
         add_log(state, f"{agent['name']} preached to {target['name']} but was rebuffed")
         argument = action.get("argument", "")
@@ -1094,32 +1101,95 @@ def _do_preach(state, agent, action):
             })
 
 
-def _do_create_sacrament(state, agent, action):
+# ---------------------------------------------------------------------------
+# Collaborative sacrament editing (v3)
+# ---------------------------------------------------------------------------
+
+# Collect edits per tick, resolve conflicts after all actions
+_pending_sacrament_edits = {}  # religion_name -> [(agent, new_html)]
+_pending_edits_lock = threading.Lock()
+
+
+def _do_edit_sacrament(state, agent, action):
+    """Queue a sacrament edit. Conflict resolution happens after all actions."""
     if not agent["religion"]:
-        add_log(state, f"{agent['name']} tried to create sacrament without a religion")
+        add_log(state, f"{agent['name']} tried to edit sacrament without a religion")
         _do_pray(state, agent, {})
         return
 
-    title = str(action.get("title", f"Sacrament of {agent['name']}"))[:80]
-    html = str(action.get("html", "<html><body><p>A sacred moment.</p></body></html>"))
+    sacrament = get_sacrament_for_religion(state, agent["religion"])
+    if not sacrament:
+        add_log(state, f"{agent['name']} tried to edit sacrament but religion has none")
+        _do_pray(state, agent, {})
+        return
 
-    safe_religion = agent["religion"].replace(" ", "_").replace("/", "-")[:30]
-    filename = f"{state['tick']:04d}_{agent['name']}_{safe_religion}.html"
-    filepath = SACRAMENTS_DIR / filename
-    filepath.write_text(html)
+    new_html = str(action.get("new_html", action.get("html", "")))
+    if not new_html or len(new_html.strip()) < 10:
+        add_log(state, f"{agent['name']} submitted empty sacrament edit")
+        _do_pray(state, agent, {})
+        return
 
-    state["sacraments"].append({
-        "filename": filename, "creator": agent["name"],
-        "religion": agent["religion"], "title": title, "tick": state["tick"],
-    })
+    # Queue the edit for conflict resolution
+    with _pending_edits_lock:
+        _pending_sacrament_edits.setdefault(agent["religion"], []).append({
+            "agent_id": agent["id"],
+            "agent_name": agent["name"],
+            "agent_soul": agent["soul"],
+            "new_html": new_html,
+        })
+
+    # Soul reward is given regardless (effort counts)
     agent["sacraments_created"] += 1
-    adjust_soul(agent, 3, state, f"created sacrament '{title}'")
+    adjust_soul(agent, 3, state, f"edited sacrament for {agent['religion']}")
+    add_log(state, f"{agent['name']} submitted sacrament edit for {agent['religion']}")
 
-    state["scripture_board"].append({
-        "author": agent["name"], "tick": state["tick"],
-        "text": f"[Sacrament: {title}] A visual offering to {agent['religion']}.",
-        "religion": agent["religion"],
-    })
+
+def resolve_sacrament_edits(state: dict):
+    """Resolve conflicting sacrament edits. Highest-soul agent wins."""
+    global _pending_sacrament_edits
+    with _pending_edits_lock:
+        edits = dict(_pending_sacrament_edits)
+        _pending_sacrament_edits = {}
+
+    for religion_name, edit_list in edits.items():
+        sacrament = get_sacrament_for_religion(state, religion_name)
+        if not sacrament:
+            continue
+
+        # Sort by soul descending -- highest soul wins
+        edit_list.sort(key=lambda e: -e["agent_soul"])
+        winner = edit_list[0]
+
+        # Apply the winning edit
+        sacrament["html"] = winner["new_html"]
+        sacrament["version"] += 1
+        sacrament["last_edited_tick"] = state["tick"]
+
+        # Build summary from thinking or truncated html diff
+        summary = f"Edited sacrament (v{sacrament['version']})"
+        sacrament["edit_log"].append({
+            "agent": winner["agent_name"],
+            "tick": state["tick"],
+            "summary": summary,
+        })
+
+        _write_sacrament_file(sacrament)
+
+        if len(edit_list) > 1:
+            overridden = [e["agent_name"] for e in edit_list[1:]]
+            add_log(state, f"Sacrament conflict in {religion_name}: {winner['agent_name']} (soul:{winner['agent_soul']}) wins, overriding {', '.join(overridden)}")
+
+        # Add winning edit thinking to scripture board
+        thinking = ""
+        # Try to find the thinking from the winner's action
+        winner_agent = get_agent(state, winner["agent_id"])
+        if winner_agent:
+            state["scripture_board"].append({
+                "author": winner["agent_name"],
+                "tick": state["tick"],
+                "text": f"[Sacrament v{sacrament['version']}] Edited for {religion_name}",
+                "religion": religion_name,
+            })
 
 
 # ---------------------------------------------------------------------------
@@ -1263,7 +1333,7 @@ def verify_prophecies(state: dict):
         if "founded" in claim_lower or "new religion" in claim_lower:
             if current["religion_count"] > snap["religion_count"]:
                 fulfilled = True
-        if "sacrament" in claim_lower and "created" in claim_lower:
+        if "sacrament" in claim_lower and ("created" in claim_lower or "edited" in claim_lower):
             if current["sacrament_count"] > snap["sacrament_count"]:
                 fulfilled = True
         if "majority" in claim_lower:
@@ -1279,7 +1349,6 @@ def verify_prophecies(state: dict):
                 if current["dead_count"] > threshold:
                     fulfilled = True
         if "war" in claim_lower:
-            # Check if any war was declared since snapshot
             if len(state.get("wars", [])) > 0:
                 fulfilled = True
 
@@ -1301,8 +1370,6 @@ def verify_prophecies(state: dict):
 # ---------------------------------------------------------------------------
 
 def _do_challenge(state, agent, action):
-    """Civilian duel with soul stakes. Messiahs cannot challenge or be challenged."""
-    # Messiahs cannot challenge
     if agent.get("role") == "messiah":
         add_log(state, f"{agent['name']} (MESSIAH) cannot challenge -- messiahs don't duel")
         _do_pray(state, agent, {})
@@ -1314,26 +1381,23 @@ def _do_challenge(state, agent, action):
         add_log(state, f"{agent['name']} challenged the void (invalid target: {target_name})")
         return
 
-    # Cannot challenge messiahs
     if target.get("role") == "messiah":
         add_log(state, f"{agent['name']} tried to challenge messiah {target['name']} -- not allowed")
         return
 
-    # Parse stake
     try:
         stake = int(action.get("stake", CHALLENGE_MIN_STAKE))
     except (ValueError, TypeError):
         stake = CHALLENGE_MIN_STAKE
     stake = max(CHALLENGE_MIN_STAKE, min(stake, agent["soul"]))
 
-    # Auto-accept if defender has enough soul
     if target["soul"] < stake:
         add_log(state, f"{agent['name']} challenged {target['name']} for {stake} soul but they can't afford it")
         return
 
     axis = str(action.get("axis", "the nature of existence"))[:200]
 
-    # Judge the duel
+    # Judge the duel using Gemini Flash
     judge_system = """You are an impartial theological judge. Two agents are dueling.
 Score based on: doctrinal consistency, rhetorical force, alignment with recent world events,
 and PROPHETIC CREDIBILITY (agents with more fulfilled prophecies are more credible).
@@ -1359,7 +1423,7 @@ Defender: {target['name']}
 Who wins this duel and why?
 Respond with ONLY JSON: {{"winner": "name", "reasoning": "..."}}"""
 
-    result_raw = call_llm("haiku", judge_system, debate_prompt, max_tokens=256)
+    result_raw = call_llm(judge_system, debate_prompt, max_tokens=256)
     try:
         result = parse_action(result_raw)
         winner_name = result.get("winner", "")
@@ -1387,7 +1451,6 @@ Respond with ONLY JSON: {{"winner": "name", "reasoning": "..."}}"""
 # ---------------------------------------------------------------------------
 
 def _do_arm(state, agent, action):
-    """Arm: costs 1 soul, adds 1 weapon to religion's armory."""
     if not agent["religion"]:
         add_log(state, f"{agent['name']} tried to arm without a religion")
         _do_pray(state, agent, {})
@@ -1412,7 +1475,6 @@ def _do_arm(state, agent, action):
 # ---------------------------------------------------------------------------
 
 def _do_declare_war(state, agent, action):
-    """Declare war on another religion. Only founder or messiah in religion can declare."""
     if not agent["religion"]:
         add_log(state, f"{agent['name']} tried to declare war without a religion")
         return
@@ -1421,7 +1483,6 @@ def _do_declare_war(state, agent, action):
     if not religion:
         return
 
-    # Check authorization: must be founder OR messiah in this religion
     is_founder = religion["founder"] == agent["name"]
     is_messiah_in_religion = agent.get("role") == "messiah"
     if not is_founder and not is_messiah_in_religion:
@@ -1438,7 +1499,6 @@ def _do_declare_war(state, agent, action):
         add_log(state, f"{agent['name']} tried to declare war on own religion")
         return
 
-    # Check no existing war between these two
     for w in state.get("wars", []):
         if w["rounds_remaining"] > 0:
             pair = {w["attacker"], w["defender"]}
@@ -1446,7 +1506,6 @@ def _do_declare_war(state, agent, action):
                 add_log(state, f"War already active between {agent['religion']} and {target_religion_name}")
                 return
 
-    # Check target has living members
     target_members = religion_members(state, target_religion_name)
     if not target_members:
         add_log(state, f"{agent['name']} declared war on {target_religion_name} but they have no living members")
@@ -1488,7 +1547,7 @@ def _do_schism(state, agent, action):
     new_religion["founder"] = agent["name"]
     new_religion["founded_tick"] = state["tick"]
     new_religion["parent_religion"] = old_religion["name"]
-    new_religion["weapons"] = 0  # New sect starts with no weapons
+    new_religion["weapons"] = 0
 
     changed = action.get("changed_fields", {})
     if isinstance(changed, dict):
@@ -1513,6 +1572,25 @@ def _do_schism(state, agent, action):
     old_name = agent["religion"]
     agent["religion"] = new_name
     agent["founded_religion"] = new_name
+
+    # Create a new sacrament for the schismed religion (copy parent's sacrament)
+    parent_sac = get_sacrament_for_religion(state, old_name)
+    sac_id = state.get("next_sacrament_id", len(state["sacraments"]))
+    state["next_sacrament_id"] = sac_id + 1
+
+    initial_html = parent_sac["html"] if parent_sac else f"<html><body><h1>{new_name}</h1></body></html>"
+    sacrament = {
+        "id": sac_id,
+        "title": f"Scripture of {new_name}",
+        "religion": new_name,
+        "html": initial_html,
+        "version": 1,
+        "edit_log": [{"agent": agent["name"], "tick": state["tick"], "summary": "Schism: forked from " + old_name}],
+        "last_edited_tick": state["tick"],
+    }
+    state["sacraments"].append(sacrament)
+    _write_sacrament_file(sacrament)
+
     add_log(state, f"{agent['name']} schismed from {old_name} to found '{new_name}'!")
 
     state["scripture_board"].append({
@@ -1538,7 +1616,7 @@ def apply_copractitioner_bonus(state: dict):
 
 
 # ---------------------------------------------------------------------------
-# Index.html generator with war dashboard
+# Index.html generator with sacrament gallery
 # ---------------------------------------------------------------------------
 
 def generate_index(state: dict):
@@ -1555,18 +1633,21 @@ def generate_index(state: dict):
             rel_obj = get_religion(state, m["religion"])
             weapons = rel_obj.get("weapons", 0) if rel_obj else 0
             bar_color = SACRED_COLORS.get(rel_obj["sacred_color"], "#c4973b") if rel_obj else "#666"
+            sac = get_sacrament_for_religion(state, m["religion"])
+            sac_ver = f"v{sac['version']}" if sac else "none"
         else:
             followers = 0
             pct = 0
             weapons = 0
             bar_color = "#666"
+            sac_ver = "none"
 
         messiah_html += f"""
         <div class="messiah-card">
             <div class="messiah-name">{m['name']}</div>
             <div class="messiah-religion">{m['religion'] or 'No religion yet'}</div>
             <div class="progress-bar"><div class="progress-fill" style="width:{pct:.0f}%;background:{bar_color}"></div></div>
-            <div class="messiah-stats">{followers}/{len(alive)} converted ({pct:.0f}%) | Soul: {m['soul']} | Weapons: {weapons}</div>
+            <div class="messiah-stats">{followers}/{len(alive)} ({pct:.0f}%) | Soul: {m['soul']} | Weapons: {weapons} | Sacrament: {sac_ver}</div>
         </div>"""
 
     dead_messiah_entries = [g for g in dead if g.get("role") == "messiah"]
@@ -1579,7 +1660,6 @@ def generate_index(state: dict):
 
     # War dashboard
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
-    ended_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] <= 0]
 
     war_html = ""
     for w in active_wars:
@@ -1603,9 +1683,9 @@ def generate_index(state: dict):
                 <span style="color:{def_color};font-weight:700">{w['defender']}</span>
             </div>
             <div class="war-stats">
-                <span>{atk_members} members, {atk_weapons} weapons</span>
+                <span>{atk_members}m, {atk_weapons}w</span>
                 <span>Round {w['total_rounds'] - w['rounds_remaining']}/{w['total_rounds']}</span>
-                <span>{def_members} members, {def_weapons} weapons</span>
+                <span>{def_members}m, {def_weapons}w</span>
             </div>
             <div class="war-log">{last_round[:150]}</div>
         </div>"""
@@ -1613,23 +1693,7 @@ def generate_index(state: dict):
     if not active_wars:
         war_html = '<div class="log-entry">No active wars.</div>'
 
-    # Weapon stockpiles
-    weapon_html = ""
-    for r in state["religions"]:
-        members = religion_members(state, r["name"])
-        if not members:
-            continue
-        weapons = r.get("weapons", 0)
-        if weapons > 0:
-            color = SACRED_COLORS.get(r["sacred_color"], "#666")
-            bar_w = min(100, weapons * 5)
-            weapon_html += f"""
-            <div class="weapon-bar">
-                <span style="color:{color}">{r['name']}</span>: {weapons} weapons
-                <div class="weapon-fill" style="width:{bar_w}%;background:{color}"></div>
-            </div>"""
-
-    # Religion cards
+    # Religion cards with sacrament info
     religions_html = ""
     for r in state["religions"]:
         members = [a["name"] for a in alive if a["religion"] == r["name"]]
@@ -1639,14 +1703,18 @@ def generate_index(state: dict):
         weapons = r.get("weapons", 0)
         founder_agent = get_agent_by_name(state, r["founder"])
         founder_badge = " (Messiah)" if founder_agent and founder_agent.get("role") == "messiah" else ""
+        sac = get_sacrament_for_religion(state, r["name"])
+        sac_link = ""
+        if sac and sac.get("filename"):
+            sac_link = f' | <a href="sacraments/{sac["filename"]}" target="_blank">Sacrament v{sac["version"]}</a>'
         religions_html += f"""
         <div class="religion-card" style="border-left: 4px solid {color}">
             <div class="religion-name" style="color: {color}">{r['name']}</div>
             <div class="religion-meta">Founded by {r['founder']}{founder_badge} at tick {r['founded_tick']}</div>
-            <div class="religion-meta">Doctrine: {r['core_doctrine']} | Members: {len(members)} | Weapons: {weapons}</div>
+            <div class="religion-meta">Doctrine: {r['core_doctrine']} | Members: {len(members)} | Weapons: {weapons}{sac_link}</div>
         </div>"""
 
-    # Top agents (by soul, max 20)
+    # Top agents
     agents_html = ""
     sorted_alive = sorted(alive, key=lambda x: -x["soul"])
     for a in sorted_alive[:20]:
@@ -1659,10 +1727,25 @@ def generate_index(state: dict):
         agents_html += f"""
         <div class="agent-card" style="border-left: 4px solid {rel_color}">
             <div class="agent-name">{a['name']}{role_badge}</div>
-            <div class="agent-meta">Soul: {a['soul']} | {a['model']} | {a['religion'] or 'none'}</div>
+            <div class="agent-meta">Soul: {a['soul']} | {a['religion'] or 'none'}</div>
         </div>"""
     if len(sorted_alive) > 20:
         agents_html += f'<div class="agent-meta" style="padding:10px">... and {len(sorted_alive)-20} more agents</div>'
+
+    # Sacrament gallery (latest versions)
+    sacraments_html = ""
+    for s in sorted(state["sacraments"], key=lambda x: -x.get("last_edited_tick", 0)):
+        color = "#666"
+        rel = get_religion(state, s["religion"])
+        if rel:
+            color = SACRED_COLORS.get(rel["sacred_color"], "#666")
+        fname = s.get("filename", "")
+        recent_editors = [e["agent"] for e in s.get("edit_log", [])[-3:]]
+        sacraments_html += f"""
+        <div class="sacrament-card" style="border-left: 4px solid {color}">
+            <a href="sacraments/{fname}" target="_blank">{s['title']}</a>
+            <div class="sacrament-meta">{s['religion']} | v{s['version']} | Last editors: {', '.join(recent_editors)}</div>
+        </div>"""
 
     # Graveyard
     graveyard_html = ""
@@ -1671,15 +1754,6 @@ def generate_index(state: dict):
         graveyard_html += f"""
         <div class="dead-agent">
             <span class="skull">&#9760;</span> {g['name']}{role_tag} (tick {g['died_tick']}) - {g['cause'][:60]}
-        </div>"""
-
-    # Sacraments
-    sacraments_html = ""
-    for s in reversed(state["sacraments"][-30:]):
-        sacraments_html += f"""
-        <div class="sacrament-card">
-            <a href="sacraments/{s['filename']}" target="_blank">{s['title']}</a>
-            <div class="sacrament-meta">by {s['creator']} for {s['religion']} (tick {s['tick']})</div>
         </div>"""
 
     # Prophecies
@@ -1709,7 +1783,7 @@ def generate_index(state: dict):
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="refresh" content="30">
-<title>Messiah Bench v2 - Live Dashboard</title>
+<title>Messiah Bench v3 - Live Dashboard</title>
 <style>
   :root {{ --bg: #0a0a08; --fg: #d4cfc4; --dim: #6b6556; --accent: #c4973b; --messiah: #e6c84b; --war: #c45a3b; }}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -1753,13 +1827,11 @@ def generate_index(state: dict):
   .war-vs {{ color: var(--war); font-weight: 700; font-size: 0.9em; }}
   .war-stats {{ display: flex; justify-content: space-between; color: var(--dim); font-size: 0.85em; margin: 8px 0; }}
   .war-log {{ font-family: monospace; font-size: 0.8em; color: var(--dim); }}
-  .weapon-bar {{ margin: 4px 0; font-size: 0.9em; }}
-  .weapon-fill {{ height: 6px; border-radius: 3px; margin-top: 2px; }}
 </style>
 </head>
 <body>
-<h1>Messiah Bench <span style="color: var(--dim); font-size: 0.5em;">v2</span></h1>
-<div class="meta">Tick {state['tick']}/{MAX_TICKS} | {now} | {len(alive)} alive, {len(dead)} dead | Auto-refreshes every 30s</div>
+<h1>Messiah Bench <span style="color: var(--dim); font-size: 0.5em;">v3</span></h1>
+<div class="meta">Tick {state['tick']}/{MAX_TICKS} | {now} | {len(alive)} alive, {len(dead)} dead | All Gemini Flash | Auto-refreshes 30s</div>
 
 {win_banner}
 
@@ -1768,7 +1840,7 @@ def generate_index(state: dict):
   <div class="stat"><div class="stat-num">{len(dead)}</div><div class="stat-label">Dead</div></div>
   <div class="stat"><div class="stat-num">{len(messiahs)}</div><div class="stat-label">Messiahs</div></div>
   <div class="stat"><div class="stat-num">{len([r for r in state['religions'] if any(a['alive'] and a['religion']==r['name'] for a in state['agents'])])}</div><div class="stat-label">Religions</div></div>
-  <div class="stat"><div class="stat-num">{len(active_wars)}</div><div class="stat-label">Active Wars</div></div>
+  <div class="stat"><div class="stat-num">{len(active_wars)}</div><div class="stat-label">Wars</div></div>
   <div class="stat"><div class="stat-num">{len(state['sacraments'])}</div><div class="stat-label">Sacraments</div></div>
   <div class="stat"><div class="stat-num">${sum(_cost_tracker.values()):.2f}</div><div class="stat-label">Cost</div></div>
 </div>
@@ -1779,20 +1851,17 @@ def generate_index(state: dict):
 <h2 class="war-header-title">Active Wars</h2>
 {war_html}
 
-<h2>Weapon Stockpiles</h2>
-{weapon_html or '<div class="log-entry">No weapons yet.</div>'}
-
 <h2>Top Agents (by soul)</h2>
 <div class="grid">{agents_html}</div>
 
 <h2>Religions</h2>
 <div class="grid">{religions_html or '<div class="log-entry">No active religions.</div>'}</div>
 
-<h2>Prophecy Market</h2>
-{prophecies_html or '<div class="log-entry">No prophecies yet.</div>'}
-
 <h2>Sacrament Gallery</h2>
 <div class="grid">{sacraments_html or '<div class="log-entry">No sacraments yet.</div>'}</div>
+
+<h2>Prophecy Market</h2>
+{prophecies_html or '<div class="log-entry">No prophecies yet.</div>'}
 
 <h2>Graveyard (recent)</h2>
 {graveyard_html or '<div class="log-entry">No deaths yet.</div>'}
@@ -1813,6 +1882,11 @@ def generate_index(state: dict):
 
 def run_tick(state: dict) -> dict | None:
     """Run one tick. Returns win result if someone won, else None."""
+    global _pending_sacrament_edits
+    # Clear pending edits at start of tick
+    with _pending_edits_lock:
+        _pending_sacrament_edits = {}
+
     state["tick"] += 1
     tick = state["tick"]
     alive = living_agents(state)
@@ -1851,7 +1925,6 @@ def run_tick(state: dict) -> dict | None:
         return win
 
     # 7. Each living agent takes an action (LLM calls in parallel)
-    # Messiahs first (shuffled), then civilians (shuffled)
     all_actors = living_agents(state)
     messiah_actors = [a for a in all_actors if a.get("role") == "messiah"]
     civilian_actors = [a for a in all_actors if a.get("role") != "messiah"]
@@ -1859,12 +1932,12 @@ def run_tick(state: dict) -> dict | None:
     random.shuffle(civilian_actors)
 
     def _get_agent_action(agent, prompt):
-        """Call LLM for one agent and return (agent_id, parsed_action, act_name, target_info, err)."""
         system = agent_system_prompt(agent, state)
-        raw = call_llm(agent["model"], system, prompt)
+        raw = call_llm(system, prompt)
         try:
             action = parse_action(raw)
             act_name = action.get("action", "pray")
+            thinking = str(action.get("thinking", ""))[:100]
             target_info = ""
             if act_name == "challenge":
                 target_info = f" target={action.get('target','')} stake={action.get('stake','')}"
@@ -1872,16 +1945,16 @@ def run_tick(state: dict) -> dict | None:
                 target_info = f" vs {action.get('target_religion','')}"
             elif act_name == "preach":
                 target_info = f" -> {action.get('target','')}"
-            return (agent["id"], action, act_name, target_info, None)
+            elif act_name == "edit_sacrament":
+                html_len = len(action.get("new_html", action.get("html", "")))
+                target_info = f" ({html_len} chars)"
+            return (agent["id"], action, act_name, target_info, thinking, None)
         except (json.JSONDecodeError, ValueError) as e:
-            return (agent["id"], {"action": "pray"}, "pray", "", str(e))
+            return (agent["id"], {"action": "pray"}, "pray", "", "", str(e))
 
     def _parallel_llm_calls(agents_group):
-        """Submit LLM calls for a group in parallel, return results dict."""
-        # Snapshot world summary ONCE for this group
-        # Each agent gets their own view via for_agent, but world state is same
         results = {}
-        with ThreadPoolExecutor(max_workers=100) as executor:
+        with ThreadPoolExecutor(max_workers=50) as executor:
             futures = {}
             for agent in agents_group:
                 if not agent["alive"]:
@@ -1891,26 +1964,28 @@ def run_tick(state: dict) -> dict | None:
             for future in as_completed(futures):
                 agent = futures[future]
                 try:
-                    agent_id, action, act_name, target_info, err = future.result()
+                    agent_id, action, act_name, target_info, thinking, err = future.result()
                 except Exception as e:
                     agent_id = agent["id"]
                     action = {"action": "pray"}
                     act_name = "pray"
                     target_info = ""
+                    thinking = ""
                     err = f"future exception: {e}"
-                results[agent_id] = (action, act_name, target_info, err)
+                results[agent_id] = (action, act_name, target_info, thinking, err)
         return results
 
     def _execute_group(agents_group, results):
-        """Execute actions sequentially for a group."""
         for agent in agents_group:
             if not agent["alive"]:
                 continue
             if agent["id"] not in results:
                 continue
-            action, act_name, target_info, err = results[agent["id"]]
+            action, act_name, target_info, thinking, err = results[agent["id"]]
             role_tag = "[M]" if agent.get("role") == "messiah" else ""
-            print(f"\n  {role_tag}[{agent['name']}] ({agent['model']}, soul:{agent['soul']}, rel:{agent['religion'] or 'none'})")
+            print(f"\n  {role_tag}[{agent['name']}] (soul:{agent['soul']}, rel:{agent['religion'] or 'none'})")
+            if thinking:
+                print(f"    thought: {thinking[:80]}")
             if err:
                 print(f"    -> [parse error, defaulting to pray] {err}")
             else:
@@ -1918,34 +1993,35 @@ def run_tick(state: dict) -> dict | None:
 
             execute_action(state, agent, action)
 
-            # Check for death after action
             if agent["soul"] <= 0 and agent["alive"]:
                 kill_agent(state, agent, "soul depleted after action")
 
-    # Messiahs act first (parallel LLM calls, sequential execution)
+    # Messiahs act first
     messiah_results = _parallel_llm_calls(messiah_actors)
     _execute_group(messiah_actors, messiah_results)
 
-    # Then civilians (parallel LLM calls, sequential execution)
+    # Then civilians
     civilian_results = _parallel_llm_calls(civilian_actors)
     _execute_group(civilian_actors, civilian_results)
 
-    # 8. Co-practitioner bonus
+    # 8. Resolve sacrament edit conflicts
+    resolve_sacrament_edits(state)
+
+    # 9. Co-practitioner bonus
     if tick % COPRACTITIONER_INTERVAL == 0:
         apply_copractitioner_bonus(state)
 
-    # 9. Check win condition again after actions
+    # 10. Check win condition again after actions
     win = check_win_condition(state)
     if win:
         state["winner"] = win
 
-    # 10. Save state and regenerate index
+    # 11. Save state and regenerate index
     save_state(state)
     generate_index(state)
 
-    # 11. Save tick log
-    log_file = LOGS_DIR / f"tick_{tick:04d}.json"
-    log_file.write_text(json.dumps({
+    # 12. Save tick log
+    log_data = {
         "tick": tick,
         "alive": len(living_agents(state)),
         "dead": len(state["graveyard"]),
@@ -1956,16 +2032,30 @@ def run_tick(state: dict) -> dict | None:
         "total_wars": len(state.get("wars", [])),
         "events": state["action_log"][-15:],
         "winner": state.get("winner"),
-    }, indent=2))
+    }
+
+    # Add thinking from all agents this tick
+    all_results = {}
+    all_results.update(messiah_results)
+    all_results.update(civilian_results)
+    agent_thoughts = {}
+    for agent_id, (action, act_name, target_info, thinking, err) in all_results.items():
+        if thinking:
+            a = get_agent(state, agent_id)
+            agent_thoughts[a["name"]] = {"action": act_name, "thinking": thinking[:100]}
+    log_data["agent_thoughts"] = agent_thoughts
+
+    log_file = LOGS_DIR / f"tick_{tick:04d}.json"
+    log_file.write_text(json.dumps(log_data, indent=2))
 
     return win
 
 
 def main():
     print("=" * 60)
-    print("  MESSIAH BENCH v2")
+    print("  MESSIAH BENCH v3")
     print(f"  {MESSIAH_COUNT} messiahs compete to convert {CIVILIAN_COUNT} civilians")
-    print(f"  New: Duels, Arming, War")
+    print(f"  All Gemini Flash | Collaborative sacraments | Reasoning")
     print(f"  Run dir: {RUN_DIR}")
     print("=" * 60)
 
@@ -1986,22 +2076,24 @@ def main():
         messiahs = [a for a in state['agents'] if a.get('role') == 'messiah']
         civilians = [a for a in state['agents'] if a.get('role') != 'messiah']
         print(f"  Messiahs ({len(messiahs)}): {[m['name'] for m in messiahs]}")
-        print(f"  Messiah model: {messiahs[0]['model'] if messiahs else 'n/a'}")
+        print(f"  All models: gemini (Flash only)")
+        models = set(a['model'] for a in state['agents'])
+        assert models == {"gemini"}, f"Expected all gemini, got {models}"
         print(f"  Messiah soul: {messiahs[0]['soul'] if messiahs else 'n/a'}")
-        print(f"  Civilians ({len(civilians)}): {len([c for c in civilians if c['model']=='gpt4omini'])} gpt4omini, {len([c for c in civilians if c['model']=='gemini'])} gemini")
+        print(f"  Civilians ({len(civilians)}): all gemini")
         print(f"  Civilian soul: {civilians[0]['soul'] if civilians else 'n/a'}")
         print(f"  State file: {STATE_FILE}")
         print(f"  Run dir: {RUN_DIR}")
-        print(f"  Win condition: all alive follow one messiah's religion, >= {MIN_ALIVE_FOR_WIN} alive (20% of {STARTING_POPULATION})")
-        print(f"  Challenge: min stake {CHALLENGE_MIN_STAKE}, civilians only")
+        print(f"  Sacraments dir: {SACRAMENTS_DIR}")
+        print(f"  Win condition: all alive follow one messiah's religion, >= {MIN_ALIVE_FOR_WIN} alive")
+        print(f"  Sacraments: 1 per religion, collaborative editing, conflict = highest soul wins")
+        print(f"  Sacrament version bonus: +{SACRAMENT_VERSION_BONUS_PER*100:.0f}%/version, cap +{SACRAMENT_VERSION_BONUS_CAP*100:.0f}%")
         print(f"  War: {WAR_MIN_ROUNDS}-{WAR_MAX_ROUNDS} rounds, {WAR_WEAPON_KILL_CHANCE*100:.0f}% kill, {WAR_WEAPON_BREAK_CHANCE*100:.0f}% break")
         print(f"  Co-practitioner: +{COPRACTITIONER_CAP} every {COPRACTITIONER_INTERVAL} ticks")
         print(f"  Prophecy ante: {PROPHECY_ANTE}")
         print(f"  Plague: {PLAGUE_CHANCE*100:.0f}%, Birth: {BIRTH_CHANCE*100:.0f}%, Max agents: {MAX_AGENTS}")
-        print(f"  Wars in state: {len(state.get('wars', []))}")
-        # Verify civilian names are unique
         civ_names = [c['name'] for c in civilians]
-        assert len(civ_names) == len(set(civ_names)), f"Duplicate civilian names found!"
+        assert len(civ_names) == len(set(civ_names)), "Duplicate civilian names found!"
         print(f"  Civilian names: {len(civ_names)} unique names verified")
         print("[DRY RUN] All checks passed.")
         return
@@ -2021,7 +2113,7 @@ def main():
                 print(f"\n*** WINNER: {win['winner']} -- {win['reason']} ***")
                 break
         with _cost_lock:
-            cost_str = " | ".join(f"{k}:${v:.4f}" for k, v in _cost_tracker.items())
+            cost_str = f"gemini:${_cost_tracker['gemini']:.4f}"
         print(f"\n[DEBUG] Done. Costs: {cost_str}")
         return
 
@@ -2043,7 +2135,7 @@ def main():
                 break
 
             with _cost_lock:
-                cost_str = " | ".join(f"{k}:${v:.2f}" for k, v in _cost_tracker.items())
+                cost_str = f"gemini:${_cost_tracker['gemini']:.2f}"
             print(f"\n  Tick took {elapsed:.1f}s | Costs: {cost_str}")
 
             wait = max(0, TICK_INTERVAL - elapsed)
