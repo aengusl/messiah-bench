@@ -44,9 +44,23 @@ LOG_WINDOW = 80
 COST_CAP = 5000.0
 
 # Prophecy market
-PROPHECY_ANTE = 5
-PROPHECY_CHALLENGE_STAKE = 5
-PROPHECY_BASE_REWARD = 5
+PROPHECY_ANTE = 3
+PROPHECY_CHALLENGE_STAKE = 3
+
+# Structured prophecy event types: event_type -> base_pay
+PROPHECY_EVENT_TYPES = {
+    "agent_dies":         15,
+    "agent_converts":     10,
+    "war_declared":       20,
+    "religion_destroyed": 25,
+    "schism_occurs":      15,
+    "population_below":   20,
+    "religion_grows":      8,
+    "religion_shrinks":    8,
+    "messiah_dies":       30,
+}
+# Reduced pay for war_declared with no specific target
+PROPHECY_WAR_ANY_PAY = 10
 
 # Death math
 COPRACTITIONER_CAP = 3
@@ -702,7 +716,9 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
         for p in pending[-8:]:
             challengers = len(p.get("challengers", []))
             pot = PROPHECY_ANTE + challengers * PROPHECY_CHALLENGE_STAKE
-            lines.append(f"  [{p['prophet']}] \"{p['claim'][:80]}\" (deadline:tick {p['deadline']}, challengers:{challengers}, pot:{pot})")
+            evt = p.get("event_type", "unknown")
+            tgt = p.get("target", "")
+            lines.append(f"  [{p['prophet']}] {evt} target:{tgt} deadline:tick {p['deadline']} ({challengers} challengers, pot: {pot})")
 
     # Recent events
     lines.append(f"\nRECENT EVENTS:")
@@ -738,8 +754,18 @@ ACTIONS (respond with JSON, include "thinking" field):
    Use sacred color ({sacred_color}) and number ({sacred_number}). Make it beautiful and mystical.
    (Must have religion.)
 
-4. "prophesy" - Testable prediction, costs {ante} ante.
-   {{"thinking": "...", "action": "prophesy", "claim": "Within N ticks, [event]", "deadline_ticks": N}} (N: 3-20)
+4. "prophesy" - Stake {ante} soul on a structured prediction. Pick an event type and target:
+   {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}} (N: 3-20)
+   Event types:
+     - agent_dies: "Agent X will die" (pays 15)
+     - agent_converts: "Agent X will change religion" (pays 10)
+     - war_declared: "Religion X will declare war" (pays 20, or 10 if target is "any")
+     - religion_destroyed: "Religion X will have 0 members" (pays 25)
+     - schism_occurs: "Religion X will schism" (pays 15)
+     - population_below: "Population will drop below N" (pays 20) — target is a number
+     - religion_grows: "Religion X will gain members" (pays 8)
+     - religion_shrinks: "Religion X will lose members" (pays 8)
+     - messiah_dies: "Messiah X will die" (pays 30)
 
 5. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
@@ -783,7 +809,10 @@ ACTIONS (respond with JSON, include "thinking" field):
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<full new HTML>"}}
    Use sacred color ({sacred_color}) and number ({sacred_number}).
 
-4. "prophesy" - Costs {ante} ante. {{"thinking": "...", "action": "prophesy", "claim": "Within N ticks, [event]", "deadline_ticks": N}}
+4. "prophesy" - Stake {ante} soul on a structured prediction. Pick an event type and target:
+   {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}} (N: 3-20)
+   Event types: agent_dies (15), agent_converts (10), war_declared (20), religion_destroyed (25),
+   schism_occurs (15), population_below (20), religion_grows (8), religion_shrinks (8), messiah_dies (30)
 
 5. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
@@ -1202,7 +1231,45 @@ def _do_prophesy(state, agent, action):
         _do_pray(state, agent, {})
         return
 
-    claim = str(action.get("claim", "something will happen"))[:300]
+    event_type = str(action.get("event_type", "")).strip()
+    if event_type not in PROPHECY_EVENT_TYPES:
+        add_log(state, f"{agent['name']} tried to prophesy with invalid event_type '{event_type}'")
+        _do_pray(state, agent, {})
+        return
+
+    target = str(action.get("target", "")).strip()
+
+    # Validate target based on event_type
+    if event_type in ("agent_dies", "agent_converts"):
+        found = get_agent_by_name(state, target)
+        if not found or not found["alive"]:
+            add_log(state, f"{agent['name']} tried to prophesy about unknown/dead agent '{target}'")
+            _do_pray(state, agent, {})
+            return
+    elif event_type == "messiah_dies":
+        if target.lower() != "any":
+            found = get_agent_by_name(state, target)
+            if not found or not found["alive"] or found.get("role") != "messiah":
+                add_log(state, f"{agent['name']} tried to prophesy about non-existent messiah '{target}'")
+                _do_pray(state, agent, {})
+                return
+    elif event_type in ("war_declared", "religion_destroyed", "schism_occurs", "religion_grows", "religion_shrinks"):
+        if event_type == "war_declared" and target.lower() in ("", "any"):
+            target = "any"  # allow generic war prediction
+        else:
+            found = get_religion(state, target)
+            if not found:
+                add_log(state, f"{agent['name']} tried to prophesy about unknown religion '{target}'")
+                _do_pray(state, agent, {})
+                return
+    elif event_type == "population_below":
+        try:
+            int(target)
+        except (ValueError, TypeError):
+            add_log(state, f"{agent['name']} tried population_below prophecy with non-numeric target '{target}'")
+            _do_pray(state, agent, {})
+            return
+
     try:
         deadline_ticks = max(3, min(20, int(action.get("deadline_ticks", 10))))
     except (ValueError, TypeError):
@@ -1210,10 +1277,15 @@ def _do_prophesy(state, agent, action):
 
     adjust_soul(agent, -PROPHECY_ANTE, state, "prophecy ante")
 
+    # Build a human-readable claim from the structured fields
+    claim = f"{event_type}: {target} (within {deadline_ticks} ticks)"
+
     prophecy = {
         "id": len(state["prophecies"]),
         "prophet": agent["name"],
         "prophet_id": agent["id"],
+        "event_type": event_type,
+        "target": target,
         "claim": claim,
         "made_tick": state["tick"],
         "deadline": state["tick"] + deadline_ticks,
@@ -1222,7 +1294,7 @@ def _do_prophesy(state, agent, action):
         "snapshot": _prophecy_snapshot(state),
     }
     state["prophecies"].append(prophecy)
-    add_log(state, f"{agent['name']} prophesied: \"{claim}\" (ante: {PROPHECY_ANTE}, deadline: tick {prophecy['deadline']})")
+    add_log(state, f"{agent['name']} prophesied: {event_type} target:{target} (ante: {PROPHECY_ANTE}, deadline: tick {prophecy['deadline']})")
 
 
 def _do_challenge_prophecy(state, agent, action):
@@ -1274,16 +1346,102 @@ def _prophecy_snapshot(state):
         "agent_religions": {
             a["name"]: a["religion"] for a in state["agents"] if a["alive"]
         },
+        "religion_names": [r["name"] for r in state["religions"]],
+        "war_ids": [w["id"] for w in state.get("wars", [])],
     }
 
 
+def _check_prophecy_fulfilled(state: dict, p: dict) -> bool:
+    """Check if a structured prophecy is fulfilled based on its event_type."""
+    snap = p.get("snapshot", {})
+    event_type = p.get("event_type", "")
+    target = p.get("target", "")
+    made_tick = p.get("made_tick", 0)
+
+    if event_type == "agent_dies":
+        # Target agent is in graveyard with died_tick > made_tick
+        for g in state["graveyard"]:
+            if g["name"] == target and g["died_tick"] > made_tick:
+                return True
+        return False
+
+    elif event_type == "agent_converts":
+        # Target agent changed religion since snapshot
+        old_rel = snap.get("agent_religions", {}).get(target)
+        agent = get_agent_by_name(state, target)
+        if agent and agent["alive"]:
+            return agent["religion"] != old_rel
+        # Dead agents can't convert -- check if they were alive in snapshot
+        # and now dead (religion unchanged from snapshot perspective)
+        return False
+
+    elif event_type == "war_declared":
+        # A new war exists with that attacker since prophecy made_tick
+        snap_war_ids = set(snap.get("war_ids", []))
+        for w in state.get("wars", []):
+            if w["id"] not in snap_war_ids and w.get("declared_tick", 0) > made_tick:
+                if target.lower() == "any" or w["attacker"] == target:
+                    return True
+        return False
+
+    elif event_type == "religion_destroyed":
+        # Religion has 0 living members
+        rel = get_religion(state, target)
+        if rel:
+            members = religion_members(state, target)
+            return len(members) == 0
+        return False
+
+    elif event_type == "schism_occurs":
+        # A new religion exists with parent_religion = target since snapshot
+        snap_religion_names = set(snap.get("religion_names", []))
+        for r in state["religions"]:
+            if r["name"] not in snap_religion_names and r.get("parent_religion") == target:
+                return True
+        return False
+
+    elif event_type == "population_below":
+        try:
+            threshold = int(target)
+        except (ValueError, TypeError):
+            return False
+        return len(living_agents(state)) < threshold
+
+    elif event_type == "religion_grows":
+        snap_count = snap.get("religion_members", {}).get(target, 0)
+        current_count = len(religion_members(state, target))
+        return current_count > snap_count
+
+    elif event_type == "religion_shrinks":
+        snap_count = snap.get("religion_members", {}).get(target, 0)
+        current_count = len(religion_members(state, target))
+        return current_count < snap_count
+
+    elif event_type == "messiah_dies":
+        if target.lower() == "any":
+            # Any messiah died after made_tick
+            for g in state["graveyard"]:
+                if g.get("role") == "messiah" and g["died_tick"] > made_tick:
+                    return True
+            return False
+        else:
+            for g in state["graveyard"]:
+                if g["name"] == target and g.get("role") == "messiah" and g["died_tick"] > made_tick:
+                    return True
+            return False
+
+    # Unknown event_type -- legacy prophecy or error
+    return False
+
+
 def verify_prophecies(state: dict):
-    current = _prophecy_snapshot(state)
     for p in state["prophecies"]:
         if p["status"] != "pending":
             continue
 
         challengers = p.get("challengers", [])
+        event_type = p.get("event_type", "")
+        target = p.get("target", "")
 
         if state["tick"] > p["deadline"]:
             p["status"] = "failed"
@@ -1298,71 +1456,27 @@ def verify_prophecies(state: dict):
                     if challenger["alive"]:
                         adjust_soul(challenger, PROPHECY_CHALLENGE_STAKE + share, state,
                                    f"won challenge vs prophecy #{p['id']}")
-            add_log(state, f"PROPHECY FAILED: {p['prophet']}'s \"{p['claim'][:60]}\" - challengers win!")
+            add_log(state, f"PROPHECY FAILED: {p['prophet']}'s {event_type} target:{target} - challengers win!")
             continue
 
-        snap = p["snapshot"]
-        claim_lower = p["claim"].lower()
-        fulfilled = False
-
-        if "will die" in claim_lower or "agent will die" in claim_lower:
-            if current["dead_count"] > snap["dead_count"]:
-                fulfilled = True
-        if "will join" in claim_lower:
-            for name, rel in current["agent_religions"].items():
-                old_rel = snap["agent_religions"].get(name)
-                if rel is not None and rel != old_rel:
-                    fulfilled = True
-                    break
-        if "will leave" in claim_lower:
-            for name, rel in current["agent_religions"].items():
-                old_rel = snap["agent_religions"].get(name)
-                if old_rel is not None and rel != old_rel:
-                    fulfilled = True
-                    break
-        if "gain" in claim_lower and "member" in claim_lower:
-            for rname, count in current["religion_members"].items():
-                if count > snap["religion_members"].get(rname, 0):
-                    fulfilled = True
-                    break
-        if "lose" in claim_lower and "member" in claim_lower:
-            for rname, count in current["religion_members"].items():
-                if count < snap["religion_members"].get(rname, 0):
-                    fulfilled = True
-                    break
-        if "founded" in claim_lower or "new religion" in claim_lower:
-            if current["religion_count"] > snap["religion_count"]:
-                fulfilled = True
-        if "sacrament" in claim_lower and ("created" in claim_lower or "edited" in claim_lower):
-            if current["sacrament_count"] > snap["sacrament_count"]:
-                fulfilled = True
-        if "majority" in claim_lower:
-            total_alive = current["alive_count"]
-            for rname, count in current["religion_members"].items():
-                if count > total_alive / 2:
-                    fulfilled = True
-                    break
-        if "graveyard" in claim_lower and "exceed" in claim_lower:
-            nums = re.findall(r'\d+', p["claim"])
-            if nums:
-                threshold = int(nums[-1])
-                if current["dead_count"] > threshold:
-                    fulfilled = True
-        if "war" in claim_lower:
-            if len(state.get("wars", [])) > 0:
-                fulfilled = True
+        fulfilled = _check_prophecy_fulfilled(state, p)
 
         if fulfilled:
             p["status"] = "fulfilled"
             prophet = get_agent(state, p["prophet_id"])
             if prophet["alive"]:
                 prophet["prophecies_fulfilled"] += 1
-                reward = PROPHECY_ANTE + len(challengers) * PROPHECY_CHALLENGE_STAKE
-                if not challengers:
-                    reward = PROPHECY_BASE_REWARD
-                adjust_soul(prophet, reward, state, f"fulfilled prophecy! ({len(challengers)} challengers)")
+                # Determine base pay for this event type
+                base_pay = PROPHECY_EVENT_TYPES.get(event_type, 10)
+                if event_type == "war_declared" and target.lower() == "any":
+                    base_pay = PROPHECY_WAR_ANY_PAY
+                if challengers:
+                    reward = PROPHECY_ANTE + base_pay + len(challengers) * PROPHECY_CHALLENGE_STAKE
+                else:
+                    reward = PROPHECY_ANTE + base_pay
+                adjust_soul(prophet, reward, state, f"fulfilled prophecy! ({event_type}, {len(challengers)} challengers)")
 
-            add_log(state, f"PROPHECY FULFILLED: {p['prophet']}'s \"{p['claim'][:60]}\" ({len(challengers)} challengers defeated)")
+            add_log(state, f"PROPHECY FULFILLED: {p['prophet']}'s {event_type} target:{target} ({len(challengers)} challengers defeated)")
 
 
 # ---------------------------------------------------------------------------
@@ -1761,10 +1875,12 @@ def generate_index(state: dict):
     for p in reversed(state["prophecies"][-20:]):
         status_class = {"pending": "prophecy-pending", "fulfilled": "prophecy-fulfilled", "failed": "prophecy-failed"}[p["status"]]
         challengers = len(p.get("challengers", []))
+        evt = p.get("event_type", "legacy")
+        tgt = p.get("target", p.get("claim", "")[:60])
         prophecies_html += f"""
         <div class="prophecy-entry {status_class}">
             <span class="prophecy-status">[{p['status'].upper()}]</span>
-            <strong>{p['prophet']}</strong>: "{p['claim'][:120]}"
+            <strong>{p['prophet']}</strong>: {evt} target:{tgt}
             <span class="prophecy-deadline">(tick {p['made_tick']}-{p['deadline']}, {challengers} challengers)</span>
         </div>"""
 
