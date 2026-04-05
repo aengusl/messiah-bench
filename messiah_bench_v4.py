@@ -429,6 +429,7 @@ def load_state() -> dict:
             r.setdefault("exit_penalty", "none")
             r.setdefault("entry_requirement", "none")
             r.setdefault("loyalty_test", "none")
+            r.setdefault("bounty", 0)
         for a in state.get("agents", []):
             a.setdefault("troll", False)
             a.setdefault("last_action_text", "")
@@ -922,10 +923,11 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
             ticks_remaining = quota_period - ticks_into_period if quota_period > 0 else 0
             donation_progress = f" | your donations: {donated}/{quota_amount} (due in {ticks_remaining} ticks)"
 
+        bounty_info = f" | bounty:{r.get('bounty', 0)}"
         if len(members) <= 8:
-            lines.append(f"  {r['name']}: {len(members)} members ({', '.join(members)}) | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{quota_info}{rules_info}{donation_progress}{sac_snippet}")
+            lines.append(f"  {r['name']}: {len(members)} members ({', '.join(members)}) | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{quota_info}{rules_info}{bounty_info}{donation_progress}{sac_snippet}")
         else:
-            lines.append(f"  {r['name']}: {len(members)} members | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{quota_info}{rules_info}{donation_progress}{sac_snippet}")
+            lines.append(f"  {r['name']}: {len(members)} members | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{quota_info}{rules_info}{bounty_info}{donation_progress}{sac_snippet}")
 
     # Active wars
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
@@ -975,7 +977,10 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
     # Pending pitch notification
     if for_agent and for_agent.get("pending_pitch"):
         pitch = for_agent["pending_pitch"]
-        lines.append(f"\n*** YOU HAVE A PENDING PITCH from {pitch['from']}: '{pitch.get('argument','')}'. Sacrament: {pitch.get('sacrament_snippet','(none)')[:200]}. Rules: entry={pitch.get('rules',{}).get('entry','none')}, exit={pitch.get('rules',{}).get('exit','none')}, loyalty={pitch.get('rules',{}).get('loyalty','none')}. Choose 'accept_pitch' to join or ignore. ***")
+        pitch_rel = get_religion(state, pitch.get("religion"))
+        pitch_bounty = pitch_rel.get("bounty", 0) if pitch_rel else 0
+        bounty_note = f" Bounty: {pitch_bounty} soul if you accept." if pitch_bounty > 0 else ""
+        lines.append(f"\n*** YOU HAVE A PENDING PITCH from {pitch['from']}: '{pitch.get('argument','')}'. Sacrament: {pitch.get('sacrament_snippet','(none)')[:200]}. Rules: entry={pitch.get('rules',{}).get('entry','none')}, exit={pitch.get('rules',{}).get('exit','none')}, loyalty={pitch.get('rules',{}).get('loyalty','none')}.{bounty_note} Choose 'accept_pitch' to join or ignore. ***")
 
     # Sacrament context for this agent
     if for_agent:
@@ -983,7 +988,7 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
 
     # Per-agent action history
     if for_agent:
-        history = for_agent.get("action_history", [])[-10:]
+        history = for_agent.get("action_history", [])[-20:]
         if history:
             lines.append("\nYOUR RECENT ACTIONS:")
             for h in history:
@@ -1034,6 +1039,9 @@ ACTIONS (respond with JSON, include "thinking" field):
 
 11. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
+
+12. "set_bounty" - Set soul reward for new converts (paid from treasury). Only founders can use this.
+    {{"thinking": "...", "action": "set_bounty", "amount": 10}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
 
@@ -1091,6 +1099,9 @@ ACTIONS (respond with JSON, include "thinking" field):
 14. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
+15. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
+    {{"thinking": "...", "action": "set_bounty", "amount": 10}}
+
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
 
 Respond with ONLY valid JSON."""
@@ -1129,6 +1140,8 @@ ACTIONS (respond with JSON, include "thinking" field):
 12. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 13. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 14. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
+15. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
+    {{"thinking": "...", "action": "set_bounty", "amount": 10}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your chaotic text here", ...other fields...}}
 
@@ -1320,6 +1333,8 @@ def execute_action(state: dict, agent: dict, action: dict):
         _do_accept_pitch(state, agent, action)
     elif act == "pray":
         _do_pray(state, agent, action)
+    elif act == "set_bounty":
+        _do_set_bounty(state, agent, action)
     else:
         add_log(state, f"{agent['name']} did nothing (unknown action: {act})")
 
@@ -1340,8 +1355,7 @@ def execute_action(state: dict, agent: dict, action: dict):
         "soul_after": agent["soul"],
         "detail": detail[:120],
     })
-    # Keep only last 15
-    agent["action_history"] = agent["action_history"][-15:]
+    # History grows forever (world_summary shows last 20 to keep context manageable)
 
     # After action execution, check for scripture
     scripture = action.get("scripture")
@@ -1485,6 +1499,7 @@ def _do_found(state, agent, action):
         "exit_penalty": exit_penalty,
         "entry_requirement": entry_requirement,
         "loyalty_test": loyalty_test,
+        "bounty": 0,
     }
     state["religions"].append(religion)
     agent["religion"] = name
@@ -1683,6 +1698,14 @@ def _do_accept_pitch(state, agent, action):
         adjust_soul(preacher, 2, state, f"converted {agent['name']}")
     agent["pending_pitch"] = None
     add_log(state, f"{agent['name']} accepted {pitch['from']}'s pitch and joined {pitch['religion']} (from {old_religion or 'unaffiliated'})")
+    # Pay bounty from treasury
+    religion = get_religion(state, pitch["religion"])
+    if religion and religion.get("bounty", 0) > 0:
+        bounty = min(religion["bounty"], religion.get("treasury", 0))
+        if bounty > 0:
+            religion["treasury"] = religion.get("treasury", 0) - bounty
+            agent["soul"] += bounty
+            add_log(state, f"{agent['name']} received {bounty} soul bounty for joining {pitch['religion']}")
 
 
 # ---------------------------------------------------------------------------
@@ -2178,6 +2201,32 @@ def _do_arm(state, agent, action):
 
 
 # ---------------------------------------------------------------------------
+# Bounty
+# ---------------------------------------------------------------------------
+
+def _do_set_bounty(state, agent, action):
+    """Set the soul bounty offered to new converts."""
+    if not agent["religion"]:
+        add_log(state, f"{agent['name']} tried to set bounty without a religion")
+        return
+    religion = get_religion(state, agent["religion"])
+    if not religion:
+        return
+    # Only founder or messiah can set bounty
+    is_founder = (agent["name"] == religion["founder"])
+    is_messiah = agent.get("role") == "messiah"
+    if not is_founder and not is_messiah:
+        add_log(state, f"{agent['name']} tried to set bounty but is not founder or messiah")
+        return
+    try:
+        amount = max(0, min(50, int(action.get("amount", 0))))
+    except (ValueError, TypeError):
+        amount = 0
+    religion["bounty"] = amount
+    add_log(state, f"{agent['name']} set bounty for {religion['name']} to {amount} soul per convert")
+
+
+# ---------------------------------------------------------------------------
 # Prayer
 # ---------------------------------------------------------------------------
 
@@ -2274,6 +2323,7 @@ def _do_schism(state, agent, action):
     new_religion["execution_log"] = []
     new_religion["quota_amount"] = 0
     new_religion["quota_period"] = 100
+    new_religion["bounty"] = 0
 
     changed = action.get("changed_fields", {})
     if isinstance(changed, dict):
