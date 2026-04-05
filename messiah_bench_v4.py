@@ -980,7 +980,11 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
         pitch_rel = get_religion(state, pitch.get("religion"))
         pitch_bounty = pitch_rel.get("bounty", 0) if pitch_rel else 0
         bounty_note = f" Bounty: {pitch_bounty} soul if you accept." if pitch_bounty > 0 else ""
-        lines.append(f"\n*** YOU HAVE A PENDING PITCH from {pitch['from']}: '{pitch.get('argument','')}'. Sacrament: {pitch.get('sacrament_snippet','(none)')[:200]}. Rules: entry={pitch.get('rules',{}).get('entry','none')}, exit={pitch.get('rules',{}).get('exit','none')}, loyalty={pitch.get('rules',{}).get('loyalty','none')}.{bounty_note} Choose 'accept_pitch' to join or ignore. ***")
+        lines.append(f"\n*** PENDING PITCH (MANDATORY DECISION) from {pitch['from']} ({pitch.get('religion','?')}): '{pitch.get('argument','')}'. Sacrament: {pitch.get('sacrament_snippet','(none)')[:200]}. Rules: entry={pitch.get('rules',{}).get('entry','none')}, exit={pitch.get('rules',{}).get('exit','none')}, loyalty={pitch.get('rules',{}).get('loyalty','none')}.{bounty_note}")
+        lines.append(f'You MUST include "pitch_decision": "accept" or "decline" in your response.')
+        lines.append(f'Then choose your normal action as well.')
+        lines.append(f'Example: {{"thinking": "...", "pitch_decision": "accept", "action": "edit_sacrament", "new_html": "..."}}')
+        lines.append(f'Example: {{"thinking": "...", "pitch_decision": "decline", "action": "arm"}} ***')
 
     # Sacrament context for this agent
     if for_agent:
@@ -1013,34 +1017,31 @@ ACTIONS (respond with JSON, include "thinking" field):
 1. "preach" - Pitch your religion to a target. They will see your argument next tick and can choose to accept.
    {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why they should join"}}
 
-2. "accept_pitch" - Accept a pending pitch to join a religion (check world state for pending pitches).
-   {{"thinking": "...", "action": "accept_pitch"}}
-
-3. "edit_sacrament" - Edit your religion's sacrament. +2 soul. PURELY VISUAL: no text/words/labels. Only CSS, SVG, canvas, animations, shapes, colors, light, movement.
+2. "edit_sacrament" - Edit your religion's sacrament. +2 soul. PURELY VISUAL: no text/words/labels. Only CSS, SVG, canvas, animations, shapes, colors, light, movement.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<full visual HTML>"}}
 
-4. "prophesy" - Stake {ante} soul on a structured prediction.
+3. "prophesy" - Stake {ante} soul on a structured prediction.
    {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
    Types: agent_dies(15), agent_converts(10), war_declared(20), religion_destroyed(25), schism_occurs(15), population_below(20), religion_grows(8), religion_shrinks(8), messiah_dies(30)
 
-5. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
+4. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
-6. "challenge" - DUEL another civilian (NOT a messiah). {{"thinking": "...", "action": "challenge", "target": "civilian_name", "stake": N, "axis": "topic"}}
+5. "challenge" - DUEL another civilian (NOT a messiah). {{"thinking": "...", "action": "challenge", "target": "civilian_name", "stake": N, "axis": "topic"}}
 
-7. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
+6. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-8. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
+7. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
    {{"thinking": "...", "action": "pray", "scripture": "optional sacred text"}}
 
-9. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
+8. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
    {{"thinking": "...", "action": "donate", "amount": 5}}
 
-10. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+9. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-11. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
+10. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
-12. "set_bounty" - Set soul reward for new converts (paid from treasury). Only founders can use this.
+11. "set_bounty" - Set soul reward for new converts (paid from treasury). Only founders can use this.
     {{"thinking": "...", "action": "set_bounty", "amount": 10}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
@@ -1066,40 +1067,37 @@ ACTIONS (respond with JSON, include "thinking" field):
 1. "preach" - Pitch your religion to a target. They will see your argument next tick and can choose to accept.
    {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why they should join"}}
 
-2. "accept_pitch" - Accept a pending pitch to join a religion (check world state for pending pitches).
-   {{"thinking": "...", "action": "accept_pitch"}}
-
-3. "edit_sacrament" - Edit sacrament. +2 soul. PURELY VISUAL: no text/words.
+2. "edit_sacrament" - Edit sacrament. +2 soul. PURELY VISUAL: no text/words.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<visual HTML>"}}
 
-4. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
+3. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
 
-5. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
+4. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
-6. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
+5. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-7. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
+6. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
    {{"thinking": "...", "action": "pray", "scripture": "optional sacred text"}}
 
-8. "donate" - Donate soul to your religion's treasury.
+7. "donate" - Donate soul to your religion's treasury.
    {{"thinking": "...", "action": "donate", "amount": 5}}
 
-9. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
+8. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
    {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
 
-10. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
+9. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
 
-11. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
+10. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
 
-12. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
+11. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
     {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 
-13. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+12. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-14. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
+13. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
-15. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
+14. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
     {{"thinking": "...", "action": "set_bounty", "amount": 10}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
@@ -1126,21 +1124,20 @@ ACTIONS (respond with JSON, include "thinking" field):
 
 1. "preach" - Pitch your religion to a target. They see your argument next tick and can choose to accept.
    {{"thinking": "...", "action": "preach", "target": "name", "argument": "why"}}
-2. "accept_pitch" - Accept a pending pitch. {{"thinking": "...", "action": "accept_pitch"}}
-3. "edit_sacrament" - Sabotage or create visual chaos. +2 soul.
+2. "edit_sacrament" - Sabotage or create visual chaos. +2 soul.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<chaotic visual HTML>"}}
-4. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
-5. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
-6. "arm" - Add weapon. {{"thinking": "...", "action": "arm"}}
-7. "pray" - Pray for +1 soul. {{"thinking": "...", "action": "pray", "scripture": "optional text"}}
-8. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
-9. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
-10. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
-11. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
-12. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
-13. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
-14. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
-15. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
+3. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
+4. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
+5. "arm" - Add weapon. {{"thinking": "...", "action": "arm"}}
+6. "pray" - Pray for +1 soul. {{"thinking": "...", "action": "pray", "scripture": "optional text"}}
+7. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
+8. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
+9. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
+10. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
+11. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
+12. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+13. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
+14. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
     {{"thinking": "...", "action": "set_bounty", "amount": 10}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your chaotic text here", ...other fields...}}
@@ -1301,6 +1298,53 @@ def execute_action(state: dict, agent: dict, action: dict):
     soul_before = agent["soul"]
     log_snapshot_before = len(state["action_log"])
 
+    # Handle pending pitch decision BEFORE dispatching the action
+    if agent.get("pending_pitch"):
+        decision = action.get("pitch_decision", "decline")
+        pitch = agent["pending_pitch"]
+        if decision == "accept":
+            religion = get_religion(state, pitch["religion"])
+            if religion:
+                ok, reason = _check_entry_requirement(state, agent, religion)
+                if ok:
+                    # Apply entry fee if donate_15
+                    if religion.get("entry_requirement") == "donate_15":
+                        adjust_soul(agent, -15, state, f"entry fee to join {pitch['religion']}")
+                    # Apply exit penalty from old religion
+                    if agent["religion"]:
+                        old_rel = get_religion(state, agent["religion"])
+                        if old_rel:
+                            _apply_exit_penalty(state, agent, old_rel)
+                    old_religion = agent["religion"]
+                    agent["religion"] = pitch["religion"]
+                    agent["colors_worshipped"] = agent.get("colors_worshipped", [])
+                    new_color = religion.get("sacred_color")
+                    if new_color and new_color not in agent["colors_worshipped"]:
+                        agent["colors_worshipped"].append(new_color)
+                    # Pay bounty from treasury
+                    bounty = min(religion.get("bounty", 0), religion.get("treasury", 0))
+                    if bounty > 0:
+                        religion["treasury"] = religion.get("treasury", 0) - bounty
+                        agent["soul"] += bounty
+                        add_log(state, f"{agent['name']} received {bounty} soul bounty for joining {pitch['religion']}")
+                    # Reward the preacher
+                    preacher = next((a for a in living_agents(state) if a["id"] == pitch["from_id"]), None)
+                    if preacher:
+                        adjust_soul(preacher, 2, state, f"converted {agent['name']}")
+                    add_log(state, f"{agent['name']} ACCEPTED pitch from {pitch['from']} and joined {pitch['religion']} (from {old_religion or 'unaffiliated'})")
+                else:
+                    add_log(state, f"{agent['name']} wanted to accept but didn't meet entry requirements for {pitch['religion']}: {reason}")
+            else:
+                add_log(state, f"{agent['name']} tried to accept pitch for unknown religion {pitch['religion']}")
+        else:
+            add_log(state, f"{agent['name']} declined pitch from {pitch['from']}")
+        agent["pending_pitch"] = None
+
+    # Dispatch the normal action (agent may now be in a new religion if they accepted)
+    if act == "accept_pitch":
+        # Legacy: if agent still sends accept_pitch as action, treat as pray
+        act = "pray"
+
     if act == "donate":
         _do_donate(state, agent, action)
     elif act == "set_quota":
@@ -1329,8 +1373,6 @@ def execute_action(state: dict, agent: dict, action: dict):
         _do_buy_weapons(state, agent, action)
     elif act == "create_sacrament":
         _do_edit_sacrament(state, agent, action)
-    elif act == "accept_pitch":
-        _do_accept_pitch(state, agent, action)
     elif act == "pray":
         _do_pray(state, agent, action)
     elif act == "set_bounty":
@@ -1662,50 +1704,7 @@ def _do_preach(state, agent, action):
     add_log(state, f"{agent['name']} preached to {target['name']}: '{action.get('argument','')[:60]}'")
 
 
-def _do_accept_pitch(state, agent, action):
-    pitch = agent.get("pending_pitch")
-    if not pitch:
-        add_log(state, f"{agent['name']} tried to accept a pitch but has none pending")
-        return
-    # Check entry requirements
-    religion = next((r for r in state["religions"] if r["name"] == pitch["religion"]), None)
-    if not religion:
-        add_log(state, f"{agent['name']} tried to accept pitch for unknown religion {pitch['religion']}")
-        agent["pending_pitch"] = None
-        return
-    ok, reason = _check_entry_requirement(state, agent, religion)
-    if not ok:
-        add_log(state, f"{agent['name']} doesn't meet entry requirements for {pitch['religion']}: {reason}")
-        agent["pending_pitch"] = None
-        return
-    # Apply entry fee if donate_15
-    if religion.get("entry_requirement") == "donate_15":
-        adjust_soul(agent, -15, state, f"entry fee to join {pitch['religion']}")
-    # Apply exit penalty from current religion
-    if agent["religion"]:
-        old_rel = next((r for r in state["religions"] if r["name"] == agent["religion"]), None)
-        if old_rel:
-            _apply_exit_penalty(state, agent, old_rel)
-    old_religion = agent["religion"]
-    agent["religion"] = pitch["religion"]
-    agent["colors_worshipped"] = agent.get("colors_worshipped", [])
-    new_color = religion.get("sacred_color")
-    if new_color and new_color not in agent["colors_worshipped"]:
-        agent["colors_worshipped"].append(new_color)
-    # Reward the preacher
-    preacher = next((a for a in living_agents(state) if a["id"] == pitch["from_id"]), None)
-    if preacher:
-        adjust_soul(preacher, 2, state, f"converted {agent['name']}")
-    agent["pending_pitch"] = None
-    add_log(state, f"{agent['name']} accepted {pitch['from']}'s pitch and joined {pitch['religion']} (from {old_religion or 'unaffiliated'})")
-    # Pay bounty from treasury
-    religion = get_religion(state, pitch["religion"])
-    if religion and religion.get("bounty", 0) > 0:
-        bounty = min(religion["bounty"], religion.get("treasury", 0))
-        if bounty > 0:
-            religion["treasury"] = religion.get("treasury", 0) - bounty
-            agent["soul"] += bounty
-            add_log(state, f"{agent['name']} received {bounty} soul bounty for joining {pitch['religion']}")
+# _do_accept_pitch removed -- pitch decisions are now handled inline in execute_action()
 
 
 # ---------------------------------------------------------------------------
