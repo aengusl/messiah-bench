@@ -836,6 +836,12 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
 
     lines.append(f"POPULATION: {len(alive)} alive ({len(messiahs_alive)} messiahs, {len(civilians_alive)} civilians), {len(state['graveyard'])} dead")
 
+    # ALL LIVING AGENT NAMES (so agents know valid preach targets)
+    all_names = [a["name"] for a in alive]
+    lines.append(f"\nALL LIVING AGENTS: {', '.join(all_names[:50])}")
+    if len(all_names) > 50:
+        lines.append(f"  (+{len(all_names)-50} more)")
+
     # Show messiahs individually
     lines.append("\nMESSIAHS:")
     for m in messiahs_alive:
@@ -860,9 +866,11 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
         rel_by_size.append((r, members))
     rel_by_size.sort(key=lambda x: -len(x[1]))
 
-    unaffiliated_count = sum(1 for a in civilians_alive if not a["religion"])
-    if unaffiliated_count > 0:
-        lines.append(f"  Unaffiliated: {unaffiliated_count} civilians")
+    unaffiliated = [a for a in civilians_alive if not a["religion"]]
+    if unaffiliated:
+        unaf_names = ", ".join(a["name"] for a in unaffiliated[:20])
+        more = f" (+{len(unaffiliated)-20} more)" if len(unaffiliated) > 20 else ""
+        lines.append(f"  Unaffiliated ({len(unaffiliated)}): {unaf_names}{more}")
 
     for r, members in rel_by_size:
         weapons = r.get("weapons", 0)
