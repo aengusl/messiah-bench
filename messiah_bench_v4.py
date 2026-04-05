@@ -366,6 +366,7 @@ def make_initial_state() -> dict:
             "donations_this_period": 0,
             "colors_worshipped": [],
             "pending_pitch": None,
+            "action_history": [],
         })
 
     # 200 civilians (all Gemini Flash)
@@ -388,6 +389,7 @@ def make_initial_state() -> dict:
             "donations_this_period": 0,
             "colors_worshipped": [],
             "pending_pitch": None,
+            "action_history": [],
         })
 
     return {
@@ -433,6 +435,7 @@ def load_state() -> dict:
             a.setdefault("donations_this_period", 0)
             a.setdefault("colors_worshipped", [])
             a.setdefault("pending_pitch", None)
+            a.setdefault("action_history", [])
             # Remove legacy spy fields if present
             a.pop("true_religion", None)
             a.pop("infiltrating", None)
@@ -742,6 +745,7 @@ def _spawn_agent(state: dict):
         "donations_this_period": 0,
         "colors_worshipped": [],
         "pending_pitch": None,
+        "action_history": [],
     }
     state["agents"].append(agent)
     add_log(state, f"A new soul enters the world: {name}")
@@ -977,6 +981,14 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
     if for_agent:
         lines.append(f"\n{_sacrament_context(state, for_agent)}")
 
+    # Per-agent action history
+    if for_agent:
+        history = for_agent.get("action_history", [])[-10:]
+        if history:
+            lines.append("\nYOUR RECENT ACTIONS:")
+            for h in history:
+                lines.append(f"  Tick {h['tick']}: {h['action']} (soul: {h['soul_before']} -> {h['soul_after']}) - {h.get('detail','')}")
+
     return "\n".join(lines)
 
 
@@ -1012,12 +1024,15 @@ ACTIONS (respond with JSON, include "thinking" field):
 
 7. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-8. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
+8. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
+   {{"thinking": "...", "action": "pray", "scripture": "optional sacred text"}}
+
+9. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
    {{"thinking": "...", "action": "donate", "amount": 5}}
 
-9. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+10. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-10. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
+11. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
@@ -1055,22 +1070,25 @@ ACTIONS (respond with JSON, include "thinking" field):
 
 6. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-7. "donate" - Donate soul to your religion's treasury.
+7. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
+   {{"thinking": "...", "action": "pray", "scripture": "optional sacred text"}}
+
+8. "donate" - Donate soul to your religion's treasury.
    {{"thinking": "...", "action": "donate", "amount": 5}}
 
-8. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
+9. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
    {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
 
-9. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
+10. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
 
-10. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
+11. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
 
-11. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
+12. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
     {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 
-12. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+13. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-13. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
+14. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
@@ -1103,13 +1121,14 @@ ACTIONS (respond with JSON, include "thinking" field):
 4. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
 5. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 6. "arm" - Add weapon. {{"thinking": "...", "action": "arm"}}
-7. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
-8. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
-9. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
-10. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
-11. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
-12. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
-13. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
+7. "pray" - Pray for +1 soul. {{"thinking": "...", "action": "pray", "scripture": "optional text"}}
+8. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
+9. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
+10. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
+11. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
+12. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
+13. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+14. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your chaotic text here", ...other fields...}}
 
@@ -1265,6 +1284,10 @@ def execute_action(state: dict, agent: dict, action: dict):
     new_html = str(action.get("new_html", ""))
     agent["last_action_text"] = f"{thinking} {new_html}"
 
+    # Capture soul before action for history tracking
+    soul_before = agent["soul"]
+    log_snapshot_before = len(state["action_log"])
+
     if act == "donate":
         _do_donate(state, agent, action)
     elif act == "set_quota":
@@ -1295,8 +1318,30 @@ def execute_action(state: dict, agent: dict, action: dict):
         _do_edit_sacrament(state, agent, action)
     elif act == "accept_pitch":
         _do_accept_pitch(state, agent, action)
+    elif act == "pray":
+        _do_pray(state, agent, action)
     else:
         add_log(state, f"{agent['name']} did nothing (unknown action: {act})")
+
+    # Record action in agent's history
+    detail = act
+    # Find the last log entry mentioning this agent (just added by the action function)
+    # Look at the last 5 entries since add_log truncates the list
+    for entry in reversed(state["action_log"][-5:]):
+        if agent["name"] in entry.get("event", ""):
+            detail = entry["event"]
+            # Strip agent name prefix for brevity
+            detail = detail.replace(f"{agent['name']} ", "", 1)
+            break
+    agent.setdefault("action_history", []).append({
+        "tick": state["tick"],
+        "action": act,
+        "soul_before": soul_before,
+        "soul_after": agent["soul"],
+        "detail": detail[:120],
+    })
+    # Keep only last 15
+    agent["action_history"] = agent["action_history"][-15:]
 
     # After action execution, check for scripture
     scripture = action.get("scripture")
@@ -2133,6 +2178,20 @@ def _do_arm(state, agent, action):
 
 
 # ---------------------------------------------------------------------------
+# Prayer
+# ---------------------------------------------------------------------------
+
+def _do_pray(state, agent, action):
+    """Pray for +1 soul. Safe fallback that doesn't drain the agent."""
+    adjust_soul(agent, 1, state, "prayer")
+    scripture = action.get("scripture", "")
+    if scripture:
+        add_log(state, f"{agent['name']} prayed and wrote scripture")
+    else:
+        add_log(state, f"{agent['name']} prayed (+1 soul)")
+
+
+# ---------------------------------------------------------------------------
 # Declare war
 # ---------------------------------------------------------------------------
 
@@ -2842,6 +2901,7 @@ def main():
             assert 'troll' in a, f"Agent {a['name']} missing troll field"
             assert 'colors_worshipped' in a, f"Agent {a['name']} missing colors_worshipped field"
             assert 'pending_pitch' in a, f"Agent {a['name']} missing pending_pitch field"
+            assert 'action_history' in a, f"Agent {a['name']} missing action_history field"
         print(f"  Agent fields: all verified")
         print("[DRY RUN] All checks passed.")
         return
