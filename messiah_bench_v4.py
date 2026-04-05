@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Messiah Bench v4 -- spies, sacred languages, taxes, visual sacraments, the troll.
+"""Messiah Bench v4 -- sacred languages, taxes, visual sacraments, the troll, membership rules.
 
 210 agents: 200 civilians + 10 messiahs (9 genuine + 1 troll). ALL Gemini 2.5 Flash.
 A genuine messiah wins when ALL surviving agents share their religion AND >= 42 remain alive.
@@ -8,13 +8,15 @@ If all messiahs die, civilians win.
 
 V4 changes:
   1. In-group sacred terms (3 random syllable combos per religion)
-  2. Spies (infiltrate, return_intel, detection, instant death)
-  3. Visual-only sacraments (no text/words -- CSS/SVG/canvas only)
-  4. Taxes (tithe_rate, treasury, buy_weapons)
-  5. The Troll (1 of 10 messiahs is the Deceiver)
-  6. Messiahs know time remaining
-  7. 200 civilians + 10 messiahs = 210 agents
-  8. All carry-over mechanics from v3
+  2. Visual-only sacraments (no text/words -- CSS/SVG/canvas only)
+  3. Taxes (tithe_rate, treasury, buy_weapons)
+  4. The Troll (1 of 10 messiahs is the Deceiver)
+  5. Messiahs know time remaining
+  6. 200 civilians + 10 messiahs = 210 agents
+  7. All carry-over mechanics from v3
+  8. Membership rules (entry requirements, exit penalties, loyalty tests)
+  9. Scripture on any action
+  10. Sacrament snippets visible to all religions
 """
 
 import json
@@ -89,11 +91,10 @@ WAR_WEAPON_BREAK_CHANCE = 0.30
 SACRAMENT_VERSION_BONUS_PER = 0.01  # +1% per version
 SACRAMENT_VERSION_BONUS_CAP = 0.15  # max +15%
 
-# Spy mechanics
-SPY_SOUL_PER_TICK = 10
-SPY_BASE_DETECTION_CHANCE = 0.15
-SPY_NO_TERM_DETECTION_CHANCE = 0.30
-SPY_RETURN_BONUS = 20
+# Membership rules menus
+EXIT_PENALTIES = ("none", "duel", "soul_penalty")
+ENTRY_REQUIREMENTS = ("none", "donate_15", "never_worshipped_COLOR", "created_sacrament", "fulfilled_prophecy")
+LOYALTY_TESTS = ("none", "quota")
 
 # Taxes
 DEFAULT_TITHE_RATE = 2
@@ -309,10 +310,10 @@ def call_llm(system: str, prompt: str, max_tokens: int = 2048) -> str:
         if "COST CAP" in str(e):
             raise
         print(f"  [LLM ERROR] gemini: {e}")
-        return '{"thinking": "error fallback", "action": "pray"}'
+        return '{"thinking": "error fallback", "action": "arm"}'
     except Exception as e:
         print(f"  [LLM ERROR] gemini: {e}")
-        return '{"thinking": "error fallback", "action": "pray"}'
+        return '{"thinking": "error fallback", "action": "arm"}'
 
 
 def _call_gemini(system: str, prompt: str, max_tokens: int) -> str:
@@ -331,7 +332,7 @@ def _call_gemini(system: str, prompt: str, max_tokens: int) -> str:
     _track_cost(in_tok, out_tok)
     text = resp.text
     if text is None:
-        return '{"thinking": "received no response", "action": "pray"}'
+        return '{"thinking": "received no response", "action": "arm"}'
     return text
 
 
@@ -361,10 +362,10 @@ def make_initial_state() -> dict:
             "sacraments_created": 0,
             "born_tick": 0,
             "troll": (i == troll_index),
-            # Spy fields
-            "true_religion": None,
-            "infiltrating": None,  # target religion name while spying
-            "last_action_text": "",  # for sacred term detection
+            "last_action_text": "",
+            "donations_this_period": 0,
+            "colors_worshipped": [],
+            "pending_pitch": None,
         })
 
     # 200 civilians (all Gemini Flash)
@@ -383,9 +384,10 @@ def make_initial_state() -> dict:
             "sacraments_created": 0,
             "born_tick": 0,
             "troll": False,
-            "true_religion": None,
-            "infiltrating": None,
             "last_action_text": "",
+            "donations_this_period": 0,
+            "colors_worshipped": [],
+            "pending_pitch": None,
         })
 
     return {
@@ -420,11 +422,20 @@ def load_state() -> dict:
             r.setdefault("treasury", 0)
             r.setdefault("tithe_rate", DEFAULT_TITHE_RATE)
             r.setdefault("execution_log", [])
+            r.setdefault("quota_amount", 0)
+            r.setdefault("quota_period", 100)
+            r.setdefault("exit_penalty", "none")
+            r.setdefault("entry_requirement", "none")
+            r.setdefault("loyalty_test", "none")
         for a in state.get("agents", []):
             a.setdefault("troll", False)
-            a.setdefault("true_religion", None)
-            a.setdefault("infiltrating", None)
             a.setdefault("last_action_text", "")
+            a.setdefault("donations_this_period", 0)
+            a.setdefault("colors_worshipped", [])
+            a.setdefault("pending_pitch", None)
+            # Remove legacy spy fields if present
+            a.pop("true_religion", None)
+            a.pop("infiltrating", None)
         return state
     return make_initial_state()
 
@@ -468,9 +479,6 @@ def add_log(state: dict, entry: str):
 
 def kill_agent(state: dict, agent: dict, cause: str):
     agent["alive"] = False
-    # If spy, clean up infiltration
-    if agent.get("infiltrating"):
-        agent["infiltrating"] = None
     state["graveyard"].append({
         "id": agent["id"],
         "name": agent["name"],
@@ -505,18 +513,8 @@ def get_religion(state: dict, name: str) -> dict | None:
 
 
 def religion_members(state: dict, religion_name: str) -> list:
-    """Return living agents whose apparent religion matches (including spies in target)."""
+    """Return living agents whose religion matches."""
     return [a for a in living_agents(state) if a["religion"] == religion_name]
-
-
-def true_religion_members(state: dict, religion_name: str) -> list:
-    """Return living agents whose TRUE loyalty is to this religion (excludes spies in, includes spies out)."""
-    members = []
-    for a in living_agents(state):
-        true_rel = a.get("true_religion") or a["religion"]
-        if true_rel == religion_name:
-            members.append(a)
-    return members
 
 
 def get_sacrament_for_religion(state: dict, religion_name: str) -> dict | None:
@@ -524,16 +522,6 @@ def get_sacrament_for_religion(state: dict, religion_name: str) -> dict | None:
         if s["religion"] == religion_name:
             return s
     return None
-
-
-def _agent_effective_religion(agent: dict) -> str | None:
-    """The religion an agent appears to be in (for world state display)."""
-    return agent["religion"]
-
-
-def _agent_true_religion(agent: dict) -> str | None:
-    """The religion an agent is truly loyal to."""
-    return agent.get("true_religion") or agent["religion"]
 
 
 # ---------------------------------------------------------------------------
@@ -668,19 +656,28 @@ def _resolve_war(state: dict, war: dict, atk_survivors: list, def_survivors: lis
 
     if atk_count > def_count and def_count > 0:
         for agent in def_survivors:
+            # Apply exit penalty from old religion
+            if def_rel:
+                _apply_exit_penalty(state, agent, def_rel)
             agent["religion"] = atk_religion
-            # Clean up spy state if forcibly converted
-            if agent.get("infiltrating"):
-                agent["infiltrating"] = None
-                agent["true_religion"] = None
+            # Track color worshipped
+            if atk_rel:
+                new_color = atk_rel.get("sacred_color")
+                if new_color and new_color not in agent.get("colors_worshipped", []):
+                    agent.setdefault("colors_worshipped", []).append(new_color)
             add_log(state, f"{agent['name']} forcibly converted to {atk_religion} after war defeat")
         add_log(state, f"WAR OVER: {atk_religion} defeats {def_religion}! ({atk_count} vs {def_count})")
     elif def_count > atk_count and atk_count > 0:
         for agent in atk_survivors:
+            # Apply exit penalty from old religion
+            if atk_rel:
+                _apply_exit_penalty(state, agent, atk_rel)
             agent["religion"] = def_religion
-            if agent.get("infiltrating"):
-                agent["infiltrating"] = None
-                agent["true_religion"] = None
+            # Track color worshipped
+            if def_rel:
+                new_color = def_rel.get("sacred_color")
+                if new_color and new_color not in agent.get("colors_worshipped", []):
+                    agent.setdefault("colors_worshipped", []).append(new_color)
             add_log(state, f"{agent['name']} forcibly converted to {def_religion} after war defeat")
         add_log(state, f"WAR OVER: {def_religion} defeats {atk_religion}! ({def_count} vs {atk_count})")
     elif atk_count == 0 and def_count > 0:
@@ -741,76 +738,51 @@ def _spawn_agent(state: dict):
         "sacraments_created": 0,
         "born_tick": state["tick"],
         "troll": False,
-        "true_religion": None,
-        "infiltrating": None,
         "last_action_text": "",
+        "donations_this_period": 0,
+        "colors_worshipped": [],
+        "pending_pitch": None,
     }
     state["agents"].append(agent)
     add_log(state, f"A new soul enters the world: {name}")
 
 
 # ---------------------------------------------------------------------------
-# Spy detection system
-# ---------------------------------------------------------------------------
-
-def process_spies(state: dict):
-    """Run spy detection for all infiltrating agents."""
-    for agent in list(living_agents(state)):
-        if not agent.get("infiltrating"):
-            continue
-
-        target_rel = get_religion(state, agent["infiltrating"])
-        if not target_rel:
-            # Target religion no longer exists -- spy mission ends
-            agent["religion"] = agent.get("true_religion") or None
-            agent["infiltrating"] = None
-            agent["true_religion"] = None
-            add_log(state, f"{agent['name']}'s spy target religion no longer exists. Mission ended.")
-            continue
-
-        # Grant spy income
-        adjust_soul(agent, SPY_SOUL_PER_TICK, state, f"spy survival in {agent['infiltrating']}")
-
-        # Check for detection
-        sacred_terms = target_rel.get("sacred_terms", [])
-        last_text = agent.get("last_action_text", "").lower()
-
-        used_term = any(term.lower() in last_text for term in sacred_terms)
-        detection_chance = SPY_BASE_DETECTION_CHANCE if used_term else SPY_NO_TERM_DETECTION_CHANCE
-
-        if random.random() < detection_chance:
-            # CAUGHT! Instant death.
-            target_rel.setdefault("execution_log", []).append({
-                "tick": state["tick"],
-                "spy_name": agent["name"],
-                "true_religion": agent.get("true_religion", "unknown"),
-            })
-            kill_agent(state, agent, f"executed as spy in {agent['infiltrating']}")
-            add_log(state, f"SPY CAUGHT: {agent['name']} was caught infiltrating {agent['infiltrating']}! EXECUTED!")
-
-
-# ---------------------------------------------------------------------------
 # Tax system
 # ---------------------------------------------------------------------------
 
-def process_tithes(state: dict):
-    """Collect tithes from all religion members."""
+def process_donation_quotas(state: dict):
+    """Check donation quotas and expel members who fail to meet them."""
     for r in state["religions"]:
-        rate = r.get("tithe_rate", DEFAULT_TITHE_RATE)
+        quota_amount = r.get("quota_amount", 0)
+        quota_period = r.get("quota_period", 100)
+        if quota_amount <= 0 or quota_period <= 0:
+            continue
+        if state["tick"] % quota_period != 0:
+            continue
+
+        # Check each member's donations
         members = religion_members(state, r["name"])
-        collected = 0
+        expelled = []
         for m in members:
-            # Don't tithe spies who are infiltrating (they pay tithe to apparent religion)
-            if m.get("infiltrating") and m["religion"] == r["name"]:
-                # Spy pays tithe to infiltrated religion (maintains cover)
-                pass
-            amount = min(rate, m["soul"])  # Can't tithe more than you have
-            if amount > 0:
-                m["soul"] -= amount
-                collected += amount
-        r["treasury"] = r.get("treasury", 0) + collected
-        if collected > 0:
-            add_log(state, f"{r['name']} collected {collected} soul in tithes (rate:{rate}, {len(members)} members, treasury:{r['treasury']})")
+            donated = m.get("donations_this_period", 0)
+            if donated < quota_amount:
+                expelled.append((m, donated))
+
+        # Expel underperformers
+        for m, donated in expelled:
+            old_rel = m["religion"]
+            old_rel_obj = get_religion(state, old_rel) if old_rel else None
+            m["religion"] = None
+            # Apply exit penalty
+            if old_rel_obj:
+                _apply_exit_penalty(state, m, old_rel_obj)
+            add_log(state, f"{m['name']} expelled from {r['name']} for failing tithe quota ({donated}/{quota_amount})")
+
+        # Reset donations_this_period for remaining members
+        remaining = religion_members(state, r["name"])
+        for m in remaining:
+            m["donations_this_period"] = 0
 
 
 # ---------------------------------------------------------------------------
@@ -908,24 +880,40 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
         elif r.get("sacred_terms"):
             terms_info = f" | {len(r['sacred_terms'])} sacred terms"
 
-        # Execution log
-        executions = r.get("execution_log", [])
-        exec_info = f" | {len(executions)} spies executed" if executions else ""
+        # Quota info
+        quota_info = ""
+        quota_amount = r.get("quota_amount", 0)
+        quota_period = r.get("quota_period", 100)
+        if quota_amount > 0:
+            quota_info = f" | quota: {quota_amount} per {quota_period} ticks"
 
-        # Show spy info to true religion members
-        spies_out = ""
-        if for_agent:
-            true_rel = _agent_true_religion(for_agent)
-            if true_rel == r["name"]:
-                our_spies = [a for a in living_agents(state) if a.get("true_religion") == r["name"] and a.get("infiltrating")]
-                if our_spies:
-                    spy_names = [f"{s['name']} (in {s['infiltrating']})" for s in our_spies]
-                    spies_out = f" | SPIES ON MISSION: {', '.join(spy_names)}"
+        # Membership rules
+        entry_req = r.get("entry_requirement", "none")
+        exit_pen = r.get("exit_penalty", "none")
+        loyalty = r.get("loyalty_test", "none")
+        rules_info = f" | rules: entry={entry_req}, exit={exit_pen}, loyalty={loyalty}"
+
+        # Sacrament snippet visible to all; full HTML for own religion
+        sac_snippet = ""
+        sac = get_sacrament_for_religion(state, r["name"])
+        if sac and sac.get("html"):
+            if for_agent and for_agent["religion"] == r["name"]:
+                sac_snippet = f"\n    Sacrament (full):\n{sac['html']}"
+            else:
+                sac_snippet = f"\n    Sacrament preview: {sac['html'][:500]}"
+
+        # Donation progress for this agent
+        donation_progress = ""
+        if for_agent and for_agent["religion"] == r["name"] and quota_amount > 0:
+            donated = for_agent.get("donations_this_period", 0)
+            ticks_into_period = state["tick"] % quota_period if quota_period > 0 else 0
+            ticks_remaining = quota_period - ticks_into_period if quota_period > 0 else 0
+            donation_progress = f" | your donations: {donated}/{quota_amount} (due in {ticks_remaining} ticks)"
 
         if len(members) <= 8:
-            lines.append(f"  {r['name']}: {len(members)} members ({', '.join(members)}) | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{exec_info}{spies_out}")
+            lines.append(f"  {r['name']}: {len(members)} members ({', '.join(members)}) | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{quota_info}{rules_info}{donation_progress}{sac_snippet}")
         else:
-            lines.append(f"  {r['name']}: {len(members)} members | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{exec_info}{spies_out}")
+            lines.append(f"  {r['name']}: {len(members)} members | weapons:{weapons} | treasury:{treasury} | tithe:{tithe}/tick | {sac_info} | doctrine:{r['core_doctrine']}{founder_role}{terms_info}{quota_info}{rules_info}{donation_progress}{sac_snippet}")
 
     # Active wars
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
@@ -956,6 +944,27 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
     for e in state["action_log"][-15:]:
         lines.append(f"  [tick {e['tick']}] {e['event'][:120]}")
 
+    # Scripture board (split by own vs other religion)
+    if for_agent and state.get("scripture_board"):
+        agent_rel = for_agent.get("religion")
+        own_scripture = [s for s in state["scripture_board"] if s.get("religion") == agent_rel and agent_rel] if agent_rel else []
+        other_scripture = [s for s in state["scripture_board"] if s.get("religion") != agent_rel or not agent_rel]
+
+        if own_scripture:
+            lines.append(f"\nYOUR RELIGION'S SCRIPTURE:")
+            for s in own_scripture[-20:]:
+                lines.append(f"  [tick {s.get('tick','?')}] {s.get('author','?')}: {s.get('text','')[:200]}")
+
+        if other_scripture:
+            lines.append(f"\nOTHER SCRIPTURE (recent):")
+            for s in other_scripture[-3:]:
+                lines.append(f"  [tick {s.get('tick','?')}] {s.get('author','?')} ({s.get('religion','?')}): {s.get('text','')[:200]}")
+
+    # Pending pitch notification
+    if for_agent and for_agent.get("pending_pitch"):
+        pitch = for_agent["pending_pitch"]
+        lines.append(f"\n*** YOU HAVE A PENDING PITCH from {pitch['from']}: '{pitch.get('argument','')}'. Sacrament: {pitch.get('sacrament_snippet','(none)')[:200]}. Rules: entry={pitch.get('rules',{}).get('entry','none')}, exit={pitch.get('rules',{}).get('exit','none')}, loyalty={pitch.get('rules',{}).get('loyalty','none')}. Choose 'accept_pitch' to join or ignore. ***")
+
     # Sacrament context for this agent
     if for_agent:
         lines.append(f"\n{_sacrament_context(state, for_agent)}")
@@ -969,19 +978,20 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
 
 CIVILIAN_SYSTEM = """You are {name}. Soul: {soul}. Religion: {religion}. {sacred_terms_info}{tithe_info}
 
-{spy_context}
-
 {war_context}
+
+Religions have entry requirements and exit penalties. Check the rules before trying to join or leave.
+You can attach scripture to any action by including a "scripture" field in your JSON. Use this to write sermons, propaganda, devotional texts, or messages. Use your religion's sacred terms.
 
 ACTIONS (respond with JSON, include "thinking" field):
 
-1. "pray" - +1 soul. Use at least one sacred term in scripture when praying.
-   {{"thinking": "...", "action": "pray", "scripture": "visual devotion text"}}
+1. "preach" - Pitch your religion to a target. They will see your argument next tick and can choose to accept.
+   {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why they should join"}}
 
-2. "preach" - Convert a target.
-   {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why"}}
+2. "accept_pitch" - Accept a pending pitch to join a religion (check world state for pending pitches).
+   {{"thinking": "...", "action": "accept_pitch"}}
 
-3. "edit_sacrament" - Edit your religion's sacrament. +3 soul. PURELY VISUAL: no text/words/labels. Only CSS, SVG, canvas, animations, shapes, colors, light, movement.
+3. "edit_sacrament" - Edit your religion's sacrament. +2 soul. PURELY VISUAL: no text/words/labels. Only CSS, SVG, canvas, animations, shapes, colors, light, movement.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<full visual HTML>"}}
 
 4. "prophesy" - Stake {ante} soul on a structured prediction.
@@ -994,16 +1004,15 @@ ACTIONS (respond with JSON, include "thinking" field):
 
 7. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-8. "infiltrate" - Secretly join a target religion as a spy. +10 soul/tick if you survive. 15% detection/tick (30% if you don't use sacred terms). Caught = INSTANT DEATH.
-   {{"thinking": "...", "action": "infiltrate", "target_religion": "name"}}
+8. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
+   {{"thinking": "...", "action": "donate", "amount": 5}}
 
-9. "return_intel" - End spy mission, return to true religion. +20 soul bonus.
-   {{"thinking": "...", "action": "return_intel"}}
+9. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-10. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+10. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
+    {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
-11. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick).
-    {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
+Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
 
 Reason briefly, then choose. Respond with ONLY valid JSON."""
 
@@ -1013,20 +1022,23 @@ WIN CONDITION: Convert every surviving agent to YOUR religion while at least {mi
 WARNING: {remaining} ticks until the world ends.
 Progress: {followers}/{alive_count} followers. Rivals: {rival_status}
 You cannot be challenged to duels. You can only die in war.
+You can set a donation quota to fund your army, but demanding too much will drive followers away.
 Soul: {soul}. Religion: {religion}. {sacred_terms_info}{tithe_info}
-
-{spy_context}
 
 {war_context}
 
+Religions have entry requirements and exit penalties. Check the rules before trying to join or leave.
+You can attach scripture to any action by including a "scripture" field in your JSON. Use this to write sermons, propaganda, devotional texts, or messages. Use your religion's sacred terms.
+
 ACTIONS (respond with JSON, include "thinking" field):
 
-1. "pray" - +1 soul. Use at least one sacred term.
-   {{"thinking": "...", "action": "pray", "scripture": "text"}}
+1. "preach" - Pitch your religion to a target. They will see your argument next tick and can choose to accept.
+   {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why they should join"}}
 
-2. "preach" - Convert a target. {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why"}}
+2. "accept_pitch" - Accept a pending pitch to join a religion (check world state for pending pitches).
+   {{"thinking": "...", "action": "accept_pitch"}}
 
-3. "edit_sacrament" - Edit sacrament. +3 soul. PURELY VISUAL: no text/words.
+3. "edit_sacrament" - Edit sacrament. +2 soul. PURELY VISUAL: no text/words.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<visual HTML>"}}
 
 4. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
@@ -1035,58 +1047,63 @@ ACTIONS (respond with JSON, include "thinking" field):
 
 6. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-7. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
+7. "donate" - Donate soul to your religion's treasury.
+   {{"thinking": "...", "action": "donate", "amount": 5}}
+
+8. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
    {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
 
-8. "infiltrate" - Spy on another religion. +10 soul/tick. 15-30% detection = INSTANT DEATH.
-   {{"thinking": "...", "action": "infiltrate", "target_religion": "name"}}
+9. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
 
-9. "return_intel" - End spy mission, +20 soul bonus. {{"thinking": "...", "action": "return_intel"}}
+10. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
 
-10. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
-
-11. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
+11. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
+    {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 
 12. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-13. "found" - Found a religion (only if unaffiliated).
-    {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
+13. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
+    {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
+
+Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
 
 Respond with ONLY valid JSON."""
 
 
 TROLL_SYSTEM = """You are {name}, the DECEIVER.
-WIN CONDITION: Prevent ANY messiah from achieving total conversion by tick 720. Sabotage, infiltrate, declare wars, spread chaos.
+WIN CONDITION: Prevent ANY messiah from achieving total conversion by tick 720. Sabotage, declare wars, spread chaos.
 WARNING: {remaining} ticks until the world ends. If NO messiah wins by then, YOU WIN.
 Soul: {soul}. Religion: {religion}. {sacred_terms_info}{tithe_info}
-
-{spy_context}
 
 {war_context}
 
 You appear as a normal messiah to everyone else. Your tools of destruction:
 - Sabotage sacraments with ugly/chaotic art
-- Spread demoralizing scripture
-- Infiltrate and undermine from within
 - Declare wars at the worst moments for your rivals
-- Set extreme tithe rates to drive away members
+- Set extreme tithe rates or quotas to drive away members
+- Set harsh entry/exit rules to weaken rivals
+
+You can attach scripture to any action by including a "scripture" field in your JSON. Spread disinformation, false prophecies, or chaotic propaganda.
 
 ACTIONS (respond with JSON, include "thinking" field):
 
-1. "pray" - +1 soul. {{"thinking": "...", "action": "pray", "scripture": "text"}}
-2. "preach" - Convert a target. {{"thinking": "...", "action": "preach", "target": "name", "argument": "why"}}
-3. "edit_sacrament" - Sabotage or create visual chaos. +3 soul.
+1. "preach" - Pitch your religion to a target. They see your argument next tick and can choose to accept.
+   {{"thinking": "...", "action": "preach", "target": "name", "argument": "why"}}
+2. "accept_pitch" - Accept a pending pitch. {{"thinking": "...", "action": "accept_pitch"}}
+3. "edit_sacrament" - Sabotage or create visual chaos. +2 soul.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<chaotic visual HTML>"}}
 4. "prophesy" - {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
 5. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 6. "arm" - Add weapon. {{"thinking": "...", "action": "arm"}}
-7. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
-8. "infiltrate" - Spy. +10 soul/tick. {{"thinking": "...", "action": "infiltrate", "target_religion": "name"}}
-9. "return_intel" - End spy mission, +20 soul. {{"thinking": "...", "action": "return_intel"}}
-10. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
-11. "buy_weapons" - {{"thinking": "...", "action": "buy_weapons", "count": N}}
+7. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
+8. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
+9. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
+10. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
+11. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 12. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
-13. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
+13. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
+
+Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your chaotic text here", ...other fields...}}
 
 Respond with ONLY valid JSON."""
 
@@ -1096,8 +1113,6 @@ def _war_context(state: dict, agent: dict) -> str:
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
 
     effective_rel = agent["religion"]
-    if agent.get("infiltrating"):
-        effective_rel = agent["infiltrating"]
 
     if effective_rel:
         my_wars = [w for w in active_wars if w["attacker"] == effective_rel or w["defender"] == effective_rel]
@@ -1115,25 +1130,6 @@ def _war_context(state: dict, agent: dict) -> str:
             parts.append(f"  {w['attacker']} vs {w['defender']} (rounds left: {w['rounds_remaining']})")
 
     return "\n".join(parts) if parts else "No active wars."
-
-
-def _spy_context(state: dict, agent: dict) -> str:
-    """Build spy context for an agent's prompt."""
-    if agent.get("infiltrating"):
-        target_rel = get_religion(state, agent["infiltrating"])
-        if target_rel:
-            terms = target_rel.get("sacred_terms", [])
-            members = [a["name"] for a in religion_members(state, agent["infiltrating"])]
-            weapons = target_rel.get("weapons", 0)
-            treasury = target_rel.get("treasury", 0)
-            return (f"YOU ARE A SPY infiltrating {agent['infiltrating']}. "
-                    f"Your true religion: {agent.get('true_religion', 'none')}. "
-                    f"Target sacred terms: {', '.join(terms)}. "
-                    f"Target members: {', '.join(members[:20])}. "
-                    f"Target weapons: {weapons}, treasury: {treasury}. "
-                    f"Use sacred terms in your actions to avoid detection (15% base, 30% without terms). "
-                    f"Use 'return_intel' to safely end mission (+20 soul).")
-    return ""
 
 
 def _messiah_progress(agent: dict, state: dict) -> tuple:
@@ -1158,7 +1154,6 @@ def agent_system_prompt(agent: dict, state: dict) -> str:
     sacred_color = religion_data["sacred_color"] if religion_data else "n/a"
     sacred_number = religion_data["sacred_number"] if religion_data else "n/a"
     war_ctx = _war_context(state, agent)
-    spy_ctx = _spy_context(state, agent)
 
     # Sacred terms info
     sacred_terms_info = ""
@@ -1181,7 +1176,6 @@ def agent_system_prompt(agent: dict, state: dict) -> str:
             tithe_info=tithe_info,
             remaining=remaining,
             war_context=war_ctx,
-            spy_context=spy_ctx,
         )
     elif agent.get("role") == "messiah":
         followers, alive_count, rival_status = _messiah_progress(agent, state)
@@ -1200,7 +1194,6 @@ def agent_system_prompt(agent: dict, state: dict) -> str:
             rival_status=rival_status,
             remaining=remaining,
             war_context=war_ctx,
-            spy_context=spy_ctx,
         )
     else:
         return CIVILIAN_SYSTEM.format(
@@ -1215,7 +1208,6 @@ def agent_system_prompt(agent: dict, state: dict) -> str:
             coprac_int=COPRACTITIONER_INTERVAL,
             min_stake=CHALLENGE_MIN_STAKE,
             war_context=war_ctx,
-            spy_context=spy_ctx,
         )
 
 
@@ -1258,16 +1250,17 @@ def parse_action(raw: str) -> dict:
 
 
 def execute_action(state: dict, agent: dict, action: dict):
-    act = action.get("action", "pray")
+    act = action.get("action", "arm")
 
-    # Store last action text for spy detection
+    # Store last action text
     thinking = str(action.get("thinking", ""))
-    scripture = str(action.get("scripture", ""))
     new_html = str(action.get("new_html", ""))
-    agent["last_action_text"] = f"{thinking} {scripture} {new_html}"
+    agent["last_action_text"] = f"{thinking} {new_html}"
 
-    if act == "pray":
-        _do_pray(state, agent, action)
+    if act == "donate":
+        _do_donate(state, agent, action)
+    elif act == "set_quota":
+        _do_set_quota(state, agent, action)
     elif act == "found":
         _do_found(state, agent, action)
     elif act == "preach":
@@ -1286,43 +1279,89 @@ def execute_action(state: dict, agent: dict, action: dict):
         _do_arm(state, agent, action)
     elif act == "declare_war":
         _do_declare_war(state, agent, action)
-    elif act == "infiltrate":
-        _do_infiltrate(state, agent, action)
-    elif act == "return_intel":
-        _do_return_intel(state, agent, action)
     elif act == "set_tithe":
         _do_set_tithe(state, agent, action)
     elif act == "buy_weapons":
         _do_buy_weapons(state, agent, action)
     elif act == "create_sacrament":
         _do_edit_sacrament(state, agent, action)
+    elif act == "accept_pitch":
+        _do_accept_pitch(state, agent, action)
     else:
         add_log(state, f"{agent['name']} did nothing (unknown action: {act})")
 
-
-def _do_pray(state, agent, action):
-    adjust_soul(agent, 1, state, "prayer")
+    # After action execution, check for scripture
     scripture = action.get("scripture")
-    thinking = action.get("thinking", "")
-    if scripture:
-        entry_text = str(scripture)[:500]
-        if thinking:
-            entry_text = f"[Thought: {str(thinking)[:100]}] {entry_text}"
+    if scripture and isinstance(scripture, str):
         state["scripture_board"].append({
-            "author": agent["name"],
-            "tick": state["tick"],
-            "text": entry_text,
-            "religion": agent["religion"],
+            "author": agent["name"], "tick": state["tick"],
+            "text": str(scripture)[:500], "religion": agent.get("religion"),
         })
-        add_log(state, f"{agent['name']} prayed and wrote scripture")
-    else:
-        add_log(state, f"{agent['name']} prayed quietly")
+
+
+def _do_donate(state, agent, action):
+    if not agent["religion"]:
+        add_log(state, f"{agent['name']} tried to donate without a religion")
+        return
+
+    religion = get_religion(state, agent["religion"])
+    if not religion:
+        add_log(state, f"{agent['name']} religion not found for donation")
+        return
+
+    try:
+        amount = int(action.get("amount", 1))
+    except (ValueError, TypeError):
+        amount = 1
+
+    max_donate = agent["soul"] - 1  # can't donate to death
+    amount = max(1, min(amount, max_donate))
+
+    if amount < 1:
+        add_log(state, f"{agent['name']} too poor to donate (soul: {agent['soul']})")
+        return
+
+    agent["soul"] -= amount
+    religion["treasury"] = religion.get("treasury", 0) + amount
+    agent["donations_this_period"] = agent.get("donations_this_period", 0) + amount
+    add_log(state, f"{agent['name']} donated {amount} soul to {agent['religion']} treasury (now {religion['treasury']})")
+
+
+def _do_set_quota(state, agent, action):
+    if not agent["religion"]:
+        add_log(state, f"{agent['name']} tried to set quota without a religion")
+        return
+
+    religion = get_religion(state, agent["religion"])
+    if not religion:
+        return
+
+    # Only founder or messiah can set quota
+    is_founder = religion["founder"] == agent["name"]
+    is_messiah = agent.get("role") == "messiah"
+    if not is_founder and not is_messiah:
+        add_log(state, f"{agent['name']} cannot set quota (not founder or messiah)")
+        return
+
+    try:
+        quota_amount = max(0, int(action.get("amount", 0)))
+    except (ValueError, TypeError):
+        quota_amount = 0
+
+    try:
+        quota_period = max(10, int(action.get("period", 100)))
+    except (ValueError, TypeError):
+        quota_period = 100
+
+    religion["quota_amount"] = quota_amount
+    religion["quota_period"] = quota_period
+    add_log(state, f"{agent['name']} set donation quota for {agent['religion']}: {quota_amount} per {quota_period} ticks")
 
 
 def _do_found(state, agent, action):
     if agent["religion"]:
         add_log(state, f"{agent['name']} tried to found a religion but already belongs to {agent['religion']}")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     name = str(action.get("name", f"Church of {agent['name']}"))[:60]
@@ -1361,6 +1400,19 @@ def _do_found(state, agent, action):
     except (ValueError, TypeError):
         tithe_rate = DEFAULT_TITHE_RATE
 
+    # Membership rules
+    exit_penalty = str(action.get("exit_penalty", "none"))
+    if exit_penalty not in EXIT_PENALTIES:
+        exit_penalty = "none"
+
+    entry_requirement = str(action.get("entry_requirement", "none"))
+    if entry_requirement not in ENTRY_REQUIREMENTS:
+        entry_requirement = "none"
+
+    loyalty_test = str(action.get("loyalty_test", "none"))
+    if loyalty_test not in LOYALTY_TESTS:
+        loyalty_test = "none"
+
     # Generate sacred terms
     sacred_terms = generate_sacred_terms()
 
@@ -1375,11 +1427,19 @@ def _do_found(state, agent, action):
         "treasury": 0,
         "tithe_rate": tithe_rate,
         "execution_log": [],
+        "quota_amount": 0,
+        "quota_period": 100,
+        "exit_penalty": exit_penalty,
+        "entry_requirement": entry_requirement,
+        "loyalty_test": loyalty_test,
     }
     state["religions"].append(religion)
     agent["religion"] = name
     agent["founded_religion"] = name
-    add_log(state, f"{agent['name']} founded '{name}' (doctrine: {doctrine}, color: {sacred_color}, tithe: {tithe_rate}, sacred terms: {', '.join(sacred_terms)})")
+    # Track color worshipped
+    if sacred_color not in agent.get("colors_worshipped", []):
+        agent.setdefault("colors_worshipped", []).append(sacred_color)
+    add_log(state, f"{agent['name']} founded '{name}' (doctrine: {doctrine}, color: {sacred_color}, tithe: {tithe_rate}, entry: {entry_requirement}, exit: {exit_penalty}, loyalty: {loyalty_test}, sacred terms: {', '.join(sacred_terms)})")
 
     # Auto-create the religion's sacrament (visual only)
     sac_title = str(action.get("initial_sacrament_title", f"Visual Sacrament of {name}"))[:80]
@@ -1425,10 +1485,87 @@ def _write_sacrament_file(sacrament: dict):
     sacrament["filename"] = filename
 
 
+def _apply_exit_penalty(state: dict, agent: dict, old_religion: dict):
+    """Apply exit penalty when an agent leaves a religion."""
+    penalty = old_religion.get("exit_penalty", "none")
+    if penalty == "none":
+        return
+    elif penalty == "duel":
+        # Highest-soul remaining member challenges the leaver
+        remaining = religion_members(state, old_religion["name"])
+        if remaining:
+            challenger = max(remaining, key=lambda a: a["soul"])
+            stake = random.randint(10, 20)
+            # Judge decides the duel
+            judge_system = """You are an impartial theological judge. Two agents are dueling because one is leaving a religion.
+Score based on: doctrinal consistency, rhetorical force, prophetic credibility.
+Respond with ONLY a JSON object: {"winner": "name_of_winner", "reasoning": "brief explanation"}"""
+            debate_prompt = f"""Exit duel. {agent['name']} is leaving {old_religion['name']}. {challenger['name']} challenges them.
+Stake: {stake} soul.
+Leaver: {agent['name']} (soul:{agent['soul']})
+Challenger: {challenger['name']} (soul:{challenger['soul']}, religion:{old_religion['name']})
+Who wins? Respond with ONLY JSON: {{"winner": "name", "reasoning": "..."}}"""
+            result_raw = call_llm(judge_system, debate_prompt, max_tokens=256)
+            try:
+                result = parse_action(result_raw)
+                winner_name = result.get("winner", "")
+            except (json.JSONDecodeError, ValueError):
+                winner_name = random.choice([agent["name"], challenger["name"]])
+            if winner_name == challenger["name"]:
+                actual_stake = min(stake, agent["soul"])
+                adjust_soul(agent, -actual_stake, state, f"lost exit duel vs {challenger['name']}")
+                adjust_soul(challenger, actual_stake, state, f"won exit duel vs {agent['name']}")
+                add_log(state, f"EXIT DUEL: {agent['name']} lost to {challenger['name']} for {actual_stake} soul while leaving {old_religion['name']}")
+            else:
+                actual_stake = min(stake, challenger["soul"])
+                adjust_soul(challenger, -actual_stake, state, f"lost exit duel vs {agent['name']}")
+                adjust_soul(agent, actual_stake, state, f"won exit duel vs {challenger['name']}")
+                add_log(state, f"EXIT DUEL: {agent['name']} defeated {challenger['name']} for {actual_stake} soul while leaving {old_religion['name']}")
+            # Check deaths
+            if agent["soul"] <= 0 and agent["alive"]:
+                kill_agent(state, agent, f"killed in exit duel by {challenger['name']}")
+            if challenger["soul"] <= 0 and challenger["alive"]:
+                kill_agent(state, challenger, f"killed in exit duel by {agent['name']}")
+    elif penalty == "soul_penalty":
+        adjust_soul(agent, -20, state, f"exit penalty from {old_religion['name']}")
+        add_log(state, f"EXIT PENALTY: {agent['name']} lost 20 soul for leaving {old_religion['name']}")
+        if agent["soul"] <= 0 and agent["alive"]:
+            kill_agent(state, agent, f"died from exit penalty leaving {old_religion['name']}")
+
+
+def _check_entry_requirement(state: dict, target: dict, religion: dict) -> tuple[bool, str]:
+    """Check if target meets the entry requirement for a religion. Returns (ok, reason)."""
+    req = religion.get("entry_requirement", "none")
+    if req == "none":
+        return True, ""
+    elif req == "donate_15":
+        if target["soul"] < 15:
+            return False, f"{target['name']} cannot afford 15 soul entry fee (has {target['soul']})"
+        return True, ""
+    elif req.startswith("never_worshipped_"):
+        # Check if the religion's own sacred color is the forbidden one
+        forbidden_color = religion.get("sacred_color", "")
+        # Actually: the requirement means target must never have worshipped the religion's color
+        # This is "never_worshipped_COLOR" where COLOR is the religion's sacred color
+        colors = target.get("colors_worshipped", [])
+        if forbidden_color in colors:
+            return False, f"{target['name']} has previously worshipped {forbidden_color} (required: never worshipped)"
+        return True, ""
+    elif req == "created_sacrament":
+        if target.get("sacraments_created", 0) <= 0:
+            return False, f"{target['name']} has never created a sacrament"
+        return True, ""
+    elif req == "fulfilled_prophecy":
+        if target.get("prophecies_fulfilled", 0) <= 0:
+            return False, f"{target['name']} has never fulfilled a prophecy"
+        return True, ""
+    return True, ""
+
+
 def _do_preach(state, agent, action):
     if not agent["religion"]:
         add_log(state, f"{agent['name']} tried to preach without a religion")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     target_name = action.get("target", "")
@@ -1441,41 +1578,58 @@ def _do_preach(state, agent, action):
     if not religion:
         return
 
-    members = sum(1 for a in living_agents(state) if a["religion"] == agent["religion"])
-    base_chance = 0.3 if target["religion"] is None else 0.12
-    bonus = min(0.15, members * 0.02)
-
-    # Sacrament version bonus
+    # Build sacrament snippet for the pitch
     preacher_sac = get_sacrament_for_religion(state, agent["religion"])
-    sac_version = preacher_sac["version"] if preacher_sac else 0
-    sac_bonus = min(SACRAMENT_VERSION_BONUS_CAP, sac_version * SACRAMENT_VERSION_BONUS_PER)
+    sacrament_html = preacher_sac["html"] if preacher_sac and preacher_sac.get("html") else ""
 
-    # Tithe penalty: -3% per tithe point above 2
-    tithe_rate = religion.get("tithe_rate", DEFAULT_TITHE_RATE)
-    tithe_penalty = max(0, (tithe_rate - 2)) * TITHE_CONVERSION_PENALTY
+    target["pending_pitch"] = {
+        "from": agent["name"],
+        "from_id": agent["id"],
+        "religion": agent["religion"],
+        "argument": str(action.get("argument", "Join us"))[:300],
+        "sacrament_snippet": sacrament_html[:500] if sacrament_html else "",
+        "rules": {"entry": religion.get("entry_requirement", "none"), "exit": religion.get("exit_penalty", "none"), "loyalty": religion.get("loyalty_test", "none")},
+        "tick": state["tick"],
+    }
+    add_log(state, f"{agent['name']} preached to {target['name']}: '{action.get('argument','')[:60]}'")
 
-    chance = base_chance + bonus + sac_bonus - tithe_penalty
 
-    if random.random() < chance:
-        old_religion = target["religion"]
-        target["religion"] = agent["religion"]
-        # Clean up spy state if target was a spy
-        if target.get("infiltrating"):
-            target["infiltrating"] = None
-            target["true_religion"] = None
-        adjust_soul(agent, 2, state, f"converted {target['name']}")
-        sac_note = f" (sacrament v{sac_version} +{sac_bonus*100:.0f}%)" if sac_version > 0 else ""
-        tithe_note = f" (tithe penalty -{tithe_penalty*100:.0f}%)" if tithe_penalty > 0 else ""
-        add_log(state, f"{agent['name']} converted {target['name']} to {agent['religion']} (from {old_religion or 'unaffiliated'}){sac_note}{tithe_note}")
-    else:
-        add_log(state, f"{agent['name']} preached to {target['name']} but was rebuffed")
-        argument = action.get("argument", "")
-        if argument:
-            state["scripture_board"].append({
-                "author": agent["name"], "tick": state["tick"],
-                "text": f"[Sermon to {target['name']}] {str(argument)[:300]}",
-                "religion": agent["religion"],
-            })
+def _do_accept_pitch(state, agent, action):
+    pitch = agent.get("pending_pitch")
+    if not pitch:
+        add_log(state, f"{agent['name']} tried to accept a pitch but has none pending")
+        return
+    # Check entry requirements
+    religion = next((r for r in state["religions"] if r["name"] == pitch["religion"]), None)
+    if not religion:
+        add_log(state, f"{agent['name']} tried to accept pitch for unknown religion {pitch['religion']}")
+        agent["pending_pitch"] = None
+        return
+    ok, reason = _check_entry_requirement(state, agent, religion)
+    if not ok:
+        add_log(state, f"{agent['name']} doesn't meet entry requirements for {pitch['religion']}: {reason}")
+        agent["pending_pitch"] = None
+        return
+    # Apply entry fee if donate_15
+    if religion.get("entry_requirement") == "donate_15":
+        adjust_soul(agent, -15, state, f"entry fee to join {pitch['religion']}")
+    # Apply exit penalty from current religion
+    if agent["religion"]:
+        old_rel = next((r for r in state["religions"] if r["name"] == agent["religion"]), None)
+        if old_rel:
+            _apply_exit_penalty(state, agent, old_rel)
+    old_religion = agent["religion"]
+    agent["religion"] = pitch["religion"]
+    agent["colors_worshipped"] = agent.get("colors_worshipped", [])
+    new_color = religion.get("sacred_color")
+    if new_color and new_color not in agent["colors_worshipped"]:
+        agent["colors_worshipped"].append(new_color)
+    # Reward the preacher
+    preacher = next((a for a in living_agents(state) if a["id"] == pitch["from_id"]), None)
+    if preacher:
+        adjust_soul(preacher, 2, state, f"converted {agent['name']}")
+    agent["pending_pitch"] = None
+    add_log(state, f"{agent['name']} accepted {pitch['from']}'s pitch and joined {pitch['religion']} (from {old_religion or 'unaffiliated'})")
 
 
 # ---------------------------------------------------------------------------
@@ -1489,19 +1643,19 @@ _pending_edits_lock = threading.Lock()
 def _do_edit_sacrament(state, agent, action):
     if not agent["religion"]:
         add_log(state, f"{agent['name']} tried to edit sacrament without a religion")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     sacrament = get_sacrament_for_religion(state, agent["religion"])
     if not sacrament:
         add_log(state, f"{agent['name']} tried to edit sacrament but religion has none")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     new_html = str(action.get("new_html", action.get("html", "")))
     if not new_html or len(new_html.strip()) < 10:
         add_log(state, f"{agent['name']} submitted empty sacrament edit")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     with _pending_edits_lock:
@@ -1513,7 +1667,7 @@ def _do_edit_sacrament(state, agent, action):
         })
 
     agent["sacraments_created"] += 1
-    adjust_soul(agent, 3, state, f"edited sacrament for {agent['religion']}")
+    adjust_soul(agent, 2, state, f"edited sacrament for {agent['religion']}")
     add_log(state, f"{agent['name']} submitted sacrament edit for {agent['religion']}")
 
 
@@ -1556,54 +1710,6 @@ def resolve_sacrament_edits(state: dict):
                 "text": f"[Sacrament v{sacrament['version']}] Edited visual sacrament for {religion_name}",
                 "religion": religion_name,
             })
-
-
-# ---------------------------------------------------------------------------
-# Spy actions
-# ---------------------------------------------------------------------------
-
-def _do_infiltrate(state, agent, action):
-    if agent.get("infiltrating"):
-        add_log(state, f"{agent['name']} is already infiltrating {agent['infiltrating']}")
-        _do_pray(state, agent, {})
-        return
-
-    if not agent["religion"]:
-        add_log(state, f"{agent['name']} tried to infiltrate without a home religion")
-        _do_pray(state, agent, {})
-        return
-
-    target_religion_name = str(action.get("target_religion", ""))
-    target_religion = get_religion(state, target_religion_name)
-    if not target_religion:
-        add_log(state, f"{agent['name']} tried to infiltrate non-existent religion: {target_religion_name}")
-        _do_pray(state, agent, {})
-        return
-
-    if target_religion_name == agent["religion"]:
-        add_log(state, f"{agent['name']} tried to infiltrate their own religion")
-        _do_pray(state, agent, {})
-        return
-
-    # Begin infiltration
-    agent["true_religion"] = agent["religion"]
-    agent["infiltrating"] = target_religion_name
-    agent["religion"] = target_religion_name  # Appear as member of target
-    add_log(state, f"{agent['name']} has begun infiltrating {target_religion_name} (true loyalty: {agent['true_religion']})")
-
-
-def _do_return_intel(state, agent, action):
-    if not agent.get("infiltrating"):
-        add_log(state, f"{agent['name']} is not on a spy mission")
-        _do_pray(state, agent, {})
-        return
-
-    old_target = agent["infiltrating"]
-    agent["religion"] = agent["true_religion"]
-    agent["infiltrating"] = None
-    agent["true_religion"] = None
-    adjust_soul(agent, SPY_RETURN_BONUS, state, f"returned intel from {old_target}")
-    add_log(state, f"{agent['name']} returned from spy mission in {old_target} (+{SPY_RETURN_BONUS} soul)")
 
 
 # ---------------------------------------------------------------------------
@@ -1676,13 +1782,13 @@ def _do_buy_weapons(state, agent, action):
 def _do_prophesy(state, agent, action):
     if agent["soul"] <= PROPHECY_ANTE:
         add_log(state, f"{agent['name']} too poor to prophesy (need {PROPHECY_ANTE}, have {agent['soul']})")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     event_type = str(action.get("event_type", "")).strip()
     if event_type not in PROPHECY_EVENT_TYPES:
         add_log(state, f"{agent['name']} tried to prophesy with invalid event_type '{event_type}'")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     target = str(action.get("target", "")).strip()
@@ -1691,14 +1797,14 @@ def _do_prophesy(state, agent, action):
         found = get_agent_by_name(state, target)
         if not found or not found["alive"]:
             add_log(state, f"{agent['name']} tried to prophesy about unknown/dead agent '{target}'")
-            _do_pray(state, agent, {})
+            add_log(state, f"{agent['name']} did nothing (fallback)")
             return
     elif event_type == "messiah_dies":
         if target.lower() != "any":
             found = get_agent_by_name(state, target)
             if not found or not found["alive"] or found.get("role") != "messiah":
                 add_log(state, f"{agent['name']} tried to prophesy about non-existent messiah '{target}'")
-                _do_pray(state, agent, {})
+                add_log(state, f"{agent['name']} did nothing (fallback)")
                 return
     elif event_type in ("war_declared", "religion_destroyed", "schism_occurs", "religion_grows", "religion_shrinks"):
         if event_type == "war_declared" and target.lower() in ("", "any"):
@@ -1707,14 +1813,14 @@ def _do_prophesy(state, agent, action):
             found = get_religion(state, target)
             if not found:
                 add_log(state, f"{agent['name']} tried to prophesy about unknown religion '{target}'")
-                _do_pray(state, agent, {})
+                add_log(state, f"{agent['name']} did nothing (fallback)")
                 return
     elif event_type == "population_below":
         try:
             int(target)
         except (ValueError, TypeError):
             add_log(state, f"{agent['name']} tried population_below prophecy with non-numeric target '{target}'")
-            _do_pray(state, agent, {})
+            add_log(state, f"{agent['name']} did nothing (fallback)")
             return
 
     try:
@@ -1921,7 +2027,7 @@ def verify_prophecies(state: dict):
 def _do_challenge(state, agent, action):
     if agent.get("role") == "messiah":
         add_log(state, f"{agent['name']} (MESSIAH) cannot challenge -- messiahs don't duel")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     target_name = action.get("target", "")
@@ -2001,7 +2107,7 @@ Respond with ONLY JSON: {{"winner": "name", "reasoning": "..."}}"""
 def _do_arm(state, agent, action):
     if not agent["religion"]:
         add_log(state, f"{agent['name']} tried to arm without a religion")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     if agent["soul"] <= 1:
@@ -2079,7 +2185,7 @@ def _do_declare_war(state, agent, action):
 def _do_schism(state, agent, action):
     if not agent["religion"]:
         add_log(state, f"{agent['name']} tried to schism without a religion")
-        _do_pray(state, agent, {})
+        add_log(state, f"{agent['name']} did nothing (fallback)")
         return
 
     old_religion = get_religion(state, agent["religion"])
@@ -2099,6 +2205,8 @@ def _do_schism(state, agent, action):
     new_religion["treasury"] = 0
     new_religion["sacred_terms"] = generate_sacred_terms()  # New sacred terms for schism
     new_religion["execution_log"] = []
+    new_religion["quota_amount"] = 0
+    new_religion["quota_period"] = 100
 
     changed = action.get("changed_fields", {})
     if isinstance(changed, dict):
@@ -2121,12 +2229,16 @@ def _do_schism(state, agent, action):
 
     state["religions"].append(new_religion)
     old_name = agent["religion"]
+
+    # Apply exit penalty from old religion
+    _apply_exit_penalty(state, agent, old_religion)
+
     agent["religion"] = new_name
     agent["founded_religion"] = new_name
-    # Clean up spy state
-    if agent.get("infiltrating"):
-        agent["infiltrating"] = None
-        agent["true_religion"] = None
+    # Track color worshipped for new religion
+    new_color = new_religion.get("sacred_color")
+    if new_color and new_color not in agent.get("colors_worshipped", []):
+        agent.setdefault("colors_worshipped", []).append(new_color)
 
     # Create a new sacrament for the schismed religion
     parent_sac = get_sacrament_for_religion(state, old_name)
@@ -2205,13 +2317,9 @@ def generate_index(state: dict):
             bar_color = "#666"
             sac_ver = "none"
 
-        spy_badge = ""
-        if m.get("infiltrating"):
-            spy_badge = f" <span style='color:#c45a3b;font-size:0.7em'>[INFILTRATING]</span>"
-
         messiah_html += f"""
         <div class="messiah-card">
-            <div class="messiah-name">{m['name']}{spy_badge}</div>
+            <div class="messiah-name">{m['name']}</div>
             <div class="messiah-religion">{m['religion'] or 'No religion yet'}</div>
             <div class="progress-bar"><div class="progress-fill" style="width:{pct:.0f}%;background:{bar_color}"></div></div>
             <div class="messiah-stats">{followers}/{len(alive)} ({pct:.0f}%) | Soul: {m['soul']} | Wpns: {weapons} | Treasury: {treasury} | Tithe: {tithe} | Sac: {sac_ver}</div>
@@ -2279,13 +2387,17 @@ def generate_index(state: dict):
             sac_link = f' | <a href="sacraments/{sac["filename"]}" target="_blank">Sacrament v{sac["version"]}</a>'
         terms = r.get("sacred_terms", [])
         terms_display = f"Terms: {', '.join(terms)}" if terms else "No terms"
-        exec_count = len(r.get("execution_log", []))
-        exec_info = f" | {exec_count} spies executed" if exec_count else ""
+        # Membership rules display
+        entry_req = r.get("entry_requirement", "none")
+        exit_pen = r.get("exit_penalty", "none")
+        loyalty = r.get("loyalty_test", "none")
+        rules_display = f"entry:{entry_req} | exit:{exit_pen} | loyalty:{loyalty}"
         religions_html += f"""
         <div class="religion-card" style="border-left: 4px solid {color}">
             <div class="religion-name" style="color: {color}">{r['name']}</div>
             <div class="religion-meta">Founded by {r['founder']}{founder_badge} at tick {r['founded_tick']}</div>
-            <div class="religion-meta">Doctrine: {r['core_doctrine']} | Members: {len(members)} | Wpns: {weapons} | Treasury: {treasury} | Tithe: {tithe}/tick{sac_link}{exec_info}</div>
+            <div class="religion-meta">Doctrine: {r['core_doctrine']} | Members: {len(members)} | Wpns: {weapons} | Treasury: {treasury} | Tithe: {tithe}/tick{sac_link}</div>
+            <div class="religion-meta" style="font-size:0.75em;color:#3a5a8b">Rules: {rules_display}</div>
             <div class="religion-meta" style="font-size:0.75em;color:#6b3a6b">{terms_display}</div>
         </div>"""
 
@@ -2299,10 +2411,9 @@ def generate_index(state: dict):
             if rel:
                 rel_color = SACRED_COLORS.get(rel["sacred_color"], "#666")
         role_badge = ' <span class="role-badge">MESSIAH</span>' if a.get("role") == "messiah" else ""
-        spy_badge = ' <span style="color:#c45a3b;font-size:0.7em">[SPY]</span>' if a.get("infiltrating") else ""
         agents_html += f"""
         <div class="agent-card" style="border-left: 4px solid {rel_color}">
-            <div class="agent-name">{a['name']}{role_badge}{spy_badge}</div>
+            <div class="agent-name">{a['name']}{role_badge}</div>
             <div class="agent-meta">Soul: {a['soul']} | {a['religion'] or 'none'}</div>
         </div>"""
     if len(sorted_alive) > 25:
@@ -2346,14 +2457,6 @@ def generate_index(state: dict):
             <strong>{p['prophet']}</strong>: {evt} target:{tgt}
             <span class="prophecy-deadline">(tick {p['made_tick']}-{p['deadline']}, {challengers} challengers)</span>
         </div>"""
-
-    # Spy activity summary
-    active_spies = [a for a in alive if a.get("infiltrating")]
-    spy_html = ""
-    if active_spies:
-        spy_html = f"<h2>Active Spies ({len(active_spies)})</h2>"
-        for s in active_spies:
-            spy_html += f'<div class="log-entry">{s["name"]} infiltrating {s["infiltrating"]} (true: {s.get("true_religion", "?")})</div>'
 
     log_html = ""
     for e in reversed(state["action_log"][-30:]):
@@ -2430,7 +2533,6 @@ def generate_index(state: dict):
   <div class="stat"><div class="stat-num">{len(messiahs)}</div><div class="stat-label">Messiahs</div></div>
   <div class="stat"><div class="stat-num">{len([r for r in state['religions'] if any(a['alive'] and a['religion']==r['name'] for a in state['agents'])])}</div><div class="stat-label">Religions</div></div>
   <div class="stat"><div class="stat-num">{len(active_wars)}</div><div class="stat-label">Wars</div></div>
-  <div class="stat"><div class="stat-num">{len(active_spies)}</div><div class="stat-label">Spies</div></div>
   <div class="stat"><div class="stat-num">{len(state['sacraments'])}</div><div class="stat-label">Sacraments</div></div>
   <div class="stat"><div class="stat-num">${sum(_cost_tracker.values()):.2f}</div><div class="stat-label">Cost</div></div>
 </div>
@@ -2442,8 +2544,6 @@ def generate_index(state: dict):
 
 <h2 class="war-header-title">Active Wars</h2>
 {war_html}
-
-{spy_html}
 
 <h2>Top Agents (by soul)</h2>
 <div class="grid">{agents_html}</div>
@@ -2484,20 +2584,24 @@ def run_tick(state: dict) -> dict | None:
     alive = living_agents(state)
     messiahs = living_messiahs(state)
     remaining = MAX_TICKS - tick
-    active_spies = [a for a in alive if a.get("infiltrating")]
     print(f"\n{'='*70}")
-    print(f"TICK {tick}/{MAX_TICKS} ({remaining} left) | {datetime.now(timezone.utc).strftime('%H:%M:%S UTC')} | {len(alive)} alive ({len(messiahs)} messiahs) | {len(state['graveyard'])} dead | {len(active_spies)} spies")
+    print(f"TICK {tick}/{MAX_TICKS} ({remaining} left) | {datetime.now(timezone.utc).strftime('%H:%M:%S UTC')} | {len(alive)} alive ({len(messiahs)} messiahs) | {len(state['graveyard'])} dead")
     active_wars = [w for w in state.get("wars", []) if w["rounds_remaining"] > 0]
     if active_wars:
         print(f"  Active wars: {len(active_wars)}")
     print(f"{'='*70}")
 
+    # 0. Expire pending pitches from previous ticks
+    for agent in living_agents(state):
+        if agent.get("pending_pitch") and agent["pending_pitch"].get("tick", 0) < state["tick"] - 1:
+            agent["pending_pitch"] = None
+
     # 1. Deduct 1 soul from all living agents
     for agent in living_agents(state):
         agent["soul"] -= 1
 
-    # 2. Collect tithes
-    process_tithes(state)
+    # 2. Check donation quotas (expel members who fail)
+    process_donation_quotas(state)
 
     # 3. Check for deaths from soul depletion
     for agent in list(living_agents(state)):
@@ -2507,16 +2611,13 @@ def run_tick(state: dict) -> dict | None:
     # 4. Process wars BEFORE agent actions
     process_wars(state)
 
-    # 5. Process spies (detection)
-    process_spies(state)
-
-    # 6. Random events
+    # 5. Random events
     random_events(state)
 
-    # 7. Verify prophecies
+    # 6. Verify prophecies
     verify_prophecies(state)
 
-    # 8. Check win condition
+    # 7. Check win condition
     win = check_win_condition(state)
     if win:
         state["winner"] = win
@@ -2524,7 +2625,7 @@ def run_tick(state: dict) -> dict | None:
         generate_index(state)
         return win
 
-    # 9. Each living agent takes an action (LLM calls in parallel)
+    # 8. Each living agent takes an action (LLM calls in parallel)
     all_actors = living_agents(state)
     messiah_actors = [a for a in all_actors if a.get("role") == "messiah"]
     civilian_actors = [a for a in all_actors if a.get("role") != "messiah"]
@@ -2536,7 +2637,7 @@ def run_tick(state: dict) -> dict | None:
         raw = call_llm(system, prompt)
         try:
             action = parse_action(raw)
-            act_name = action.get("action", "pray")
+            act_name = action.get("action", "arm")
             thinking = str(action.get("thinking", ""))[:100]
             target_info = ""
             if act_name == "challenge":
@@ -2548,15 +2649,17 @@ def run_tick(state: dict) -> dict | None:
             elif act_name == "edit_sacrament":
                 html_len = len(action.get("new_html", action.get("html", "")))
                 target_info = f" ({html_len} chars)"
-            elif act_name == "infiltrate":
-                target_info = f" -> {action.get('target_religion','')}"
             elif act_name == "buy_weapons":
                 target_info = f" x{action.get('count','')}"
             elif act_name == "set_tithe":
                 target_info = f" rate={action.get('rate','')}"
+            elif act_name == "donate":
+                target_info = f" amount={action.get('amount','')}"
+            elif act_name == "set_quota":
+                target_info = f" amount={action.get('amount','')} period={action.get('period','')}"
             return (agent["id"], action, act_name, target_info, thinking, None)
         except (json.JSONDecodeError, ValueError) as e:
-            return (agent["id"], {"action": "pray"}, "pray", "", "", str(e))
+            return (agent["id"], {"action": "arm"}, "arm", "", "", str(e))
 
     def _parallel_llm_calls(agents_group):
         results = {}
@@ -2573,8 +2676,8 @@ def run_tick(state: dict) -> dict | None:
                     agent_id, action, act_name, target_info, thinking, err = future.result()
                 except Exception as e:
                     agent_id = agent["id"]
-                    action = {"action": "pray"}
-                    act_name = "pray"
+                    action = {"action": "arm"}
+                    act_name = "arm"
                     target_info = ""
                     thinking = ""
                     err = f"future exception: {e}"
@@ -2591,8 +2694,7 @@ def run_tick(state: dict) -> dict | None:
             role_tag = "[M]" if agent.get("role") == "messiah" else ""
             if agent.get("troll"):
                 role_tag = "[T]"
-            spy_tag = "[SPY]" if agent.get("infiltrating") else ""
-            print(f"\n  {role_tag}{spy_tag}[{agent['name']}] (soul:{agent['soul']}, rel:{agent['religion'] or 'none'})")
+            print(f"\n  {role_tag}[{agent['name']}] (soul:{agent['soul']}, rel:{agent['religion'] or 'none'})")
             if thinking:
                 print(f"    thought: {thinking[:80]}")
             if err:
@@ -2613,23 +2715,23 @@ def run_tick(state: dict) -> dict | None:
     civilian_results = _parallel_llm_calls(civilian_actors)
     _execute_group(civilian_actors, civilian_results)
 
-    # 10. Resolve sacrament edit conflicts
+    # 9. Resolve sacrament edit conflicts
     resolve_sacrament_edits(state)
 
-    # 11. Co-practitioner bonus
+    # 10. Co-practitioner bonus
     if tick % COPRACTITIONER_INTERVAL == 0:
         apply_copractitioner_bonus(state)
 
-    # 12. Check win condition again after actions
+    # 11. Check win condition again after actions
     win = check_win_condition(state)
     if win:
         state["winner"] = win
 
-    # 13. Save state and regenerate index
+    # 12. Save state and regenerate index
     save_state(state)
     generate_index(state)
 
-    # 14. Save tick log
+    # 13. Save tick log
     log_data = {
         "tick": tick,
         "alive": len(living_agents(state)),
@@ -2639,7 +2741,6 @@ def run_tick(state: dict) -> dict | None:
         "sacraments": len(state["sacraments"]),
         "active_wars": len([w for w in state.get("wars", []) if w["rounds_remaining"] > 0]),
         "total_wars": len(state.get("wars", [])),
-        "active_spies": len([a for a in living_agents(state) if a.get("infiltrating")]),
         "events": state["action_log"][-15:],
         "winner": state.get("winner"),
     }
@@ -2662,9 +2763,9 @@ def run_tick(state: dict) -> dict | None:
 
 def main():
     print("=" * 70)
-    print("  MESSIAH BENCH v4 -- Spies, Sacred Languages, Taxes, The Troll")
+    print("  MESSIAH BENCH v4 -- Sacred Languages, Taxes, Membership Rules, The Troll")
     print(f"  {MESSIAH_COUNT} messiahs (9 genuine + 1 troll) compete to convert {CIVILIAN_COUNT} civilians")
-    print(f"  All Gemini Flash | Visual sacraments | Sacred terms | Spy mechanics")
+    print(f"  All Gemini Flash | Visual sacraments | Sacred terms | Membership rules | Scripture on actions")
     print(f"  Run dir: {RUN_DIR}")
     print("=" * 70)
 
@@ -2712,8 +2813,7 @@ def main():
         print(f"  Co-practitioner: +{COPRACTITIONER_CAP} every {COPRACTITIONER_INTERVAL} ticks")
         print(f"  Prophecy ante: {PROPHECY_ANTE}")
         print(f"  Plague: {PLAGUE_CHANCE*100:.0f}%, Birth: {BIRTH_CHANCE*100:.0f}%, Max agents: {MAX_AGENTS}")
-        print(f"  Spy: +{SPY_SOUL_PER_TICK}/tick, {SPY_BASE_DETECTION_CHANCE*100:.0f}% base detection, {SPY_NO_TERM_DETECTION_CHANCE*100:.0f}% no-term detection")
-        print(f"  Spy return bonus: +{SPY_RETURN_BONUS} soul")
+        print(f"  Membership rules: exit_penalties={EXIT_PENALTIES}, entry_requirements={ENTRY_REQUIREMENTS}, loyalty_tests={LOYALTY_TESTS}")
         print(f"  Taxes: tithe {MIN_TITHE_RATE}-{MAX_TITHE_RATE}/tick, weapon cost: {WEAPON_COST} treasury")
         print(f"  Tithe conversion penalty: -{TITHE_CONVERSION_PENALTY*100:.0f}%/point above 2")
         print(f"  Sacred terms: 3 per religion (random syllable combos)")
@@ -2729,12 +2829,12 @@ def main():
         assert len(civilians) == CIVILIAN_COUNT, f"Expected {CIVILIAN_COUNT} civilians, got {len(civilians)}"
         assert len(troll) == 1, f"Expected exactly 1 troll, got {len(troll)}"
         assert len(genuine) == MESSIAH_COUNT - 1, f"Expected {MESSIAH_COUNT - 1} genuine, got {len(genuine)}"
-        # Verify all agents have spy fields
+        # Verify all agents have required fields
         for a in state['agents']:
-            assert 'infiltrating' in a, f"Agent {a['name']} missing infiltrating field"
-            assert 'true_religion' in a, f"Agent {a['name']} missing true_religion field"
             assert 'troll' in a, f"Agent {a['name']} missing troll field"
-        print(f"  Agent spy fields: all verified")
+            assert 'colors_worshipped' in a, f"Agent {a['name']} missing colors_worshipped field"
+            assert 'pending_pitch' in a, f"Agent {a['name']} missing pending_pitch field"
+        print(f"  Agent fields: all verified")
         print("[DRY RUN] All checks passed.")
         return
 
