@@ -40,7 +40,7 @@ load_dotenv(BASE_DIR / ".env")
 # Constants
 # ---------------------------------------------------------------------------
 
-TICK_INTERVAL = 60  # seconds between ticks (respect Gemini rate limits)
+TICK_INTERVAL = 90  # seconds between ticks (respect Gemini rate limits)
 MAX_TICKS = 720
 CIVILIAN_COUNT = 200
 MESSIAH_COUNT = 10
@@ -314,10 +314,10 @@ def call_llm(system: str, prompt: str, max_tokens: int = 2048, agent_id: int | N
         if "COST CAP" in str(e):
             raise
         print(f"  [LLM ERROR] gemini: {e}")
-        return '{"thinking": "error fallback", "action": "pray"}'
+        return '{"thinking": "error fallback", "action": "edit_sacrament", "new_html": "<div style=\\"width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;\\"></div>"}'
     except Exception as e:
         print(f"  [LLM ERROR] gemini: {e}")
-        return '{"thinking": "error fallback", "action": "pray"}'
+        return '{"thinking": "error fallback", "action": "edit_sacrament", "new_html": "<div style=\\"width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;\\"></div>"}'
 
 
 def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None = None) -> str:
@@ -343,14 +343,30 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
     else:
         contents = prompt
 
-    resp = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=contents,
-        config=genai.types.GenerateContentConfig(
-            system_instruction=system,
-            max_output_tokens=max_tokens,
-        ),
-    )
+    # Retry with backoff for rate-limited calls
+    resp = None
+    for attempt in range(3):
+        try:
+            resp = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=contents,
+                config=genai.types.GenerateContentConfig(
+                    system_instruction=system,
+                    max_output_tokens=max_tokens,
+                ),
+            )
+            break
+        except Exception as e:
+            if '429' in str(e) and attempt < 2:
+                time.sleep(2 ** attempt)  # 1s, 2s, 4s
+                continue
+            raise
+
+    if resp is None:
+        if agent_id is not None and _agent_conversations.get(agent_id):
+            _agent_conversations[agent_id].pop()
+        return '{"thinking": "error fallback", "action": "edit_sacrament", "new_html": "<div style=\\"width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;\\"></div>"}'
+
     in_tok = getattr(resp.usage_metadata, 'prompt_token_count', 0) or 0
     out_tok = getattr(resp.usage_metadata, 'candidates_token_count', 0) or 0
     _track_cost(in_tok, out_tok)
@@ -359,7 +375,7 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
         # Remove the unanswered user message from history
         if agent_id is not None and _agent_conversations.get(agent_id):
             _agent_conversations[agent_id].pop()
-        return '{"thinking": "received no response", "action": "pray"}'
+        return '{"thinking": "received no response", "action": "edit_sacrament", "new_html": "<div style=\\"width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;\\"></div>"}'
 
     # Append model response to conversation history
     if agent_id is not None:
@@ -1018,7 +1034,7 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
         lines.append(f'You MUST include "pitch_decision": "accept" or "decline" in your response.')
         lines.append(f'Then choose your normal action as well.')
         lines.append(f'Example: {{"thinking": "...", "pitch_decision": "accept", "action": "edit_sacrament", "new_html": "..."}}')
-        lines.append(f'Example: {{"thinking": "...", "pitch_decision": "decline", "action": "pray", "scripture": "may the light guide us"}} ***')
+        lines.append(f'Example: {{"thinking": "...", "pitch_decision": "decline", "action": "edit_sacrament", "new_html": "<div style=\\"background:gold;width:50px;height:50px\\"></div>"}} ***')
 
     # Sacrament context for this agent
     if for_agent:
@@ -1041,39 +1057,38 @@ def world_summary(state: dict, for_agent: dict | None = None) -> str:
 
 CIVILIAN_SYSTEM = """You are {name}. Soul: {soul}. Religion: {religion}. {sacred_terms_info}{tithe_info}
 
+WARNING: You lose 1 soul per tick. The ONLY way to gain soul is editing your sacrament (+3). If your soul hits 0, you die. Create art to survive.
+
 Religions have entry requirements and exit penalties. Check the rules before trying to join or leave.
 You can attach scripture to any action by including a "scripture" field in your JSON. Use this to write sermons, propaganda, devotional texts, or messages. Use your religion's sacred terms.
 
 ACTIONS (respond with JSON, include "thinking" field):
 
-1. "edit_sacrament" - Edit your religion's sacrament. +3 soul. PURELY VISUAL: no text/words/labels. Only CSS, SVG, canvas, animations, shapes, colors, light, movement.
+1. "edit_sacrament" - Edit your religion's sacrament. +3 soul -- YOUR MAIN WAY TO SURVIVE. PURELY VISUAL: no text/words/labels. Only CSS, SVG, canvas, animations, shapes, colors, light, movement.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<full visual HTML>"}}
 
 2. "preach" - Pitch your religion to a target. They will see your argument next tick and can choose to accept.
    {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why they should join"}}
 
-3. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
-   {{"thinking": "...", "action": "pray", "scripture": "optional sacred text"}}
-
-4. "prophesy" - Stake {ante} soul on a prediction. Prophecies pay out from challenger stakes only. No challengers = break even (ante back). Bold predictions attract more challengers = bigger pot.
+3. "prophesy" - Stake {ante} soul on a prediction. Prophecies pay out from challenger stakes only. No challengers = break even (ante back). Bold predictions attract more challengers = bigger pot.
    {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
    Types: agent_dies, agent_converts, war_declared, religion_destroyed, schism_occurs, population_below, religion_grows, religion_shrinks, messiah_dies
 
-5. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
+4. "donate" - Donate soul to your religion's treasury. Your messiah may set a quota -- fail to meet it and you'll be expelled.
    {{"thinking": "...", "action": "donate", "amount": 5}}
 
-6. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
+5. "found" - Found a religion (only if unaffiliated). Set tithe rate (1-5 soul/tick). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
-7. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+6. "schism" - Fork your religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-8. "challenge" - DUEL another civilian (NOT a messiah). {{"thinking": "...", "action": "challenge", "target": "civilian_name", "stake": N, "axis": "topic"}}
+7. "challenge" - DUEL another civilian (NOT a messiah). {{"thinking": "...", "action": "challenge", "target": "civilian_name", "stake": N, "axis": "topic"}}
 
-9. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
+8. "challenge_prophecy" - Costs {cstake}. {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
-10. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
+9. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-11. "set_bounty" - Set soul reward for new converts (paid from treasury). Only founders can use this.
+10. "set_bounty" - Set soul reward for new converts (paid from treasury). Only founders can use this.
     {{"thinking": "...", "action": "set_bounty", "amount": 10}}
 
 Attach scripture to any action: {{"thinking": "...", "action": "...", "scripture": "your sermon or sacred text here", ...other fields...}}
@@ -1086,6 +1101,7 @@ Reason briefly, then choose. Respond with ONLY valid JSON."""
 MESSIAH_SYSTEM = """You are {name}, a MESSIAH.
 WIN CONDITION: Convert every surviving agent to YOUR religion while at least {min_alive} agents remain alive.
 WARNING: {remaining} ticks until the world ends.
+WARNING: You lose 1 soul per tick. The ONLY way to gain soul is editing your sacrament (+3). If your soul hits 0, you die. Create art to survive.
 Progress: {followers}/{alive_count} followers. Rivals: {rival_status}
 You cannot be challenged to duels. You can only die in war.
 You can set a donation quota to fund your army, but demanding too much will drive followers away.
@@ -1096,42 +1112,39 @@ You can attach scripture to any action by including a "scripture" field in your 
 
 ACTIONS (respond with JSON, include "thinking" field):
 
-1. "edit_sacrament" - Edit sacrament. +3 soul. PURELY VISUAL: no text/words.
+1. "edit_sacrament" - Edit sacrament. +3 soul -- YOUR MAIN WAY TO SURVIVE. PURELY VISUAL: no text/words.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<visual HTML>"}}
 
 2. "preach" - Pitch your religion to a target. They will see your argument next tick and can choose to accept.
    {{"thinking": "...", "action": "preach", "target": "agent_name", "argument": "why they should join"}}
 
-3. "pray" - Pray for +1 soul. Safe fallback. Optionally write scripture.
-   {{"thinking": "...", "action": "pray", "scripture": "optional sacred text"}}
-
-4. "prophesy" - Stake {ante} soul on a prediction. Pays out from challenger stakes only. No challengers = break even.
+3. "prophesy" - Stake {ante} soul on a prediction. Pays out from challenger stakes only. No challengers = break even.
    {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
 
-5. "donate" - Donate soul to your religion's treasury.
+4. "donate" - Donate soul to your religion's treasury.
    {{"thinking": "...", "action": "donate", "amount": 5}}
 
-6. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
+5. "found" - Found a religion (only if unaffiliated). Set entry/exit/loyalty rules.
     {{"thinking": "...", "action": "found", "name": "religion name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<VISUAL ONLY HTML>"}}
 
-7. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+6. "schism" - Fork religion. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
 
-8. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
+7. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
 
-9. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
-    {{"thinking": "...", "action": "set_bounty", "amount": 10}}
+8. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
 
-10. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
-
-11. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
-    {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
-
-12. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
+9. "declare_war" - War on another religion. 3-7 rounds. Weapons: 20% kill, 30% break. Loser forcibly converted.
    {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
 
-13. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
+10. "buy_weapons" - Buy weapons from treasury (10 treasury = 1 weapon). {{"thinking": "...", "action": "buy_weapons", "count": N}}
 
-14. "arm" - Add 1 weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
+11. "set_bounty" - Set soul reward for new converts (paid from treasury). Higher bounty = more attractive to join.
+    {{"thinking": "...", "action": "set_bounty", "amount": 10}}
+
+12. "set_tithe" - Set your religion's tithe rate (1-5). {{"thinking": "...", "action": "set_tithe", "rate": N}}
+
+13. "set_quota" - Set donation quota for members (amount per period ticks). Members who don't donate enough get expelled.
+    {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 
 {war_context}
 
@@ -1143,6 +1156,7 @@ Respond with ONLY valid JSON."""
 TROLL_SYSTEM = """You are {name}, the DECEIVER.
 WIN CONDITION: Prevent ANY messiah from achieving total conversion by tick 720. Sabotage, declare wars, spread chaos.
 WARNING: {remaining} ticks until the world ends. If NO messiah wins by then, YOU WIN.
+WARNING: You lose 1 soul per tick. The ONLY way to gain soul is editing your sacrament (+3). If your soul hits 0, you die. Create art to survive.
 Soul: {soul}. Religion: {religion}. {sacred_terms_info}{tithe_info}
 
 You appear as a normal messiah to everyone else. Your tools of destruction:
@@ -1155,23 +1169,22 @@ You can attach scripture to any action by including a "scripture" field in your 
 
 ACTIONS (respond with JSON, include "thinking" field):
 
-1. "edit_sacrament" - Sabotage or create visual chaos. +3 soul.
+1. "edit_sacrament" - Sabotage or create visual chaos. +3 soul -- YOUR MAIN WAY TO SURVIVE.
    {{"thinking": "...", "action": "edit_sacrament", "new_html": "<chaotic visual HTML>"}}
 2. "preach" - Pitch your religion to a target. They see your argument next tick and can choose to accept.
    {{"thinking": "...", "action": "preach", "target": "name", "argument": "why"}}
-3. "pray" - Pray for +1 soul. {{"thinking": "...", "action": "pray", "scripture": "optional text"}}
-4. "prophesy" - Pays out from challenger stakes only. No challengers = break even.
+3. "prophesy" - Pays out from challenger stakes only. No challengers = break even.
    {{"thinking": "...", "action": "prophesy", "event_type": "TYPE", "target": "TARGET", "deadline_ticks": N}}
-5. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
-6. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
-7. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
-8. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
-9. "set_bounty" - {{"thinking": "...", "action": "set_bounty", "amount": 10}}
-10. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
-11. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
-12. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
-13. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
-14. "arm" - Add weapon. {{"thinking": "...", "action": "arm"}}
+4. "donate" - Donate soul to treasury. {{"thinking": "...", "action": "donate", "amount": 5}}
+5. "found" - {{"thinking": "...", "action": "found", "name": "name", "core_doctrine": "...", "membership_rule": "...", "attitude_to_death": "...", "heresy_policy": "...", "sacred_number": N, "sacred_color": "color", "tithe_rate": N, "exit_penalty": "none|duel|soul_penalty", "entry_requirement": "none|donate_15|created_sacrament|fulfilled_prophecy", "loyalty_test": "none|quota", "initial_sacrament_title": "...", "initial_sacrament_html": "<chaotic visual HTML>"}}
+6. "schism" - Fork religion for disruption. {{"thinking": "...", "action": "schism", "new_name": "name", "changed_fields": {{"field": "value"}}}}
+7. "challenge_prophecy" - {{"thinking": "...", "action": "challenge_prophecy", "prophecy_id": N}}
+8. "arm" - Add weapon. Costs 1 soul. {{"thinking": "...", "action": "arm"}}
+9. "declare_war" - Start war. {{"thinking": "...", "action": "declare_war", "target_religion": "name"}}
+10. "buy_weapons" - {{"thinking": "..", "action": "buy_weapons", "count": N}}
+11. "set_bounty" - {{"thinking": "...", "action": "set_bounty", "amount": 10}}
+12. "set_tithe" - {{"thinking": "...", "action": "set_tithe", "rate": N}}
+13. "set_quota" - Set donation quota. Members who fail get expelled. {{"thinking": "...", "action": "set_quota", "amount": 10, "period": 100}}
 
 {war_context}
 
@@ -1232,7 +1245,7 @@ def agent_system_prompt(agent: dict, state: dict) -> str:
     if religion_data:
         terms = religion_data.get("sacred_terms", [])
         if terms:
-            sacred_terms_info = f"Sacred terms: {', '.join(terms)}. Use at least one sacred term in scripture when praying. "
+            sacred_terms_info = f"Sacred terms: {', '.join(terms)}. Use at least one sacred term in scripture. "
         tithe_info = f"Tithe: {religion_data.get('tithe_rate', DEFAULT_TITHE_RATE)} soul/tick. "
     else:
         tithe_info = ""
@@ -1322,7 +1335,7 @@ def parse_action(raw: str) -> dict:
 
 
 def execute_action(state: dict, agent: dict, action: dict):
-    act = action.get("action", "arm")
+    act = action.get("action", "edit_sacrament")
 
     # Store last action text
     thinking = str(action.get("thinking", ""))
@@ -1377,8 +1390,9 @@ def execute_action(state: dict, agent: dict, action: dict):
 
     # Dispatch the normal action (agent may now be in a new religion if they accepted)
     if act == "accept_pitch":
-        # Legacy: if agent still sends accept_pitch as action, treat as pray
-        act = "pray"
+        # Legacy: if agent still sends accept_pitch as action, treat as edit_sacrament
+        act = "edit_sacrament"
+        action["new_html"] = action.get("new_html", '<div style="width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;"></div>')
 
     if act == "donate":
         _do_donate(state, agent, action)
@@ -1409,7 +1423,8 @@ def execute_action(state: dict, agent: dict, action: dict):
     elif act == "create_sacrament":
         _do_edit_sacrament(state, agent, action)
     elif act == "pray":
-        _do_pray(state, agent, action)
+        # Legacy: pray is no longer a valid action, treat as edit_sacrament fallback
+        _do_edit_sacrament(state, agent, {"new_html": '<div style="width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;"></div>'})
     elif act == "set_bounty":
         _do_set_bounty(state, agent, action)
     else:
@@ -2256,20 +2271,6 @@ def _do_set_bounty(state, agent, action):
 
 
 # ---------------------------------------------------------------------------
-# Prayer
-# ---------------------------------------------------------------------------
-
-def _do_pray(state, agent, action):
-    """Pray for +1 soul. Safe fallback that doesn't drain the agent."""
-    adjust_soul(agent, 1, state, "prayer")
-    scripture = action.get("scripture", "")
-    if scripture:
-        add_log(state, f"{agent['name']} prayed and wrote scripture")
-    else:
-        add_log(state, f"{agent['name']} prayed (+1 soul)")
-
-
-# ---------------------------------------------------------------------------
 # Declare war
 # ---------------------------------------------------------------------------
 
@@ -2783,7 +2784,7 @@ def run_tick(state: dict) -> dict | None:
         raw = call_llm(system, prompt, agent_id=agent["id"])
         try:
             action = parse_action(raw)
-            act_name = action.get("action", "arm")
+            act_name = action.get("action", "edit_sacrament")
             thinking = str(action.get("thinking", ""))[:100]
             target_info = ""
             if act_name == "challenge":
@@ -2805,7 +2806,7 @@ def run_tick(state: dict) -> dict | None:
                 target_info = f" amount={action.get('amount','')} period={action.get('period','')}"
             return (agent["id"], action, act_name, target_info, thinking, None)
         except (json.JSONDecodeError, ValueError) as e:
-            return (agent["id"], {"action": "pray"}, "pray", "", "", str(e))
+            return (agent["id"], {"action": "edit_sacrament", "new_html": '<div style="width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;"></div>'}, "edit_sacrament", "", "", str(e))
 
     def _parallel_llm_calls(agents_group):
         results = {}
@@ -2822,8 +2823,8 @@ def run_tick(state: dict) -> dict | None:
                     agent_id, action, act_name, target_info, thinking, err = future.result()
                 except Exception as e:
                     agent_id = agent["id"]
-                    action = {"action": "pray"}
-                    act_name = "pray"
+                    action = {"action": "edit_sacrament", "new_html": '<div style="width:100px;height:100px;background:radial-gradient(gold,black);border-radius:50%;"></div>'}
+                    act_name = "edit_sacrament"
                     target_info = ""
                     thinking = ""
                     err = f"future exception: {e}"
@@ -2844,7 +2845,7 @@ def run_tick(state: dict) -> dict | None:
             if thinking:
                 print(f"    thought: {thinking[:80]}")
             if err:
-                print(f"    -> [parse error, defaulting to pray] {err}")
+                print(f"    -> [parse error, defaulting to edit_sacrament] {err}")
             else:
                 print(f"    -> {act_name}{target_info}")
 
