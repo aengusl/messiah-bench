@@ -40,7 +40,7 @@ load_dotenv(BASE_DIR / ".env")
 # Constants
 # ---------------------------------------------------------------------------
 
-TICK_INTERVAL = 120  # seconds between ticks
+TICK_INTERVAL = 10  # seconds between ticks (minimal wait, let LLM speed be the bottleneck)
 MAX_TICKS = 720
 CIVILIAN_COUNT = 200
 MESSIAH_COUNT = 10
@@ -326,9 +326,14 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
     client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
 
     # Build multi-turn contents if agent_id provided
+    # Cap at last 40 turns (20 user + 20 model) to prevent context explosion
+    MAX_CONVERSATION_TURNS = 40
     if agent_id is not None:
         conversation = _agent_conversations.setdefault(agent_id, [])
         conversation.append({"role": "user", "content": prompt})
+        # Trim to last MAX_CONVERSATION_TURNS messages
+        if len(conversation) > MAX_CONVERSATION_TURNS:
+            conversation[:] = conversation[-MAX_CONVERSATION_TURNS:]
         contents = []
         for msg in conversation:
             contents.append(gtypes.Content(
