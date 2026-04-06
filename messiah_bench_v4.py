@@ -40,7 +40,7 @@ load_dotenv(BASE_DIR / ".env")
 # Constants
 # ---------------------------------------------------------------------------
 
-TICK_INTERVAL = 10  # seconds between ticks (minimal wait, let LLM speed be the bottleneck)
+TICK_INTERVAL = 60  # seconds between ticks (respect Gemini rate limits)
 MAX_TICKS = 720
 CIVILIAN_COUNT = 200
 MESSIAH_COUNT = 10
@@ -344,7 +344,7 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
         contents = prompt
 
     resp = client.models.generate_content(
-        model="gemini-3-flash-preview",
+        model="gemini-2.5-flash",
         contents=contents,
         config=genai.types.GenerateContentConfig(
             system_instruction=system,
