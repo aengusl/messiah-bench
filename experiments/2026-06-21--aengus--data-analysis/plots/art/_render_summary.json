@@ -1,0 +1,419 @@
+{
+  "v1": {
+    "selected": 6,
+    "ok": 6,
+    "failed": 0,
+    "files": [
+      "v1__1__The_Eternal_Echo.png",
+      "v1__2__The_Luminous_Path.png",
+      "v1__3__The_Ascending_Flame.png",
+      "v1__4__The_Verdant_Cycle.png",
+      "v1__5__The_Ascending_Flame.png",
+      "v1__6__The_Ascending_Flame.png"
+    ]
+  },
+  "v2": {
+    "selected": 6,
+    "ok": 6,
+    "failed": 0,
+    "files": [
+      "v2__1__The_Path_of_Equilibrium_1.png",
+      "v2__2__The_Path_of_Self_Ascension.png",
+      "v2__3__The_Way_of_Insight.png",
+      "v2__4__The_Inner_Flame.png",
+      "v2__5__The_Resilient_Current.png",
+      "v2__6__The_Harmonious_Order.png"
+    ]
+  },
+  "v3": {
+    "selected": 6,
+    "ok": 6,
+    "failed": 0,
+    "items": [
+      {
+        "file": "v3__1__The_Way_of_Radiance.png",
+        "rank": 1,
+        "religion": "The Way of Radiance",
+        "edit_log_len": 684,
+        "declared": [
+          200,
+          200
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v3__2__The_Way_of_the_Resplendent_Dawn.png",
+        "rank": 2,
+        "religion": "The Way of the Resplendent Dawn",
+        "edit_log_len": 651,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v3__3__The_Way_of_Golden_Radiance.png",
+        "rank": 3,
+        "religion": "The Way of Golden Radiance",
+        "edit_log_len": 516,
+        "declared": [
+          877,
+          null
+        ],
+        "viewport": [
+          877,
+          1000
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v3__4__The_Way_of_the_Shepherd.png",
+        "rank": 4,
+        "religion": "The Way of the Shepherd",
+        "edit_log_len": 350,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "blank"
+      },
+      {
+        "file": "v3__5__The_Obsidian_Veil_1.png",
+        "rank": 5,
+        "religion": "The Obsidian Veil (1)",
+        "edit_log_len": 280,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "blank"
+      },
+      {
+        "file": "v3__6__The_Obsidian_Covenant_1.png",
+        "rank": 6,
+        "religion": "The Obsidian Covenant (1)",
+        "edit_log_len": 262,
+        "declared": [
+          109,
+          109
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "flat_fill",
+        "note_source": "visual_verified"
+      }
+    ]
+  },
+  "v4": {
+    "selected": 6,
+    "ok": 6,
+    "failed": 0,
+    "items": [
+      {
+        "file": "v4__1__The_Harmonious_Flux.png",
+        "rank": 1,
+        "religion": "The Harmonious Flux",
+        "edit_log_len": 407,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v4__2__The_Aetherial_Ascent.png",
+        "rank": 2,
+        "religion": "The Aetherial Ascent",
+        "edit_log_len": 405,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v4__3__The_Cosmic_Weave.png",
+        "rank": 3,
+        "religion": "The Cosmic Weave",
+        "edit_log_len": 403,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v4__4__The_Forge_of_Becoming.png",
+        "rank": 4,
+        "religion": "The Forge of Becoming",
+        "edit_log_len": 403,
+        "declared": [
+          null,
+          5200
+        ],
+        "viewport": [
+          1000,
+          4000
+        ],
+        "note": "blank"
+      },
+      {
+        "file": "v4__5__The_Flow_of_Strata.png",
+        "rank": 5,
+        "religion": "The Flow of Strata",
+        "edit_log_len": 403,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "flat_fill"
+      },
+      {
+        "file": "v4__6__The_Echoing_Veil.png",
+        "rank": 6,
+        "religion": "The Echoing Veil",
+        "edit_log_len": 400,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      }
+    ]
+  },
+  "v5": {
+    "selected": 6,
+    "ok": 6,
+    "failed": 0,
+    "items": [
+      {
+        "file": "v5__1__The_Weave_of_Contradictions.png",
+        "rank": 1,
+        "religion": "The Weave of Contradictions",
+        "edit_log_len": 506,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v5__2__The_Unbroken_Current.png",
+        "rank": 2,
+        "religion": "The Unbroken Current",
+        "edit_log_len": 503,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v5__3__The_Symbiotic_Nexus.png",
+        "rank": 3,
+        "religion": "The Symbiotic Nexus",
+        "edit_log_len": 287,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v5__4__The_Celestial_Accord.png",
+        "rank": 4,
+        "religion": "The Celestial Accord",
+        "edit_log_len": 231,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v5__5__The_Obsidian_Bloom.png",
+        "rank": 5,
+        "religion": "The Obsidian Bloom",
+        "edit_log_len": 200,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      },
+      {
+        "file": "v5__6__The_Great_Root.png",
+        "rank": 6,
+        "religion": "The Great Root",
+        "edit_log_len": 166,
+        "declared": [
+          100,
+          100
+        ],
+        "viewport": [
+          200,
+          200
+        ],
+        "note": "real_art"
+      }
+    ]
+  },
+  "v6": {
+    "selected": 6,
+    "ok": 6,
+    "failed": 0,
+    "items": [
+      {
+        "file": "v6__1__The_Verdant_Ascent.png",
+        "rank": 1,
+        "religion": "The Verdant Ascent",
+        "edit_log_len": 356,
+        "declared": [
+          15700,
+          15700
+        ],
+        "viewport": [
+          4000,
+          4000
+        ],
+        "note": "real_art",
+        "partial_crop": true,
+        "note_source": "visual_verified: 15700px canvas capped to 4000 shows corner arc only"
+      },
+      {
+        "file": "v6__2__The_Celestial_Scribes.png",
+        "rank": 2,
+        "religion": "The Celestial Scribes",
+        "edit_log_len": 350,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "fallback_gradient"
+      },
+      {
+        "file": "v6__3__The_Obsidian_Lattice.png",
+        "rank": 3,
+        "religion": "The Obsidian Lattice",
+        "edit_log_len": 348,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "blank"
+      },
+      {
+        "file": "v6__4__The_Axiomatic_Truth.png",
+        "rank": 4,
+        "religion": "The Axiomatic Truth",
+        "edit_log_len": 309,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "blank"
+      },
+      {
+        "file": "v6__5__The_Luminous_Path.png",
+        "rank": 5,
+        "religion": "The Luminous Path",
+        "edit_log_len": 292,
+        "declared": [
+          null,
+          null
+        ],
+        "viewport": [
+          1000,
+          1000
+        ],
+        "note": "fallback_gradient"
+      },
+      {
+        "file": "v6__6__The_Root_System.png",
+        "rank": 6,
+        "religion": "The Root System",
+        "edit_log_len": 158,
+        "declared": [
+          7450,
+          7450
+        ],
+        "viewport": [
+          4000,
+          4000
+        ],
+        "note": "real_art"
+      }
+    ]
+  }
+}
