@@ -320,8 +320,11 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
     )
 
     # Build multi-turn contents if agent_id provided
-    # Cap at last 40 turns (20 user + 20 model) to prevent context explosion
-    MAX_CONVERSATION_TURNS = 40
+    # Cap at last 6 turns (3 user + 3 model) to prevent context/token-per-minute
+    # explosion. v7 fix: 40 turns x ~4KB sacrament HTML x 100 agents blew Gemini's
+    # TPM quota (rising 429s). Current world state is re-sent each tick anyway, so a
+    # short memory is sufficient.
+    MAX_CONVERSATION_TURNS = 6
     if agent_id is not None:
         conversation = _agent_conversations.setdefault(agent_id, [])
         conversation.append({"role": "user", "content": prompt})
@@ -337,9 +340,12 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
     else:
         contents = prompt
 
-    # Retry with backoff for rate-limited calls
+    # Retry with jittered backoff for rate-limited / transient errors.
+    # v7 fix: 5 attempts + jitter to ride out TPM (429 RESOURCE_EXHAUSTED) spikes;
+    # log the exception (was silently swallowed) so failures are diagnosable.
     resp = None
-    for attempt in range(3):
+    last_exc = None
+    for attempt in range(5):
         try:
             resp = client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -352,12 +358,14 @@ def _call_gemini(system: str, prompt: str, max_tokens: int, agent_id: int | None
             )
             break
         except Exception as e:
-            if attempt < 2:
-                time.sleep(2 ** attempt)
+            last_exc = e
+            if attempt < 4:
+                time.sleep((2 ** attempt) + random.random() * 2)
                 continue
-            break
 
     if resp is None:
+        if last_exc is not None:
+            print(f"  [LLM ERROR] gemini after 5 retries: {type(last_exc).__name__}: {str(last_exc)[:140]}")
         if agent_id is not None and _agent_conversations.get(agent_id):
             _agent_conversations[agent_id].pop()
         return '{"thinking": "error fallback", "action": "idle"}'
@@ -3006,7 +3014,7 @@ def run_tick(state: dict) -> dict | None:
 
     def _parallel_llm_calls(agents_group):
         results = {}
-        with ThreadPoolExecutor(max_workers=50) as executor:
+        with ThreadPoolExecutor(max_workers=20) as executor:  # v7 fix: 50->20 to stay under Gemini TPM/concurrency limits
             futures = {}
             for agent in agents_group:
                 if not agent["alive"]:
