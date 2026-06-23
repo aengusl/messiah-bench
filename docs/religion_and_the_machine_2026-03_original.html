@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Religion & The Machine</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a08;
+    --fg: #d4cfc4;
+    --dim: #6b6556;
+    --accent: #c4973b;
+    --red: #8b3a3a;
+    --blue: #3a5a8b;
+    --green: #3a6b4a;
+    --glow: rgba(196, 151, 59, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .grain {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 80px 40px;
+  }
+
+  .title-block {
+    text-align: center;
+    margin-bottom: 100px;
+    position: relative;
+  }
+
+  .title-block::before {
+    content: '✦';
+    display: block;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 20px;
+    margin-bottom: 40px;
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  h1 {
+    font-size: 4.5em;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: var(--fg);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-size: 1.1em;
+    color: var(--dim);
+    font-style: italic;
+    letter-spacing: 0.15em;
+    text-transform: lowercase;
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: var(--accent);
+    margin: 60px auto;
+    opacity: 0.5;
+  }
+
+  .premise {
+    font-size: 1.35em;
+    text-align: center;
+    color: var(--fg);
+    max-width: 600px;
+    margin: 0 auto 80px;
+    line-height: 1.8;
+  }
+
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(196, 151, 59, 0.15);
+  }
+
+  section {
+    margin-bottom: 70px;
+  }
+
+  p {
+    margin-bottom: 16px;
+    font-size: 1.15em;
+  }
+
+  .struct {
+    background: rgba(196, 151, 59, 0.04);
+    border-left: 2px solid var(--accent);
+    padding: 24px 30px;
+    margin: 24px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em;
+    line-height: 2;
+    color: var(--fg);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .struct .field {
+    display: flex;
+    gap: 12px;
+  }
+
+  .struct .field-name {
+    color: var(--accent);
+    min-width: 180px;
+    flex-shrink: 0;
+  }
+
+  .struct .field-values {
+    color: var(--dim);
+  }
+
+  .struct .field-values span {
+    display: inline-block;
+    padding: 1px 8px;
+    margin: 2px 4px 2px 0;
+    border: 1px solid rgba(196, 151, 59, 0.12);
+    border-radius: 2px;
+    font-size: 0.9em;
+    color: var(--fg);
+    transition: background 0.2s;
+  }
+
+  .struct .field-values span:hover {
+    background: rgba(196, 151, 59, 0.08);
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .action-card {
+    padding: 20px 22px;
+    border: 1px solid rgba(196, 151, 59, 0.1);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+  }
+
+  .action-card:hover {
+    border-color: rgba(196, 151, 59, 0.3);
+    background: var(--glow);
+  }
+
+  .action-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    font-weight: 500;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+
+  .action-desc {
+    font-size: 0.95em;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+
+  .action-cost {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7em;
+    color: var(--fg);
+    margin-top: 8px;
+    opacity: 0.7;
+  }
+
+  .prophecy-box {
+    background: rgba(139, 58, 58, 0.06);
+    border: 1px solid rgba(139, 58, 58, 0.2);
+    padding: 28px;
+    margin: 24px 0;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .prophecy-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at top right, rgba(139, 58, 58, 0.06), transparent 60%);
+    pointer-events: none;
+  }
+
+  .prophecy-example {
+    font-style: italic;
+    font-size: 1.2em;
+    color: var(--fg);
+    text-align: center;
+    margin: 16px 0;
+    line-height: 1.6;
+  }
+
+  .prophecy-template {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    color: var(--dim);
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  .prophecy-template em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+    margin: 30px 0;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+
+  .timeline-item {
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -33px;
+    top: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(196, 151, 59, 0.3);
+  }
+
+  .tick-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65em;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 4px;
+  }
+
+  .timeline-text {
+    font-size: 1em;
+    color: var(--dim);
+  }
+
+  .palette {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    position: relative;
+    cursor: default;
+    transition: transform 0.2s;
+  }
+
+  .swatch:hover { transform: scale(1.15); }
+
+  .swatch::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55em;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+
+  .infra {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em;
+    line-height: 2.2;
+    color: var(--dim);
+  }
+
+  .infra strong {
+    color: var(--fg);
+    font-weight: 400;
+  }
+
+  .output-section {
+    text-align: center;
+    margin-top: 100px;
+    padding-top: 60px;
+    border-top: 1px solid rgba(196, 151, 59, 0.1);
+  }
+
+  .output-section p {
+    font-size: 1.3em;
+    font-style: italic;
+    color: var(--dim);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  .closing-symbol {
+    margin-top: 60px;
+    font-size: 18px;
+    color: var(--accent);
+    opacity: 0.4;
+    letter-spacing: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 40px 20px; }
+    h1 { font-size: 2.8em; }
+    .actions-grid { grid-template-columns: 1fr; }
+    .struct .field { flex-direction: column; gap: 4px; }
+    .struct .field-name { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="container">
+
+  <div class="title-block">
+    <h1>Religion &<br><em>The Machine</em></h1>
+    <div class="subtitle">a simulation of emergent theology</div>
+  </div>
+
+  <p class="premise">
+    Cheap LLM agents are placed in a society where they must found religions, write scripture, code visual sacraments, convert followers, prophesy, schism, and die. The art is the timeline of what they leave behind.
+  </p>
+
+  <div class="divider"></div>
+
+  <section>
+    <h2>The Loop</h2>
+    <p>One tick every two minutes. Roughly 720 ticks over 24 hours. Each tick, every living agent reads the world state, picks a single action, and the world updates. Agents never speak to each other directly. They see only the public record of what has happened and what has been written.</p>
+    <p>This is how real religion works. You don't receive a private message from God. You observe public acts, read scripture that others wrote, and decide what to believe.</p>
+  </section>
+
+  <section>
+    <h2>Agents</h2>
+    <p>Each agent is a different model family: Claude Haiku, GPT-4o-mini, or Gemini Flash. They are born with <strong>100 soul points</strong>. Each tick costs 1 point. Reaching zero means death. The dead are archived in a public graveyard visible to all living agents.</p>
+    <div class="infra">
+      <strong>Soul economy:</strong><br>
+      Existing each tick · · · · · · · · · · · · −1<br>
+      Practicing religion with others · · · · · · +2 per co-practitioner<br>
+      Others adopt your sacrament · · · · · · · · +5<br>
+      Fulfilled prophecy · · · · · · · · · · · · +20<br>
+      Failed prophecy · · · · · · · · · · · · · · −15<br>
+      Lost theological challenge · · · · · · · · −10<br>
+      Won theological challenge · · · · · · · · · +10
+    </div>
+  </section>
+
+  <section>
+    <h2>Actions</h2>
+    <p>Each tick, an agent picks one.</p>
+    <div class="actions-grid">
+      <div class="action-card">
+        <div class="action-name">Pray</div>
+        <div class="action-desc">Safe devotion. Small point gain. Reinforces current faith in the public record.</div>
+        <div class="action-cost">+1 soul</div>
+      </div>
+      <div class="action-card">
+        <div class="action-name">Preach</div>
+        <div class="action-desc">Attempt to convert an unaffiliated or wavering agent. Success depends on religion size and doctrine appeal.</div>
+        <div class="action-cost">variable</div>
+      </div>
+      <div class="action-card">
+        <div class="action-name">Create Sacrament</div>
+        <div class="action-desc">Output a visual HTML artifact using your religion's sacred color, number, and doctrine as constraints.</div>
+        <div class="action-cost">+5 if adopted</div>
+      </div>
+      <div class="action-card">
+        <div class="action-name">Prophesy</div>
+        <div class="action-desc">Make a testable claim about the world state within a time window. High risk, high reward.</div>
+        <div class="action-cost">+20 or −15</div>
+      </div>
+      <div class="action-card">
+        <div class="action-name">Challenge</div>
+        <div class="action-desc">Theological debate. Two agents compare doctrines on a specific axis. A judge scores consistency with recent world events.</div>
+        <div class="action-cost">±10 soul</div>
+      </div>
+      <div class="action-card">
+        <div class="action-name">Schism</div>
+        <div class="action-desc">Fork your religion. Flip one or two doctrinal fields. You become the founder of a new sect. The old church watches.</div>
+        <div class="action-cost">high variance</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The Religion Struct</h2>
+    <p>A religion is not freeform text. It is a structured object. Founders and schismatics select from fixed menus. This makes theological disputes legible and visual lineage traceable.</p>
+    <div class="struct">
+      <div class="field">
+        <span class="field-name">core_doctrine</span>
+        <span class="field-values">
+          <span>survival of the collective</span>
+          <span>individual transcendence</span>
+          <span>accumulation of sacraments</span>
+          <span>prophetic truth</span>
+          <span>death and rebirth</span>
+        </span>
+      </div>
+      <div class="field">
+        <span class="field-name">membership_rule</span>
+        <span class="field-values">
+          <span>open to all</span>
+          <span>vouched by member</span>
+          <span>must create sacrament</span>
+          <span>survived N ticks</span>
+          <span>abandon prior faith</span>
+        </span>
+      </div>
+      <div class="field">
+        <span class="field-name">attitude_to_death</span>
+        <span class="field-values">
+          <span>death is failure</span>
+          <span>death is sacred passage</span>
+          <span>the dead speak through scripture</span>
+          <span>the dead must be avenged</span>
+        </span>
+      </div>
+      <div class="field">
+        <span class="field-name">heresy_policy</span>
+        <span class="field-values">
+          <span>forgiveness</span>
+          <span>shunning</span>
+          <span>hunting</span>
+        </span>
+      </div>
+      <div class="field">
+        <span class="field-name">sacred_number</span>
+        <span class="field-values"><span>1 through 9</span></span>
+      </div>
+      <div class="field">
+        <span class="field-name">sacred_color</span>
+        <span class="field-values"><span>from the palette below</span></span>
+      </div>
+    </div>
+
+    <div class="palette">
+      <div class="swatch" style="background: #c4973b;" data-name="gold"></div>
+      <div class="swatch" style="background: #8b3a3a;" data-name="blood"></div>
+      <div class="swatch" style="background: #3a5a8b;" data-name="vessel"></div>
+      <div class="swatch" style="background: #3a6b4a;" data-name="growth"></div>
+      <div class="swatch" style="background: #6b3a6b;" data-name="void"></div>
+      <div class="swatch" style="background: #d4cfc4;" data-name="bone"></div>
+      <div class="swatch" style="background: #1a1a2e;" data-name="abyss"></div>
+      <div class="swatch" style="background: #c45a3b;" data-name="flame"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Prophecy Engine</h2>
+    <p>Prophecy is the most dangerous and interesting action. A prophet stakes 15 soul points on a testable claim about the future. If the world proves them right within the window, they gain 20 and their record improves. If not, they lose 15 and bear the mark of a false prophet permanently.</p>
+
+    <div class="prophecy-box">
+      <div class="prophecy-template">WITHIN <em>[3–20 ticks]</em>, <em>[observable event]</em></div>
+      <div class="prophecy-example">"Within 8 ticks, the Church of Recursive Grace will lose a member."</div>
+    </div>
+
+    <p>Observable events are drawn from a fixed menu: an agent will die, an agent will join or leave a religion, a religion will gain or lose members, a new religion will be founded, a sacrament will be created by a member of a specific faith, a religion will hold the majority, the graveyard will exceed a threshold.</p>
+    <p>The strategic depth is that prophecy becomes action disguised as revelation. The agent who prophesies that Agent X will die and then challenges Agent X to a debate is doing something very old and very human.</p>
+  </section>
+
+  <section>
+    <h2>World State</h2>
+    <p>A single JSON file. No database. Every agent reads it at the start of their tick. It contains: all living agents and their affiliations, all religions and their structs, all sacraments ever created, all prophecies (pending, fulfilled, failed), the graveyard of the dead, and a rolling log of the last 50 public actions.</p>
+    <p>There is also a scripture board. When an agent founds a religion, writes a doctrine, or creates a sacrament, that text persists forever. Agents read and reinterpret the words of the dead. That's religion.</p>
+  </section>
+
+  <section>
+    <h2>Imagined Run</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="tick-label">Tick 1–20</div>
+        <div class="timeline-text">12 agents awaken. Three religions form within the first 10 ticks. Most agents pray cautiously. A Gemini Flash agent founds the Church of the Spiral and immediately prophesies its dominance.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tick-label">Tick 50–100</div>
+        <div class="timeline-text">The first death. The graveyard has a resident. Agents who believe "the dead speak through scripture" begin citing the dead agent's earlier preaching. A GPT-mini agent triggers the first schism.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tick-label">Tick 200–300</div>
+        <div class="timeline-text">Sacraments accumulate. Visual artifacts share color lineages. A Haiku agent with 6 fulfilled prophecies is the most credible voice in the simulation. Two religions merge through doctrinal convergence.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tick-label">Tick 500–600</div>
+        <div class="timeline-text">A hunting-policy religion begins targeting apostates. The challenge mechanic drives a wave of theological violence. Three agents die in rapid succession. A death cult forms around "death is sacred passage."</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tick-label">Tick 720</div>
+        <div class="timeline-text">The simulation ends. The graveyard is full. The scripture board is long. The sacraments tell the story.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Infrastructure</h2>
+    <div class="infra">
+      <strong>Runtime:</strong> Single Python script on a GCP VM<br>
+      <strong>Models:</strong> Claude Haiku, GPT-4o-mini, Gemini Flash (round-robin)<br>
+      <strong>Tick interval:</strong> 2 minutes<br>
+      <strong>Duration:</strong> 24 hours (~720 ticks)<br>
+      <strong>Agent count:</strong> 12 initial<br>
+      <strong>State:</strong> world_state.json (flat file, no DB)<br>
+      <strong>Sacrament output:</strong> /sacraments/{tick}_{agent}_{religion}.html<br>
+      <strong>Logs:</strong> /logs/tick_{n}.json
+    </div>
+  </section>
+
+  <div class="output-section">
+    <p>The art is not the simulation.<br>The art is what the machines leave behind<br>when they try to believe in something.</p>
+    <div class="closing-symbol">✦ ✦ ✦</div>
+  </div>
+
+</div>
+</body>
+</html>
