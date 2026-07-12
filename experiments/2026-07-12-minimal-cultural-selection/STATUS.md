@@ -8,7 +8,7 @@ Agents will voluntarily spend scarce turns making cultural artifacts when those 
 
 ## Phase
 
-Ready to launch pilot.
+Pilot running.
 
 ## Plan
 
@@ -36,11 +36,12 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 
 ## Launch
 
-- Tmux session: not launched
-- PID: not launched
-- Command: pending validation
+- Tmux session: `260712-minimal-pilot`
+- PID: `1771020` (tmux pane shell)
+- Command: `UV_CACHE_DIR=/tmp/uv-cache uv run python experiments/2026-07-12-minimal-cultural-selection/run.py --agents=24 --turns=100 --workers=8 --run-dir=outputs/2026-07-12-minimal-cultural-selection`
 - Log: `experiments/2026-07-12-minimal-cultural-selection/run.log`
 - Monitor: `experiments/2026-07-12-minimal-cultural-selection/monitor.log`
+- Monitor tmux: `260712-minimal-watch`
 
 ## Progress log
 
@@ -54,7 +55,10 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12: Corrected 8-agent/5-turn smoke passed: 40/40 valid, 1 voluntary make, 2 other-agent responses, top influence 2, $0.0834.
 - 2026-07-12: Inspected Ember's rendered proposal and reasoning. The agent knowingly spent survival time to make a modest visual/doctrinal revision it expected Axiom to support; Axiom did so on turns 4 and 5.
 - 2026-07-12: Generated an eight-slide editable deck. First visual QA found blank images on slide 5; corrected its render path and verified the repair.
+- 2026-07-12 23:02 UTC: Launched 24-agent/100-turn pilot in tmux. Monitor PID `1771025`; expected completion 23:27–23:42 UTC based on smoke latency.
+- 2026-07-12 23:04 UTC: Turn 9 checkpoint healthy: 24 alive, 6 make actions, 5 open proposals, 1 accepted version, Cairn influence 13, 216/216 valid calls, pilot cost $0.5909.
+- 2026-07-12 23:04 UTC: Replaced cleaned-up nohup watcher with persistent exact-name tmux session `260712-minimal-watch`; verified it recorded turn 9.
 
 ## Next step
 
-Commit/push the launch-ready milestone, then launch the 24-agent/100-turn pilot with persistent monitoring.
+Inspect artwork and proposal competition at turns 15–20; continue monitoring cost and invalid rate.

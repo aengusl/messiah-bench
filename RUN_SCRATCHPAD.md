@@ -4,18 +4,19 @@ Last updated: 2026-07-12 UTC
 
 ## Current state
 
-- Phase: launch readiness
-- Status: corrected 8-agent smoke passed technically and behaviorally; deck generated and visually QA'd
+- Phase: live pilot
+- Status: 24-agent/100-turn pilot healthy at turn 9; cultural production and selection are active
 - Canonical output: `outputs/2026-07-12-minimal-cultural-selection/`
-- Tmux session: not launched yet
+- Tmux session: `260712-minimal-pilot`
+- Monitor session: `260712-minimal-watch`
 - Latest completed checkpoint: 6-agent, 10-turn scripted dry-run
 
 ## Budget and cost
 
 - Hard stop: **$100**
-- Actual API cost so far: **$0.155** (one-agent check plus two 8-agent smoke runs)
-- Paid model calls so far: **81**
-- Current projection: **about $5–$8 measured / $10–$20 conservative** for 2,400 pilot actions
+- Actual API cost so far: **$0.746** ($0.155 preflight + $0.591 pilot)
+- Pilot calls so far: **216**, all valid
+- Current projection: **about $6.57 pilot cost at the current rate**, with a conservative **$10–$20** allowance as proposals add images
 - Stop conditions: cost reaches $100, authentication fails, more than 5% of actions are invalid, or the same phase fails twice
 
 ## ETA
@@ -23,8 +24,8 @@ Last updated: 2026-07-12 UTC
 - Tests and deterministic validation: approximately 15–30 minutes
 - Corrected paid smoke test: complete
 - Design deck draft and first fix-and-verify QA cycle: complete
-- Pilot launch: next
-- Full 100-turn pilot duration: approximately **25–40 minutes** from measured smoke latency, with additional time possible as proposal images accumulate
+- Pilot launched: **2026-07-12 23:02 UTC**
+- Expected completion: approximately **23:18–23:30 UTC** based on the first nine turns; proposal growth may slow later turns
 
 ETAs are estimates and will be replaced with measured rates as soon as live calls begin.
 
@@ -38,10 +39,13 @@ ETAs are estimates and will be replaced with measured rates as soon as live call
 - Corrected smoke: 40/40 valid actions, 8 alive, 1 proposal, top influence 2, $0.0834.
 - Artwork render inspected successfully; doctrine and geometry were visibly revised.
 - Eight-slide editable deck generated. Visual QA found missing artwork on slide 5, fixed the source path, and verified the repaired slide plus slides 1, 6, and 8.
+- Pilot turn 9: 24 alive, 4 religions, 6 make actions, 5 open proposals, 1 accepted version, 0 invalid actions.
+- Cairn's first proposal attracted 13 other-agent choices by turn 9. Top influence is 13.
+- Persistent monitoring moved to exact tmux session `260712-minimal-watch` after the initial detached watcher was cleaned up by its launch shell.
 
 ## Next actions
 
-1. Commit and push the corrected design, scratchpad, and deck.
-2. Launch the 24-agent/100-turn pilot in tmux.
-3. Start a persistent monitor and record exact process/session details.
-4. Inspect early turns for make rate, invalid rate, cost, and artwork quality.
+1. Inspect artwork quality and proposal competition around turns 15–20.
+2. Update and push this scratchpad at meaningful checkpoints.
+3. Diagnose immediately if invalid actions exceed 5% or logs stop changing.
+4. Update the deck and website from actual run evidence after sufficient trajectory develops.
