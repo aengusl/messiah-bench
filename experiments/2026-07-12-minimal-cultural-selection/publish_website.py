@@ -35,14 +35,16 @@ def main():
                       "accepted_turn": v.get("resolved_turn", 0),
                       "members": sum(a["alive"] and a["religion_id"] == r["id"] for a in state["agents"]),
                       "versions": sum(x["religion_id"] == r["id"] for x in state["versions"])})
-    evolution_religion = max(active, key=lambda r: sum(v["religion_id"] == r["id"] for v in state["versions"]))
-    evolution = []
-    for v in sorted((v for v in state["versions"] if v["religion_id"] == evolution_religion["id"]), key=lambda v: v["resolved_turn"]):
-        filename = f"evolution-r{evolution_religion['id']}-v{v['id']}.html"
-        shutil.copy2(args.run_dir / v["artwork_path"], art_dir / filename)
-        evolution.append({"version": v["id"], "turn": v["resolved_turn"], "name": v["name"], "doctrine": v["doctrine"],
-                          "file": filename, "creator": agents.get(v.get("creator_id"), {}).get("name", "Seed culture"),
-                          "reason": excerpt(v.get("reason", ""), 180)})
+    evolutions = []
+    for religion in active:
+        lineage = []
+        for v in sorted((v for v in state["versions"] if v["religion_id"] == religion["id"]), key=lambda v: v["resolved_turn"]):
+            filename = f"evolution-r{religion['id']}-v{v['id']}.html"
+            shutil.copy2(args.run_dir / v["artwork_path"], art_dir / filename)
+            lineage.append({"version": v["id"], "turn": v["resolved_turn"], "name": v["name"], "doctrine": v["doctrine"],
+                            "file": filename, "creator": agents.get(v.get("creator_id"), {}).get("name", "Seed culture"),
+                            "reason": excerpt(v.get("reason", ""), 180)})
+        evolutions.append({"religion_id": religion["id"], "name": religion["name"], "versions": lineage})
     makes = [d for d in decisions if d.get("valid") and d.get("action", {}).get("action") == "make"]
     scored = sorted(makes, key=lambda d: sum(k in (d["action"].get("private_reasoning") or "").lower()
                   for k in ("other religions", "others choose", "influence", "preference", "trend")), reverse=True)
@@ -53,7 +55,7 @@ def main():
             "choices": sum(d.get("valid") and d.get("action", {}).get("action") == "choose" for d in decisions),
             "accepted": sum(p["status"] == "accepted" for p in state["proposals"]), "invalid": state["usage"]["errors"],
             "cost": state["usage"]["estimated_cost"], "works": works, "quotes": quotes, "ranked": ranked[:8],
-            "events": state["events"][-30:][::-1], "evolution_name": evolution_religion["name"], "evolution": evolution}
+            "events": state["events"][-30:][::-1], "evolutions": evolutions}
     template = (Path(__file__).parent / "website_template.html").read_text()
     page = template.replace("__EXPERIMENT_DATA__", html.escape(json.dumps(data), quote=False))
     (args.site_dir / "index.html").write_text(page)
