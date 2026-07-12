@@ -18,7 +18,8 @@ publish() {
 }
 while [[ ! -f "$OUT/COMPLETE" ]]; do
   turn=$(jq -r '.turn // 0' "$OUT/world_state.json" 2>/dev/null || echo 0)
-  if [[ "$turn" != "$LAST" && "$turn" -ge 1 && $((turn % 10)) -eq 0 ]]; then
+  baseline=${LAST:-0}
+  if [[ "$turn" -ge 1 && $((turn - baseline)) -ge 10 ]]; then
     publish "$turn"
     LAST="$turn"
     echo "[$(date -u +%FT%TZ)] PUBLISHED turn=$turn"
