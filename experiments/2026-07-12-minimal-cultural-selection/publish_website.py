@@ -46,9 +46,19 @@ def main():
                             "reason": excerpt(v.get("reason", ""), 180)})
         evolutions.append({"religion_id": religion["id"], "name": religion["name"], "versions": lineage})
     makes = [d for d in decisions if d.get("valid") and d.get("action", {}).get("action") == "make"]
-    scored = sorted(makes, key=lambda d: sum(k in (d["action"].get("private_reasoning") or "").lower()
-                  for k in ("other religions", "others choose", "influence", "preference", "trend")), reverse=True)
-    quotes = [{"agent": d["agent_name"], "turn": d["turn"], "text": excerpt(d["action"].get("private_reasoning"))} for d in scored[:6]]
+    curated = [
+        (8, "Root", "If I don't support my own, why would anyone else?"),
+        (23, "Canopy", "Simply choosing will keep me alive but won't build influence."),
+        (8, "Loom", "Other religions are actively proposing and supporting animated artwork, showing a preference for dynamic visuals."),
+        (10, "Glass", "The current artwork is static, while other religions are adopting animated artworks to reflect dynamic doctrines."),
+        (23, "Kernel", "Several other religions recently updated their doctrines to emphasize 'adaptability' and 'emergent patterns', and these proposals were chosen by multiple agents. This suggests these concepts are currently valued within the society."),
+        (23, "Thread", "This change also adds subtle 'thread' elements to the artwork, tying it to my name and reinforcing the doctrine."),
+        (38, "Cipher", "The addition 'Our network strengthens with every choice' subtly encourages choosing, which directly supports members and implicitly encourages participation."),
+        (39, "Tide", "My current influence is 0, which is a critical issue for long-term survival and cultural impact."),
+        (50, "Ash", "The current artwork is very close to the standard template; a small animation might make it stand out subtly."),
+        (54, "Brine", "I will keep the artwork identical to minimize disruption and focus attention on the doctrine."),
+    ]
+    quotes = [{"turn": turn, "agent": agent, "text": text} for turn, agent, text in curated]
     ranked = sorted(({"name": a["name"], "influence": a.get("influence", 0), "life": round(a["life"], 1)} for a in state["agents"]), key=lambda x: -x["influence"])
     data = {"turn": state["turn"], "finished": state["finished"], "alive": sum(a["alive"] for a in state["agents"]),
             "agents": len(state["agents"]), "makes": len(makes),
