@@ -42,6 +42,7 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - Log: `experiments/2026-07-12-minimal-cultural-selection/run.log`
 - Monitor: `experiments/2026-07-12-minimal-cultural-selection/monitor.log`
 - Monitor tmux: `260712-minimal-watch`
+- Website publisher tmux: `260712-minimal-publish`
 
 ## Progress log
 
@@ -58,7 +59,9 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12 23:02 UTC: Launched 24-agent/100-turn pilot in tmux. Monitor PID `1771025`; expected completion 23:27–23:42 UTC based on smoke latency.
 - 2026-07-12 23:04 UTC: Turn 9 checkpoint healthy: 24 alive, 6 make actions, 5 open proposals, 1 accepted version, Cairn influence 13, 216/216 valid calls, pilot cost $0.5909.
 - 2026-07-12 23:04 UTC: Replaced cleaned-up nohup watcher with persistent exact-name tmux session `260712-minimal-watch`; verified it recorded turn 9.
+- 2026-07-12 23:11 UTC: Published a new, standalone live exhibition at `/cultural-selection/` in the personal website repository. Existing Messiah Bench pages were not modified. Initial snapshot: turn 37, 18 makes, 15 accepted works, 4 living religions, 0 invalid actions, $2.69.
+- 2026-07-12 23:12 UTC: Turn 44 healthy: 24 alive, 1,056/1,056 valid calls, pilot spend $3.2693. Launched publisher tmux `260712-minimal-publish` for ten-turn website updates.
 
 ## Next step
 
-Inspect artwork and proposal competition at turns 15–20; continue monitoring cost and invalid rate.
+Confirm GitHub Pages deployment, continue monitoring, and update the deck at completion.
