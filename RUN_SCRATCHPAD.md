@@ -4,8 +4,8 @@ Last updated: 2026-07-12 UTC
 
 ## Current state
 
-- Phase: live pilot
-- Status: pilot healthy at turn 44; separate live exhibition pushed and awaiting GitHub Pages deployment
+- Phase: complete
+- Status: 100-turn pilot, final website, art-evolution timeline, and final deck complete
 - Canonical output: `outputs/2026-07-12-minimal-cultural-selection/`
 - Tmux session: `260712-minimal-pilot`
 - Monitor session: `260712-minimal-watch`
@@ -15,9 +15,10 @@ Last updated: 2026-07-12 UTC
 ## Budget and cost
 
 - Hard stop: **$100**
-- Actual API cost so far: **$3.424** ($0.155 preflight + $3.269 pilot)
-- Pilot calls so far: **1,056**, all valid
-- Current projection: **about $6.57 pilot cost at the current rate**, with a conservative **$10–$20** allowance as proposals add images
+- Actual pilot cost: **$7.3383**
+- Preflight smoke cost: **$0.1554**
+- Total experiment cost: approximately **$7.49**
+- Pilot calls: **2,400 / 2,400 valid**
 - Stop conditions: cost reaches $100, authentication fails, more than 5% of actions are invalid, or the same phase fails twice
 
 ## ETA
@@ -26,7 +27,7 @@ Last updated: 2026-07-12 UTC
 - Corrected paid smoke test: complete
 - Design deck draft and first fix-and-verify QA cycle: complete
 - Pilot launched: **2026-07-12 23:02 UTC**
-- Expected completion: approximately **23:18–23:30 UTC** based on the first nine turns; proposal growth may slow later turns
+- Completed: **2026-07-12 23:24 UTC**
 
 ETAs are estimates and will be replaced with measured rates as soon as live calls begin.
 
@@ -45,10 +46,14 @@ ETAs are estimates and will be replaced with measured rates as soon as live call
 - Persistent monitoring moved to exact tmux session `260712-minimal-watch` after the initial detached watcher was cleaned up by its launch shell.
 - New website page: `https://www.aenguslynch.com/cultural-selection/`. Initial turn-37 snapshot pushed at website commit `c666ffc`; GitHub Pages deployment is queued.
 - Live publisher updates the separate page every ten turns without modifying the existing Messiah Bench page.
+- Final: 24/24 alive, 26 makes, 2,374 choices, 21 accepted works, 5 rejected, 4 religions, $7.3383 pilot cost.
+- Brine won with influence 318. Tide reached 304, Ash 278, Echo 189.
+- Making ended after turn 54. Turns 55–100 were a consolidation phase in which canonical authors accumulated influence.
+- Final website includes a scrollable seven-version evolution of The Verdant Archive.
+- Editable deck updated in place to ten slides with final metrics and the convergence finding.
 
 ## Next actions
 
-1. Confirm the queued GitHub Pages deployment and public URL.
-2. Update and push this scratchpad at meaningful checkpoints.
-3. Diagnose immediately if invalid actions exceed 5% or logs stop changing.
-4. Update the deck with final trajectories after completion.
+1. Review the final exhibition and deck.
+2. Decide whether to replicate the condition across seeds.
+3. Design a minimal mechanism that can sustain differentiation without an aesthetic score.

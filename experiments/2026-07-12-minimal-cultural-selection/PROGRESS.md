@@ -38,3 +38,16 @@ Agents recognized that choosing indefinitely held life constant. Culture had no 
 - Axiom chose it on turns 4 and 5, giving Ember influence 2.
 
 This passes the minimum behavioral gate: making remained costly and unpaid, but another agent's subsequent choices created the payoff.
+
+## Final pilot
+
+- 24 agents × 100 turns
+- 2,400/2,400 valid actions
+- 26 make; 2,374 choose
+- 21 accepted proposals; 5 rejected
+- 24 survivors; 4 surviving religions
+- $7.3383 estimated pilot cost
+
+Creation occurred between turns 6 and 54. The remainder of the run was consolidation. Successful authors continued receiving influence from repeated choices of canonical work, while no agent attempted a further cultural challenge.
+
+The primary positive result is causal legibility: agents made because they expected others to choose their work, and others did. The primary negative result is visual and doctrinal convergence. Animation and incremental adaptation became a fashion shared across all four religions.

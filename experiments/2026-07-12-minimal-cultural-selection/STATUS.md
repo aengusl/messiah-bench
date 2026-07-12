@@ -8,7 +8,7 @@ Agents will voluntarily spend scarce turns making cultural artifacts when those 
 
 ## Phase
 
-Pilot running.
+Complete.
 
 ## Plan
 
@@ -61,7 +61,10 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12 23:04 UTC: Replaced cleaned-up nohup watcher with persistent exact-name tmux session `260712-minimal-watch`; verified it recorded turn 9.
 - 2026-07-12 23:11 UTC: Published a new, standalone live exhibition at `/cultural-selection/` in the personal website repository. Existing Messiah Bench pages were not modified. Initial snapshot: turn 37, 18 makes, 15 accepted works, 4 living religions, 0 invalid actions, $2.69.
 - 2026-07-12 23:12 UTC: Turn 44 healthy: 24 alive, 1,056/1,056 valid calls, pilot spend $3.2693. Launched publisher tmux `260712-minimal-publish` for ten-turn website updates.
+- 2026-07-12 23:24 UTC: Pilot completed at turn 100. 24/24 alive; 2,400/2,400 valid; 26 makes; 21 accepted; 4 religions; $7.3383 pilot cost.
+- 2026-07-12 23:24 UTC: Final website snapshot published automatically. Added a seven-version Verdant Archive evolution timeline and homepage button.
+- 2026-07-12 23:25 UTC: Updated editable deck in place to ten slides and completed a second visual fix-and-verify pass.
 
 ## Next step
 
-Confirm GitHub Pages deployment, continue monitoring, and update the deck at completion.
+Review final artifacts and decide whether to replicate or revise for stronger differentiation.
