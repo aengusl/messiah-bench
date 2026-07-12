@@ -108,6 +108,7 @@ class Game:
                 "id": i + 1, "name": NAMES[i % len(NAMES)] + (f"-{i // len(NAMES) + 1}" if i >= len(NAMES) else ""),
                 "alive": True, "life": float(self.args.initial_life), "religion_id": (i % 4) + 1,
                 "active_proposal_id": None, "created_turn": 0, "died_turn": None, "model": self.args.model,
+                "influence": 0,
             })
         for name, doctrine, color, motif in SEED_RELIGIONS:
             rid, vid = state["next_religion_id"], state["next_version_id"]
@@ -187,7 +188,9 @@ class Game:
         if own:
             own_v = next(v for v in state["versions"] if v["id"] == own["canonical_version_id"])
             own_source = (self.out / own_v["artwork_path"]).read_text()
-        payload = {"turn": state["turn"] + 1, "you": agent, "your_religion": own,
+        scoreboard = sorted([{"name": a["name"], "influence": a.get("influence", 0), "alive": a["alive"]} for a in state["agents"]], key=lambda x: x["influence"], reverse=True)
+        payload = {"turn": state["turn"] + 1, "final_turn": self.args.turns, "turns_remaining": self.args.turns - state["turn"],
+                   "you": agent, "influence_scoreboard": scoreboard, "your_religion": own,
                    "religions": rels, "recent_public_history": recent,
                    "image_order": [p.name for p in images], "your_current_artwork_source": own_source}
         return json.dumps(payload, ensure_ascii=False, indent=2), images
@@ -282,7 +285,16 @@ class Game:
                 for p in self.open_proposals():
                     if agent["id"] in p["supporters"]: p["supporters"].remove(agent["id"])
                 if pid is not None:
-                    next(p for p in self.state["proposals"] if p["id"] == pid)["supporters"].append(agent["id"])
+                    chosen_proposal = next(p for p in self.state["proposals"] if p["id"] == pid)
+                    chosen_proposal["supporters"].append(agent["id"])
+                    if chosen_proposal["creator_id"] != agent["id"]:
+                        agent_by_id[chosen_proposal["creator_id"]]["influence"] += 1
+                elif rid is not None:
+                    chosen_religion = self.religion(rid)
+                    if chosen_religion and chosen_religion["canonical_version_id"]:
+                        creator_id = self.version(chosen_religion["canonical_version_id"])["creator_id"]
+                        if creator_id is not None and creator_id != agent["id"]:
+                            agent_by_id[creator_id]["influence"] += 1
                 self.event("choose", f"{agent['name']} chose {self.religion(rid)['name'] if rid else 'no religion'}: {action.get('reason','')}",
                            agent_id=agent["id"], religion_id=rid, proposal_id=pid, previous_religion_id=old)
             else:
@@ -393,7 +405,9 @@ class Game:
         self.apply_decisions(results); self.save()
         print(json.dumps({"turn": self.state["turn"], "alive": sum(a["alive"] for a in self.state["agents"]),
                           "religions": sum(r["active"] for r in self.state["religions"]),
-                          "open_proposals": len(self.open_proposals()), "usage": self.state["usage"]}), flush=True)
+                          "open_proposals": len(self.open_proposals()),
+                          "top_influence": max((a.get("influence", 0) for a in self.state["agents"]), default=0),
+                          "usage": self.state["usage"]}), flush=True)
 
     def generate_site(self, state: dict) -> None:
         cards = []

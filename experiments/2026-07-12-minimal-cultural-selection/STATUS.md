@@ -8,7 +8,7 @@ Agents will voluntarily spend scarce turns making cultural artifacts when those 
 
 ## Phase
 
-Deterministic engine validation.
+Ready to launch pilot.
 
 ## Plan
 
@@ -48,7 +48,13 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12: Defined support as a per-turn choice. `choose` contributes support; `make` does not. This prevents automatic equilibrium and makes cultural production genuinely costly.
 - 2026-07-12: Completed first 6-agent/10-turn scripted run: 60 decisions, 4 proposals, 2 accepted versions, all agents alive, $0 spend.
 - 2026-07-12: Six of seven focused tests passed. The remaining failure was a test expecting resolution before the full three-turn proposal window; corrected the test boundary.
+- 2026-07-12: First live Gemini action passed; $0.0011, 0 errors, private reasoning correctly weighed making against survival.
+- 2026-07-12: Eight-agent/5-turn smoke passed technically (40/40 valid, $0.0709) but failed behaviorally: 40 `choose`, 0 `make`. Stable support was a dominant equilibrium.
+- 2026-07-12: Added cultural influence: an agent earns influence only when another agent chooses a proposal or canonical version it authored. Making remains unpaid.
+- 2026-07-12: Corrected 8-agent/5-turn smoke passed: 40/40 valid, 1 voluntary make, 2 other-agent responses, top influence 2, $0.0834.
+- 2026-07-12: Inspected Ember's rendered proposal and reasoning. The agent knowingly spent survival time to make a modest visual/doctrinal revision it expected Axiom to support; Axiom did so on turns 4 and 5.
+- 2026-07-12: Generated an eight-slide editable deck. First visual QA found blank images on slide 5; corrected its render path and verified the repair.
 
 ## Next step
 
-Rerun tests and schema checks, then commit/push the engine milestone.
+Commit/push the launch-ready milestone, then launch the 24-agent/100-turn pilot with persistent monitoring.

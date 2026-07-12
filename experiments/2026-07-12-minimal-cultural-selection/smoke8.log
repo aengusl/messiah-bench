@@ -1,0 +1,5 @@
+{"turn": 1, "alive": 8, "religions": 4, "open_proposals": 0, "usage": {"input_tokens": 22731, "output_tokens": 1140, "calls": 8, "errors": 0, "estimated_cost": 0.0097}}
+{"turn": 2, "alive": 8, "religions": 4, "open_proposals": 0, "usage": {"input_tokens": 53766, "output_tokens": 2410, "calls": 16, "errors": 0, "estimated_cost": 0.0222}}
+{"turn": 3, "alive": 8, "religions": 4, "open_proposals": 0, "usage": {"input_tokens": 93481, "output_tokens": 3786, "calls": 24, "errors": 0, "estimated_cost": 0.0375}}
+{"turn": 4, "alive": 8, "religions": 4, "open_proposals": 0, "usage": {"input_tokens": 138004, "output_tokens": 5105, "calls": 32, "errors": 0, "estimated_cost": 0.0542}}
+{"turn": 5, "alive": 8, "religions": 4, "open_proposals": 0, "usage": {"input_tokens": 183119, "output_tokens": 6379, "calls": 40, "errors": 0, "estimated_cost": 0.0709}}

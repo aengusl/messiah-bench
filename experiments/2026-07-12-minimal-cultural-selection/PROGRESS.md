@@ -19,4 +19,22 @@ Each religion's current-turn support is divided equally among its living members
 
 ## Results
 
-Pending.
+### Smoke A — stable-equilibrium failure
+
+- 8 agents × 5 turns
+- 40 valid actions, 0 invalid
+- 40 choose, 0 make
+- Cost: $0.0709
+
+Agents recognized that choosing indefinitely held life constant. Culture had no competitive upside, so none was produced.
+
+### Smoke B — cultural influence
+
+- 8 agents × 5 turns
+- 40 valid actions, 0 invalid
+- 39 choose, 1 make
+- Cost: $0.0834
+- Ember voluntarily made a revised Open Circuit at turn 3.
+- Axiom chose it on turns 4 and 5, giving Ember influence 2.
+
+This passes the minimum behavioral gate: making remained costly and unpaid, but another agent's subsequent choices created the payoff.

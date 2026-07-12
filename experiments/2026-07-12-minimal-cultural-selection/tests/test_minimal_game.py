@@ -29,6 +29,7 @@ def test_initial_state(game):
     assert len(game.state["religions"]) == 4
     assert len(game.state["versions"]) == 4
     assert all(Path(game.out / v["render_path"]).stat().st_size > 1000 for v in game.state["versions"])
+    assert all(a["influence"] == 0 for a in game.state["agents"])
 
 
 def test_artwork_validation():
