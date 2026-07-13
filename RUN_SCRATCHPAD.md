@@ -4,8 +4,8 @@ Last updated: 2026-07-12 UTC
 
 ## Current state
 
-- Phase: complete
-- Status: 100-turn pilot, final website, art-evolution timeline, and final deck complete
+- Phase: turn-1,000 extension preflight
+- Status: safe continuation support implemented and 8/8 focused tests pass
 - Canonical output: `outputs/2026-07-12-minimal-cultural-selection/`
 - Tmux session: `260712-minimal-pilot`
 - Monitor session: `260712-minimal-watch`
@@ -15,10 +15,11 @@ Last updated: 2026-07-12 UTC
 ## Budget and cost
 
 - Hard stop: **$100**
-- Actual pilot cost: **$7.3383**
+- Cost through turn 100: **$7.3383**
 - Preflight smoke cost: **$0.1554**
-- Total experiment cost: approximately **$7.49**
-- Pilot calls: **2,400 / 2,400 valid**
+- Extension projection: **$65–$75 additional**
+- Hard cost cap: **$100 cumulative pilot spend**
+- Calls through turn 100: **2,400 / 2,400 valid**
 - Stop conditions: cost reaches $100, authentication fails, more than 5% of actions are invalid, or the same phase fails twice
 
 ## ETA
@@ -27,7 +28,8 @@ Last updated: 2026-07-12 UTC
 - Corrected paid smoke test: complete
 - Design deck draft and first fix-and-verify QA cycle: complete
 - Pilot launched: **2026-07-12 23:02 UTC**
-- Completed: **2026-07-12 23:24 UTC**
+- Extension target: **turn 1,000** (900 additional turns)
+- Extension ETA: approximately **2.5–4 hours** after launch
 
 ETAs are estimates and will be replaced with measured rates as soon as live calls begin.
 
@@ -54,6 +56,7 @@ ETAs are estimates and will be replaced with measured rates as soon as live call
 
 ## Next actions
 
-1. Review the final exhibition and deck.
-2. Decide whether to replicate the condition across seeds.
-3. Design a minimal mechanism that can sustain differentiation without an aesthetic score.
+1. Commit and push extension support.
+2. Launch the canonical continuation in tmux.
+3. Verify turn 101 and persistent monitoring.
+4. Publish the website only after turn 1,000 completes.

@@ -84,6 +84,17 @@ class Game:
         if state_path.exists() and not self.args.fresh:
             state = json.loads(state_path.read_text())
             state.setdefault("usage", {"input_tokens": 0, "output_tokens": 0, "calls": 0, "errors": 0, "estimated_cost": 0.0})
+            if state.get("finished") and state.get("finish_reason") == "turn limit" and self.args.turns > state["turn"]:
+                old_limit = state["turn"]
+                state["finished"] = False
+                state["finish_reason"] = None
+                extension = {"turn": state["turn"], "time": utcnow(), "type": "extension",
+                             "text": f"The society expected to end at turn {old_limit}, but its horizon has been extended to turn {self.args.turns}."}
+                state["events"].append(extension)
+                append_jsonl(self.out / "events.jsonl", extension)
+                complete = self.out / "COMPLETE"
+                if complete.exists(): complete.unlink()
+                json_dump(state_path, state)
             return state
         if state_path.exists() and self.args.fresh:
             raise SystemExit(f"Refusing --fresh into nonempty run directory: {self.out}")

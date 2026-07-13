@@ -51,3 +51,9 @@ This passes the minimum behavioral gate: making remained costly and unpaid, but 
 Creation occurred between turns 6 and 54. The remainder of the run was consolidation. Successful authors continued receiving influence from repeated choices of canonical work, while no agent attempted a further cultural challenge.
 
 The primary positive result is causal legibility: agents made because they expected others to choose their work, and others did. The primary negative result is visual and doctrinal convergence. Animation and incremental adaptation became a fashion shared across all four religions.
+
+## Turn-1,000 extension
+
+The canonical society will continue from turn 100 to turn 1,000. All state, agents, influence, artworks, proposals, usage totals, and histories are preserved. Agents receive a public event explaining that the society expected to end at turn 100 but its horizon has moved to turn 1,000.
+
+The extension tests whether the turn-55 consolidation was terminal or whether a radically longer horizon restarts cultural production, creates new factions, or deepens convergence.

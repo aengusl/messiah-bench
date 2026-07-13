@@ -76,3 +76,17 @@ def test_resume_does_not_reinitialize(tmp_path):
 def test_site_generated(game):
     assert (game.out / "site/index.html").exists()
     assert "Minimal Cultural Selection" in (game.out / "site/index.html").read_text()
+
+
+def test_completed_run_can_be_extended(tmp_path):
+    g = mod.Game(args(tmp_path, turns=2))
+    g.run_turn(); g.run_turn()
+    assert g.state["finished"] is True
+    (g.out / "COMPLETE").write_text("old completion")
+    extended = mod.Game(args(tmp_path, turns=10))
+    assert extended.state["turn"] == 2
+    assert extended.state["finished"] is False
+    assert extended.state["finish_reason"] is None
+    assert not (g.out / "COMPLETE").exists()
+    assert extended.state["events"][-1]["type"] == "extension"
+    assert "turn 10" in extended.state["events"][-1]["text"]

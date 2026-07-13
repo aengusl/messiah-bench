@@ -8,7 +8,7 @@ Agents will voluntarily spend scarce turns making cultural artifacts when those 
 
 ## Phase
 
-Complete.
+Extension preflight complete; ready to launch.
 
 ## Plan
 
@@ -64,7 +64,9 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12 23:24 UTC: Pilot completed at turn 100. 24/24 alive; 2,400/2,400 valid; 26 makes; 21 accepted; 4 religions; $7.3383 pilot cost.
 - 2026-07-12 23:24 UTC: Final website snapshot published automatically. Added a seven-version Verdant Archive evolution timeline and homepage button.
 - 2026-07-12 23:25 UTC: Updated editable deck in place to ten slides and completed a second visual fix-and-verify pass.
+- 2026-07-12: User requested continuation to 10× the original horizon. Implemented safe turn-limit extension: clears only the turn-limit completion state, removes the stale sentinel, preserves all agents/culture/usage, and adds a public horizon-extension event.
+- 2026-07-12: Extension regression suite passed 8/8. Target is turn 1,000; projected additional cost $65–$75; cumulative hard cap remains $100.
 
 ## Next step
 
-Review final artifacts and decide whether to replicate or revise for stronger differentiation.
+Commit extension support, launch turn 100→1,000 continuation, and verify turn 101.
