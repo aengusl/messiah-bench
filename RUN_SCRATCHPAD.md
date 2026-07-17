@@ -1,16 +1,16 @@
 # Minimal Cultural Selection — Live Scratchpad
 
-Last updated: 2026-07-12 UTC
+Last updated: 2026-07-17 04:24 UTC
 
 ## Current state
 
 - Phase: turn-1,000 extension running
-- Status: canonical society resumed successfully; new proposals appeared immediately
+- Status: canonical society healthy at turn 126; website refreshed from turn 123
 - Canonical output: `outputs/2026-07-12-minimal-cultural-selection/`
-- Tmux session: `260712-minimal-pilot`
-- Monitor session: `260712-minimal-watch`
-- Website publisher session: `260712-minimal-publish`
-- Latest completed checkpoint: 6-agent, 10-turn scripted dry-run
+- Tmux session: `260712-minimal-1000`
+- Monitor session: `260712-minimal-1000-watch`
+- Website publisher session: `260712-minimal-1000-publish`
+- Latest checkpoint: turn 126, 24 alive, 3,024 cumulative calls, 1 error
 
 ## Budget and cost
 
@@ -20,6 +20,7 @@ Last updated: 2026-07-12 UTC
 - Extension projection: **approximately $71–$78 additional; $78–$85 cumulative**
 - Hard cost cap: **$100 cumulative pilot spend**
 - Calls through turn 100: **2,400 / 2,400 valid**
+- Cost through turn 126: **$9.3491 cumulative estimated**
 - Stop conditions: cost reaches $100, authentication fails, more than 5% of actions are invalid, or the same phase fails twice
 
 ## ETA
@@ -54,6 +55,7 @@ ETAs are estimates and will be replaced with measured rates as soon as live call
 - Making ended after turn 54. Turns 55–100 were a consolidation phase in which canonical authors accumulated influence.
 - Final website includes a scrollable seven-version evolution of The Verdant Archive.
 - Editable deck updated in place to ten slides with final metrics and the convergence finding.
+- Latest website repo was pulled before regeneration; turn-123 snapshot pushed as website commit `a26975a` with four updated religion evolution files. The completion publisher remains armed for turn 1,000.
 
 ## Next actions
 
