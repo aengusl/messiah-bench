@@ -4,8 +4,8 @@ Last updated: 2026-07-12 UTC
 
 ## Current state
 
-- Phase: turn-1,000 extension preflight
-- Status: safe continuation support implemented and 8/8 focused tests pass
+- Phase: turn-1,000 extension running
+- Status: canonical society resumed successfully; new proposals appeared immediately
 - Canonical output: `outputs/2026-07-12-minimal-cultural-selection/`
 - Tmux session: `260712-minimal-pilot`
 - Monitor session: `260712-minimal-watch`
@@ -17,7 +17,7 @@ Last updated: 2026-07-12 UTC
 - Hard stop: **$100**
 - Cost through turn 100: **$7.3383**
 - Preflight smoke cost: **$0.1554**
-- Extension projection: **$65–$75 additional**
+- Extension projection: **approximately $71–$78 additional; $78–$85 cumulative**
 - Hard cost cap: **$100 cumulative pilot spend**
 - Calls through turn 100: **2,400 / 2,400 valid**
 - Stop conditions: cost reaches $100, authentication fails, more than 5% of actions are invalid, or the same phase fails twice
@@ -29,7 +29,8 @@ Last updated: 2026-07-12 UTC
 - Design deck draft and first fix-and-verify QA cycle: complete
 - Pilot launched: **2026-07-12 23:02 UTC**
 - Extension target: **turn 1,000** (900 additional turns)
-- Extension ETA: approximately **2.5–4 hours** after launch
+- Extension launched: **2026-07-17 04:16 UTC**
+- Measured ETA: approximately **08:00–08:45 UTC** (3.5–4.5 hours total)
 
 ETAs are estimates and will be replaced with measured rates as soon as live calls begin.
 
@@ -56,7 +57,6 @@ ETAs are estimates and will be replaced with measured rates as soon as live call
 
 ## Next actions
 
-1. Commit and push extension support.
-2. Launch the canonical continuation in tmux.
-3. Verify turn 101 and persistent monitoring.
-4. Publish the website only after turn 1,000 completes.
+1. Monitor progress, cost, and invalid rate at durable checkpoints.
+2. Stop if cumulative cost reaches $100 or invalid actions exceed 5%.
+3. Completion watcher publishes the website only after the extension sentinel appears.

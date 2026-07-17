@@ -8,7 +8,7 @@ Agents will voluntarily spend scarce turns making cultural artifacts when those 
 
 ## Phase
 
-Extension preflight complete; ready to launch.
+Turn-1,000 extension running.
 
 ## Plan
 
@@ -43,6 +43,12 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - Monitor: `experiments/2026-07-12-minimal-cultural-selection/monitor.log`
 - Monitor tmux: `260712-minimal-watch`
 - Website publisher tmux: `260712-minimal-publish`
+- Extension tmux: `260712-minimal-1000`
+- Extension monitor tmux: `260712-minimal-1000-watch`
+- Extension pane PID: `2331476`
+- Extension command: `UV_CACHE_DIR=/tmp/uv-cache uv run python experiments/2026-07-12-minimal-cultural-selection/run.py --agents=24 --turns=1000 --workers=8 --cost-cap=100 --run-dir=outputs/2026-07-12-minimal-cultural-selection`
+- Extension log: `experiments/2026-07-12-minimal-cultural-selection/extension.log`
+- Extension monitor: `experiments/2026-07-12-minimal-cultural-selection/extension-monitor.log`
 
 ## Progress log
 
@@ -66,7 +72,9 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12 23:25 UTC: Updated editable deck in place to ten slides and completed a second visual fix-and-verify pass.
 - 2026-07-12: User requested continuation to 10× the original horizon. Implemented safe turn-limit extension: clears only the turn-limit completion state, removes the stale sentinel, preserves all agents/culture/usage, and adds a public horizon-extension event.
 - 2026-07-12: Extension regression suite passed 8/8. Target is turn 1,000; projected additional cost $65–$75; cumulative hard cap remains $100.
+- 2026-07-17 04:16 UTC: Launched canonical turn-100→1,000 continuation in tmux with persistent monitoring.
+- 2026-07-17 04:18 UTC: Turn 106 healthy: 24 alive, 2,544/2,544 cumulative valid calls, $7.8248 cumulative pilot cost. Two new proposals appeared after the horizon-extension event. Measured ETA 08:00–08:45 UTC; projected final cost $78–$85.
 
 ## Next step
 
-Commit extension support, launch turn 100→1,000 continuation, and verify turn 101.
+Monitor extension; completion watcher will regenerate and push the website after the terminal sentinel.
