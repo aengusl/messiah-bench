@@ -1,6 +1,6 @@
 # Minimal Cultural Selection — Status
 
-Updated: 2026-07-12 UTC (engine validation)
+Updated: 2026-07-17 04:23 UTC
 
 ## Hypothesis
 
@@ -74,6 +74,7 @@ Expected files include `world_state.json`, `events.jsonl`, `decisions.jsonl`, `o
 - 2026-07-12: Extension regression suite passed 8/8. Target is turn 1,000; projected additional cost $65–$75; cumulative hard cap remains $100.
 - 2026-07-17 04:16 UTC: Launched canonical turn-100→1,000 continuation in tmux with persistent monitoring.
 - 2026-07-17 04:18 UTC: Turn 106 healthy: 24 alive, 2,544/2,544 cumulative valid calls, $7.8248 cumulative pilot cost. Two new proposals appeared after the horizon-extension event. Measured ETA 08:00–08:45 UTC; projected final cost $78–$85.
+- 2026-07-17 04:23 UTC: Pulled the latest website `main` branch, regenerated the exhibition in place at turn 123, and pushed website commit `a26975a`. Snapshot: 24 alive, 2,952 calls, 1 model error, $9.1123 cumulative estimated cost; the completion publisher remains armed for turn 1,000.
 
 ## Next step
 
