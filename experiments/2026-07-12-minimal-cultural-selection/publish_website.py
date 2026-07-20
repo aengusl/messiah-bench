@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Publish a standalone live exhibition page into aengusl.github.io."""
 
-import argparse, html, json, re, shutil
+import argparse, difflib, html, json, re, shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -12,6 +12,22 @@ def load_jsonl(path):
 def excerpt(value, n=380):
     value = re.sub(r"\s+", " ", value or "").strip()
     return value if len(value) <= n else value[:n].rsplit(" ", 1)[0] + "…"
+
+def doctrine_delta(before, after):
+    before_words, after_words = (before or "").split(), (after or "").split()
+    added, removed = [], []
+    for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, before_words, after_words).get_opcodes():
+        if op in {"insert", "replace"}: added.extend(after_words[j1:j2])
+        if op in {"delete", "replace"}: removed.extend(before_words[i1:i2])
+    return {"added": excerpt(" ".join(added), 160), "removed": excerpt(" ".join(removed), 160)}
+
+def artwork_delta(before_path, after_path):
+    before = before_path.read_text(errors="replace").splitlines() if before_path and before_path.exists() else []
+    after = after_path.read_text(errors="replace").splitlines()
+    changes = list(difflib.ndiff(before, after))
+    added = sum(x.startswith("+ ") for x in changes)
+    removed = sum(x.startswith("- ") for x in changes)
+    return {"added_lines": added, "removed_lines": removed}
 
 def main():
     ap = argparse.ArgumentParser()
@@ -24,6 +40,8 @@ def main():
     art_dir = args.site_dir / "artworks"; art_dir.mkdir(exist_ok=True)
     versions = {v["id"]: v for v in state["versions"]}
     agents = {a["id"]: a for a in state["agents"]}
+    make_decisions = {(d["turn"], d["agent_id"]): d for d in decisions
+                      if d.get("valid") and d.get("action", {}).get("action") == "make"}
     religions = [r for r in state["religions"] if r.get("canonical_version_id")]
     active = [r for r in religions if r["active"]]
     works = []
@@ -43,9 +61,20 @@ def main():
         for v in sorted((v for v in state["versions"] if v["religion_id"] == religion["id"]), key=lambda v: v["resolved_turn"]):
             filename = f"evolution-r{religion['id']}-v{v['id']}.html"
             shutil.copy2(args.run_dir / v["artwork_path"], art_dir / filename)
+            parent = versions.get(v.get("parent_version_id"))
+            maker = agents.get(v.get("creator_id"), {})
+            decision = make_decisions.get((v.get("created_turn"), v.get("creator_id")), {})
+            private_reasoning = decision.get("action", {}).get("private_reasoning", "")
+            doctrine_change = doctrine_delta(parent.get("doctrine", "") if parent else "", v["doctrine"])
+            art_change = artwork_delta(args.run_dir / parent["artwork_path"] if parent else None,
+                                       args.run_dir / v["artwork_path"])
             lineage.append({"version": v["id"], "turn": v["resolved_turn"], "name": v["name"], "doctrine": v["doctrine"],
-                            "file": filename, "creator": agents.get(v.get("creator_id"), {}).get("name", "Seed culture"),
-                            "reason": excerpt(v.get("reason", ""), 180)})
+                            "created_turn": v.get("created_turn"), "parent_version": v.get("parent_version_id"),
+                            "file": filename, "creator": maker.get("name", "Seed culture"),
+                            "creator_alive": maker.get("alive"), "creator_influence": maker.get("influence", 0),
+                            "supporters": len(v.get("supporters", [])), "reason": excerpt(v.get("reason", ""), 420),
+                            "private_reasoning": excerpt(private_reasoning, 900),
+                            "doctrine_change": doctrine_change, "art_change": art_change})
         extinction = next((e for e in events if e.get("type") == "extinction" and e.get("religion_id") == religion["id"]), None)
         evolutions.append({"religion_id": religion["id"], "name": religion["name"], "active": religion["active"],
                            "extinct_turn": extinction.get("turn") if extinction else None, "versions": lineage})
