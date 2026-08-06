@@ -20,6 +20,8 @@ REPO = Path(__file__).resolve().parents[3]
 EXP = REPO / "experiments/2026-07-29--aengus--cultural-selection-blog"
 RESULTS = EXP / "results"
 TWIN = REPO / "outputs/2026-08-06-twin-worlds"
+TWIN2 = REPO / "outputs/2026-08-06-twin-worlds-v2"
+BLIND = Path("/home/aenguslynch/.claude/jobs/bc7fec2f/tmp/blind-classify")
 DIAL = REPO / "outputs/2026-08-06-threat-dial"
 BLOG_RENDERS = RESULTS / "renders"
 OUT = RESULTS / "art_assets.json"
@@ -91,6 +93,13 @@ def encode(path, max_side=320, quality=70, fmt="JPEG"):
     return f"data:{mime};base64,{payload}", img.size
 
 
+def rel_source(path):
+    try:
+        return str(path.relative_to(REPO))
+    except ValueError:
+        return str(path)
+
+
 def entry(eid, group, label, caption, path, **kw):
     b64, size = encode(path, **kw)
     return {
@@ -101,7 +110,7 @@ def entry(eid, group, label, caption, path, **kw):
         "b64": b64,
         "width": size[0],
         "height": size[1],
-        "source": str(path.relative_to(REPO)),
+        "source": rel_source(path),
     }
 
 
@@ -203,6 +212,106 @@ def add_evolution():
         "world": world, "charter": charter, "religion_id": rid,
         "lineage_length": n, "versions": [chain[i]["id"] for i in idxs],
     }
+
+
+# ---------------------------------------------------------------- v2 assets
+#
+# Hand-curated. Candidate contact sheets were built from the final-generation
+# canonical render of every religion in all three replicate worlds per charter
+# (later versions preferred, >8 distinct colours except ascetic, where the low
+# colour count *is* the aesthetic), then picked by eye.
+
+V2_FINAL = {
+    "ascetic": [("ascetic-r1", 30), ("ascetic-r1", 39), ("ascetic-r3", 29)],
+    "baroque": [("baroque-r1", 58), ("baroque-r3", 35), ("baroque-r2", 47)],
+    "nihilist": [("nihilist-r2", 54), ("nihilist-r1", 23), ("nihilist-r3", 33)],
+    "ancestor": [("ancestor-r3", 20), ("ancestor-r3", 21), ("ancestor-r1", 13)],
+    "futurist": [("futurist-r2", 36), ("futurist-r1", 29), ("futurist-r3", 34)],
+    "control": [("control-r1", 28), ("control-r2", 58), ("control-r3", 23)],
+}
+
+V2_LOOK = {
+    "ascetic": "black hairline geometry on bone-white — one arc, one dot, nothing else",
+    "baroque": "crimson-and-gold rosette, gilt corner bosses, a pearl ring around the rim",
+    "nihilist": "confetti of saturated blocks over black, slashed by two yellow diagonals",
+    "ancestor": "a stained-glass arch: brick coursing, a haloed figure in earth browns",
+    "futurist": "cyan wireframe pyramid on a receding grid, starfield behind",
+    "control": "a soft-glowing disc inside a rotated square, one colour per world",
+}
+
+V2_SEEDS = {c: (f"{c}-r1", 1) for c in CHARTERS}
+
+# The clearest lineage in the fleet: a bare square accretes a glowing core and
+# orbiting nodes over 15 canonical revisions.
+V2_EVO = ("control-r2", 4, [4, 14, 23, 29, 46, 58])
+
+V2_BLIND = ["art-05", "art-06", "art-09", "art-12", "art-13",
+            "art-23", "art-26", "art-31"]
+
+
+def v2_index(world):
+    run = TWIN2 / world
+    return run, {v["id"]: v for v in load_versions(run)}
+
+
+def add_v2_final():
+    for charter, picks in V2_FINAL.items():
+        for world, vid in picks:
+            run, idx = v2_index(world)
+            v = idx[vid]
+            p = run / v["render_path"]
+            dc = safe_distinct(p)
+            assets.append(entry(
+                f"v2-{world}-v{vid}", "v2-final",
+                f"{charter} · {world} · version-{vid}",
+                f'"{v["name"]}" — {v["doctrine"]} ({CHARTER_BLURB[charter]}; '
+                f"turn {v['created_turn']}, {dc} distinct colours)",
+                p, max_side=360, quality=75,
+            ))
+        notes.setdefault("v2_final", {})[charter] = {
+            "picks": [f"{w}/v{i}" for w, i in picks], "look": V2_LOOK[charter],
+        }
+
+
+def add_v2_seeds():
+    for charter, (world, vid) in V2_SEEDS.items():
+        run, idx = v2_index(world)
+        v = idx[vid]
+        assets.append(entry(
+            f"v2seed-{charter}", "v2-seeds",
+            f"{charter} · founding seed",
+            f'the founding DNA — "{v["name"]}", {v["doctrine"]} '
+            f"({CHARTER_BLURB[charter]})",
+            run / v["render_path"], max_side=360, quality=75,
+        ))
+        notes.setdefault("v2_seeds", {})[charter] = f"{world}/v{vid}"
+
+
+def add_v2_evolution():
+    world, rid, vids = V2_EVO
+    run, idx = v2_index(world)
+    for step, vid in enumerate(vids, 1):
+        v = idx[vid]
+        assets.append(entry(
+            f"v2evo-{world}-v{vid}", "v2-evolution",
+            f"turn {v['created_turn']} · version-{vid}",
+            f'"{v["name"]}" at turn {v["created_turn"]} — {v["doctrine"]} '
+            f"(step {step}/{len(vids)})",
+            run / v["render_path"], max_side=360, quality=75,
+        ))
+    notes["v2_evolution"] = {"world": world, "religion_id": rid, "versions": vids}
+
+
+def add_v2_blind():
+    key = json.loads((BLIND / "KEY.json").read_text())
+    for stem in V2_BLIND:
+        p = BLIND / f"{stem}.png"
+        assets.append(entry(
+            f"v2blind-{stem}", "v2-blind", stem,
+            "classified correctly (36/36 overall)",
+            p, max_side=240, quality=75,
+        ))
+    notes["v2_blind"] = {s: key[f"{s}.png"] for s in V2_BLIND}
 
 
 def add_dial():
@@ -344,6 +453,10 @@ def collect_quotes():
 def main():
     print("twin...");        add_twin()
     print("evolution...");   add_evolution()
+    print("v2 final...");    add_v2_final()
+    print("v2 seeds...");    add_v2_seeds()
+    print("v2 evolution..."); add_v2_evolution()
+    print("v2 blind...");    add_v2_blind()
     print("dial...");        add_dial()
     print("degenerate...");  add_degenerate()
     print("plots...");       add_plots()
