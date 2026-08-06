@@ -442,6 +442,10 @@ body{{margin:0;background:#08090e;color:#e8e6df;font:16px/1.5 system-ui}}header,
         config = vars(self.args).copy(); config["started_at"] = utcnow(); json_dump(self.out / "config.json", config)
         while not self.state["finished"] and self.state["turn"] < self.args.turns:
             self.run_turn()
+            u = self.state["usage"]
+            if self.state["turn"] >= 3 and u["calls"] > 0 and u["errors"] == u["calls"]:
+                self.state["finished"] = True
+                self.state["finish_reason"] = "aborted: every API call errored (check keys/quota)"
         (self.out / "COMPLETE").write_text(f"{utcnow()} {self.state['finish_reason']}\n")
 
 

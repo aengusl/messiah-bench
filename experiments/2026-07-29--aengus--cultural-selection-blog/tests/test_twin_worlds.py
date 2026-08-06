@@ -102,7 +102,7 @@ def test_launcher_shared_params_identical_across_worlds():
     lines = dry_run_lines("--reps", "2", "--turns", "300")
     shared = ["--model gemini-2.5-flash", "--agents 24", "--turns 300", "--seed 46",
               "--initial-life 20", "--proposal-lifetime 3", "--workers 8",
-              "--cost-cap 10000", "PYTHONUNBUFFERED=1"]
+              "--cost-cap 40", "PYTHONUNBUFFERED=1"]
     for line in lines:
         for token in shared:
             assert token in line, f"missing {token!r} in: {line}"
