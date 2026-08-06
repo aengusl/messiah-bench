@@ -36,3 +36,9 @@
 ## Cumulative spend
 - $0.09 (judge pilots incl. failed-key run) + smoke in flight ≈ $3
 - See COSTLOG.md for per-call detail.
+
+## 2026-08-06 04:30 UTC — smoke gate PASSED
+ascetic-r1 50 turns: $3.41, 1/1200 errors, 24 alive, 13 accepted versions. Charter verified in world_state + agent reasoning ("aligns with the removal principle of the founding charter", 2494 charter mentions, 354 ascetic-vocab lines in decisions.jsonl). Fleet launch queued behind judge tournament (shared Gemini quota).
+
+## 2026-08-06 04:50 UTC — AUDIT: round-1 regime ranking RETRACTED
+Renderer fails on v7/v8 SVG/animation/blur art (38%/73%/100% render success, monotonic with ELO headline) + minimal embeds legible doctrine text. Judge r2 killed at $0.31. Gemini slot-A bias 62%. ELO math and 10/10 spot checks clean. Full audit in the team transcript; render fix delegated to builder-move1. Twin-worlds fleet unaffected (minimal-engine HTML renders 100%).

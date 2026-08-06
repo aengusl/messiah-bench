@@ -13,9 +13,11 @@ Experiments sufficient for a Twitter thread → blog post. Thesis: **culture, no
 - **H2 Competition breeds beauty** — P ≈ 0.5. Regime ranking: competitive regimes > locked pluralism. Early pilot signal (n=30 pairs): minimal 35 > v8 21 > v7 4 wins — but confounded (v7 art embeds text, render era differs). Falsifier: ranking driven by confounds or judge taste.
 - **H4 Threat sharpens art** — P ≈ 0.4. Untested until Move 3.
 
-## State of the world (2026-08-06 04:15 UTC)
-- **RUNNING** tmux `260806-judge-full`: 2000-pair tournament, 8 workers, ~$6, ETA ~35 min. Monitor b3586jg9v. Output: data/judgments.jsonl.
-- **RUNNING** tmux `260806-twin-ascetic-r1`: 50-turn ascetic smoke world (~$3), outputs/2026-08-06-twin-smoke-fix-1/ascetic-r1/ (canonical). Monitor bf1ul9jmt.
+## State of the world (2026-08-06 04:45 UTC)
+- **RUNNING** fleet: 18 twin worlds × 300 turns in tmux (`260806-twin-*`), ETA 2-4h, per-world cap $40. Monitor bucr75ps2 (5-min watchdog: completion/crash/error-storm).
+- **RETRACTED: round-1 regime ranking (minimal 1799 > v8 1433 > v7 1312).** Audit found renderer blanks v7/v8 art (render-success 38%/73%/100%, exactly monotonic with ELO) — v7/v8 use SVG+animation+blur our screenshot doesn't paint; minimal also embeds legible doctrine text judges cite. Judged on renderer compatibility, not art. Round 2 killed at $0.31. Auditor also found: Gemini 62% slot-A bias (discounts half of votes); ELO math + spot checks clean (10/10); elo.csv silently drops 36 low-game artworks. → retractions ledger.
+- **BLOCKED (render fix)**: builder-move1 diagnosing blank IDs, forcing animations to end-state, adding distinct-colour render gate to separate render failure from genuinely degenerate art. Rejudge only after per-regime render table looks sane.
+- H2 prior unchanged at 0.5 (evidence invalidated, not reversed). Process bugs logged: dry-run must not write files; pair_index not a unique key across runs.
 - Built + committed: judge harness (68 tests), twin-worlds injection + launcher (79 tests), repo restructure, CLAUDE.md/MAP.md.
 - Known confounds for H2: artworks embed religion names/doctrine (not fully blind); v7 degenerate art renders blank (scores low, arguably correctly).
 - ANTHROPIC key: repo .env stale; working key = just-find-misalignment .env via env override.
