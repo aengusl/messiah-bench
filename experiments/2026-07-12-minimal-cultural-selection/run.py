@@ -77,7 +77,12 @@ class Game:
         self.charter = Path(args.charter_file).read_text().strip() if getattr(args, "charter_file", None) else ""
         if self.charter:
             self.system_prompt = self.system_prompt + "\n\n## The founding charter of this world\n\n" + self.charter
+        self.announcement = ""
+        if getattr(args, "announce_pressure", False):
+            self.announcement = (EXP_DIR / "prompts/pressure_announcement.md").read_text().strip()
+            self.system_prompt = self.system_prompt + "\n\n## How allegiance is tested\n\n" + self.announcement
         self.turn_prompt = (EXP_DIR / "prompts/agent_turn.md").read_text()
+        self.pressure_prompt = (EXP_DIR / "prompts/pressure_turn.md").read_text()
         self.rng = random.Random(args.seed)
         self.client = None
         self.state = self.load_or_initialize()
@@ -111,6 +116,8 @@ class Game:
             "seed": self.args.seed,
             "model": self.args.model,
             "charter": self.charter,
+            "pressure_every": getattr(self.args, "pressure_every", 0),
+            "min_members": getattr(self.args, "min_members", 0),
             "initial_life": self.args.initial_life,
             "proposal_lifetime": self.args.proposal_lifetime,
             "agents": [], "religions": [], "versions": [], "proposals": [],
@@ -234,12 +241,15 @@ class Game:
                 "proposal_id": props[0]["id"] if props else None, "reason": "Sustain the culture I currently trust."}
 
     def gemini_action(self, agent: dict, snapshot: dict) -> dict:
+        observation, images = self.observation(agent, snapshot)
+        return self.gemini_json(self.system_prompt + "\n\n" + observation + "\n\n" + self.turn_prompt, images)
+
+    def gemini_json(self, text: str, images: list[Path]) -> dict:
         from google import genai
         from google.genai import types
         if self.client is None:
             self.client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
-        observation, images = self.observation(agent, snapshot)
-        parts: list[Any] = [types.Part.from_text(text=self.system_prompt + "\n\n" + observation + "\n\n" + self.turn_prompt)]
+        parts: list[Any] = [types.Part.from_text(text=text)]
         for p in images:
             if p.exists(): parts.append(types.Part.from_bytes(data=p.read_bytes(), mime_type="image/png"))
         response = self.client.models.generate_content(
@@ -422,12 +432,151 @@ class Game:
         e = {"turn": self.state["turn"] + 1, "time": utcnow(), "type": kind, "text": text, **fields}
         self.state["events"].append(e); append_jsonl(self.out / "events.jsonl", e)
 
+    # ------------------------------------------------------------ pressure round
+    # Conquest by conversion. Every --pressure-every turns, an EXTRA round runs in which
+    # allegiance is re-decided from the canonical artworks alone: no names, no doctrines,
+    # no members, no history, panels permuted per agent. It never replaces the turn's normal
+    # make/choose action, so make-opportunities per turn are identical at every dial setting.
+    # See docs/threat_dial_prereg.md in the cultural-selection-blog experiment.
+
+    def pressure_panels(self, agent: dict, snapshot: dict) -> list[dict]:
+        """Active religions in an order scrambled for this agent alone, reproducibly."""
+        active = sorted([r for r in snapshot["religions"] if r["active"] and r["canonical_version_id"]],
+                        key=lambda r: r["id"])
+        order = list(range(len(active)))
+        random.Random(f"{self.args.seed}:{snapshot['turn']}:{agent['id']}").shuffle(order)
+        return [active[i] for i in order]
+
+    def pressure_observation(self, panels: list[dict], snapshot: dict) -> tuple[str, list[Path]]:
+        """Images only. Nothing here may identify a religion — that is the whole mechanic."""
+        images = []
+        for r in panels:
+            v = next(x for x in snapshot["versions"] if x["id"] == r["canonical_version_id"])
+            images.append(self.out / v["render_path"])
+        payload = {"turn": snapshot["turn"], "panels": len(panels),
+                   "image_order": [f"panel-{i + 1}.png" for i in range(len(panels))]}
+        return json.dumps(payload, ensure_ascii=False, indent=2), images
+
+    def scripted_ranking(self, agent: dict, panels: list[dict]) -> dict:
+        n = len(panels)
+        shift = agent["id"] % n if n else 0
+        return {"ranking": [(i + shift) % n + 1 for i in range(n)], "reason": "Scripted ranking."}
+
+    def gemini_ranking(self, panels: list[dict], snapshot: dict) -> dict:
+        observation, images = self.pressure_observation(panels, snapshot)
+        return self.gemini_json(self.system_prompt + "\n\n" + observation + "\n\n" + self.pressure_prompt, images)
+
+    @staticmethod
+    def validate_ranking(action: dict, n: int) -> tuple[bool, str]:
+        ranking = action.get("ranking")
+        if not isinstance(ranking, list): return False, "ranking must be a list"
+        if len(ranking) != n: return False, f"ranking must cover all {n} panels"
+        if sorted(ranking) != list(range(1, n + 1)): return False, "ranking must be a permutation of panel numbers"
+        return True, "ok"
+
+    def rank_one(self, agent: dict, snapshot: dict) -> dict:
+        started = time.time()
+        panels = self.pressure_panels(agent, snapshot)
+        observation, images = self.pressure_observation(panels, snapshot)
+        obs_record = {"turn": snapshot["turn"], "agent_id": agent["id"], "agent_name": agent["name"],
+                      "observation_sha256": hashlib.sha256(observation.encode()).hexdigest(),
+                      "observation": observation, "panel_religion_ids": [r["id"] for r in panels],
+                      "images": [str(p.relative_to(self.out)) for p in images]}
+        try:
+            action = self.scripted_ranking(agent, panels) if self.args.dry_run else self.gemini_ranking(panels, snapshot)
+            valid, error = self.validate_ranking(action, len(panels))
+        except Exception as exc:
+            action, valid, error = {"action": "invalid"}, False, f"{type(exc).__name__}: {exc}"
+        return {"observation": obs_record, "panels": [r["id"] for r in panels],
+                "decision": {"turn": snapshot["turn"], "agent_id": agent["id"], "agent_name": agent["name"],
+                             "action": action, "valid": valid, "error": None if valid else error,
+                             "latency_seconds": round(time.time() - started, 3)}}
+
+    def apply_pressure(self, results: list[dict]) -> None:
+        turn = self.state["turn"]
+        agent_by_id = {a["id"]: a for a in self.state["agents"]}
+        prefs: dict[int, list[int]] = {}
+        for res in results:
+            append_jsonl(self.out / "pressure_observations.jsonl", res["observation"])
+            d = res["decision"]
+            append_jsonl(self.out / "pressure_decisions.jsonl", d)
+            usage = d["action"].get("_usage", {})
+            self.state["usage"]["input_tokens"] += usage.get("input_tokens", 0)
+            self.state["usage"]["output_tokens"] += usage.get("output_tokens", 0)
+            self.state["usage"]["calls"] += 0 if self.args.dry_run else 1
+            agent = agent_by_id[d["agent_id"]]
+            if not d["valid"]:
+                self.state["usage"]["errors"] += 1
+                self.event("invalid_ranking", f"{d['agent_name']}'s ranking failed: {d['error']}", agent_id=agent["id"])
+                # An agent who cannot rank keeps the allegiance it already had.
+                prefs[agent["id"]] = [agent["religion_id"]] if agent["religion_id"] else []
+                continue
+            prefs[agent["id"]] = [res["panels"][p - 1] for p in d["action"]["ranking"]]
+
+        for aid, pref in prefs.items():
+            if not pref: continue
+            agent, rid = agent_by_id[aid], pref[0]
+            agent["religion_id"] = rid
+            r = self.religion(rid)
+            if r and r["canonical_version_id"]:
+                creator_id = self.version(r["canonical_version_id"])["creator_id"]
+                if creator_id is not None and creator_id != aid:
+                    agent_by_id[creator_id]["influence"] += 1
+
+        self.resolve_extinctions(prefs, agent_by_id, turn)
+        counts = {r["name"]: len(self.members(r["id"])) for r in self.state["religions"] if r["active"]}
+        self.event("pressure_round", f"Allegiance was tested on artwork alone: {json.dumps(counts, ensure_ascii=False)}")
+
+    def resolve_extinctions(self, prefs: dict[int, list[int]], agent_by_id: dict[int, dict], turn: int) -> None:
+        """Kill religions under --min-members, scatter their members down their own ranking.
+
+        Iterative: a scatter can push another religion under the threshold. Religions younger
+        than the grace period are exempt so that founding is not made impossible at high
+        pressure -- a founder starts alone and needs turns to attract members.
+        """
+        grace = getattr(self.args, "min_members_grace", 0)
+        while True:
+            active = [r for r in self.state["religions"] if r["active"]]
+            doomed = [r for r in active
+                      if len(self.members(r["id"])) < self.args.min_members and turn - r["created_turn"] > grace]
+            if not doomed: return
+            if len(active) - len(doomed) < 1:
+                self.event("pressure_stalemate",
+                           "Every culture fell below the threshold at once; none was dissolved.")
+                return
+            doomed_ids = {r["id"] for r in doomed}
+            for r in doomed:
+                r["active"] = False
+                self.event("extinction", f"{r['name']} lost its members when allegiance was tested.", religion_id=r["id"])
+            survivors = {r["id"] for r in self.state["religions"] if r["active"]}
+            for a in self.state["agents"]:
+                if not a["alive"] or a["religion_id"] not in doomed_ids: continue
+                fallback = next((rid for rid in prefs.get(a["id"], []) if rid in survivors), None)
+                if fallback is None:
+                    fallback = max(survivors, key=lambda rid: (len(self.members(rid)), -rid))
+                a["religion_id"] = fallback
+                self.event("scatter", f"{a['name']} fell to {self.religion(fallback)['name']}.",
+                           agent_id=a["id"], religion_id=fallback)
+
+    def pressure_round(self) -> None:
+        snapshot = copy.deepcopy(self.state)
+        alive = [a for a in snapshot["agents"] if a["alive"]]
+        if not alive or len([r for r in snapshot["religions"] if r["active"] and r["canonical_version_id"]]) < 2:
+            return
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.args.workers) as pool:
+            results = list(pool.map(lambda a: self.rank_one(a, snapshot), alive))
+        self.apply_pressure(results)
+
     def run_turn(self) -> None:
         snapshot = copy.deepcopy(self.state)
         alive = [a for a in snapshot["agents"] if a["alive"]]
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.args.workers) as pool:
             results = list(pool.map(lambda a: self.decide_one(a, snapshot), alive))
-        self.apply_decisions(results); self.save()
+        self.apply_decisions(results)
+        every = getattr(self.args, "pressure_every", 0)
+        if every and self.state["turn"] % every == 0 and any(a["alive"] for a in self.state["agents"]):
+            self.pressure_round()
+        self.save()
         print(json.dumps({"turn": self.state["turn"], "alive": sum(a["alive"] for a in self.state["agents"]),
                           "religions": sum(r["active"] for r in self.state["religions"]),
                           "open_proposals": len(self.open_proposals()),
@@ -470,6 +619,14 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--fresh", action="store_true")
     p.add_argument("--charter-file", default=None,
                    help="Path to a founding-charter markdown file injected into the system prompt")
+    p.add_argument("--pressure-every", type=int, default=0,
+                   help="Run an art-only allegiance round every K turns (0 = never, the control)")
+    p.add_argument("--min-members", type=int, default=3,
+                   help="Religions below this many members are dissolved by a pressure round")
+    p.add_argument("--min-members-grace", type=int, default=0,
+                   help="Religions younger than this many turns are exempt from --min-members")
+    p.add_argument("--announce-pressure", action="store_true",
+                   help="Tell agents allegiance is periodically tested (set for ALL threat-dial worlds, control included)")
     return p
 
 

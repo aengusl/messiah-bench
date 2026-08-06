@@ -376,3 +376,38 @@ Two lesser parameters I have set by judgement and will change on request: **M = 
 extinction threshold — the §7.4 checkpoint exists partly to catch M being wrong) and
 **K ∈ {∞, 16, 8, 4}** (the spacing is geometric so an inverted-U would be visible rather than
 straddled).
+
+---
+
+## 9. Sign-off
+
+Decisions (a), (b) and (c) in §8 were **accepted as recommended on 2026-08-06** by the
+orchestrator under Aengus's standing authorization. Overridable until launch; after launch a
+change means re-running the affected worlds.
+
+### 9.1 Addendum: grace period for young religions (added at build time)
+
+Implementing §1.3 surfaced a consequence the spec did not cover. A religion is founded by a
+single agent and becomes canonical the same turn (`run.py:353–368`), so a founder starts with
+exactly one member. Under M=3 with no protection, the next pressure round dissolves every new
+religion before it can recruit — at K=4 a founder would have at most four turns, at K=16
+sixteen. High pressure would therefore suppress *founding* as well as selecting on art, and
+the pluralism secondary outcomes would measure that suppression rather than the dial.
+
+Added: `--min-members-grace G`, exempting religions younger than G turns from the threshold.
+The launcher sets **G = K** for pressure worlds (0 for the control, where it is inert), so a
+new religion always gets exactly one full pressure cycle to attract members regardless of dial
+setting. This keeps the founding window constant across the sweep instead of scaling it with K.
+
+This is a deviation from the signed-off spec, made because the alternative silently confounds
+the dial. It is flagged rather than buried, and is cheap to revert (`--min-members-grace 0`).
+
+### 9.2 Note: simultaneous collapse is possible and is not a bug
+
+Extinction resolves iteratively, so one round can dissolve several religions at once — with 24
+agents over 4 religions at M=3, a round where most agents converge on one or two artworks culls
+the rest immediately and the world reaches monoculture in a single round. This is the mechanic
+working, and it is exactly what the §7.4 mid-sweep checkpoint should be watching: if K=4 worlds
+hit monoculture in the first few rounds, the dial's high end is measuring collapse rather than
+competition and M needs lowering before the remaining worlds are launched. Pinned by
+`test_simultaneous_collapse_culls_every_religion_under_threshold`.
