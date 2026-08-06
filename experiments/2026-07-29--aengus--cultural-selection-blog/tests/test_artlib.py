@@ -269,7 +269,7 @@ def test_wrap_html_wraps_fragments_only():
 def test_wrap_html_injects_fit_to_frame_scaling():
     """Fragments must be scaled up, or a 200x200 SVG loses to a full-frame one on size."""
     wrapped = A.wrap_html("<svg width='200' height='200'></svg>")
-    assert 'id="art-root"' in wrapped
+    assert 'id="art-frame"' in wrapped
     assert "getBoundingClientRect" in wrapped
     assert str(A.FILL_FRACTION) in wrapped
     assert "{body}" not in wrapped and "{fill}" not in wrapped  # format placeholders consumed
@@ -278,7 +278,152 @@ def test_wrap_html_injects_fit_to_frame_scaling():
 def test_wrap_html_leaves_full_documents_alone():
     """Whole documents already size themselves to the viewport."""
     doc = "<!doctype html><html><body><div>hi</div></body></html>"
-    assert "art-root" not in A.wrap_html(doc)
+    assert "art-frame" not in A.wrap_html(doc)
+
+
+def test_wrap_html_gives_the_frame_a_definite_size():
+    """Percentage-sized roots collapse to nothing against an auto-sized parent."""
+    wrapped = A.wrap_html("<svg width='100%' height='100%'></svg>")
+    assert f"width:{A.FRAME_PX}px;height:{A.FRAME_PX}px" in wrapped
+
+
+def test_wrap_html_puts_the_scaler_before_the_artwork():
+    """Truncated artwork markup swallows anything after it, including our script."""
+    wrapped = A.wrap_html("<svg>")
+    assert wrapped.index("addEventListener") < wrapped.index("<body")
+
+
+# ---------------------------------------------------------------- truncation repair
+
+def test_repair_closes_unclosed_tags():
+    out = A.repair_truncated("<svg width='10'><style>a{b:c}")
+    assert out.count("</style>") == 1 and out.count("</svg>") == 1
+
+
+def test_repair_drops_a_tag_cut_mid_attribute():
+    """A half-written tag swallows everything after it as attribute text."""
+    out = A.repair_truncated("<svg><circle cx='5' r='3'/><rect x='1' width='2")
+    assert "<rect" not in out
+    assert "<circle" in out          # complete elements are kept
+    assert out.endswith("</svg>")
+
+
+def test_repair_is_a_noop_on_well_formed_html():
+    good = "<svg><rect width='10' height='10'/></svg>"
+    assert A.repair_truncated(good) == good
+
+
+def test_repair_never_invents_content():
+    src = "<svg><text>hello</text>"
+    out = A.repair_truncated(src)
+    assert out.startswith(src)                       # only appends
+    assert set(out[len(src):]) <= set("</svg>")
+
+
+# ---------------------------------------------------------------- freeze css
+
+def test_freeze_css_pins_a_frame():
+    css = A.freeze_css(0.0)
+    assert "animation-play-state:paused!important" in css
+    assert "animation-delay:-0.0s!important" in css
+
+
+def test_freeze_css_can_be_disabled():
+    assert A.freeze_css(None) == ""
+
+
+# ---------------------------------------------------------------- source content
+
+def test_source_content_ignores_defs_and_style():
+    """Gradients and keyframes are definitions; they paint nothing on their own."""
+    html = ("<svg><defs><radialGradient id='g'><stop offset='0%'/></radialGradient></defs>"
+            "<style>@keyframes k{0%{opacity:1}}</style></svg>")
+    c = A.source_content(html)
+    assert c["foreground_elements"] == 0
+    assert not c["has_paintable_content"]
+
+
+def test_source_content_ignores_truncated_defs():
+    """An unclosed <defs> must still be stripped, or its contents look paintable."""
+    html = "<svg><defs><radialGradient id='g'><stop offset='0%' stop-color='#fff'/>"
+    assert not A.source_content(html)["has_paintable_content"]
+
+
+def test_source_content_does_not_count_half_written_tags():
+    """<circle cx='4 never paints — counting it would fake a render failure."""
+    assert not A.source_content("<svg><circle cx='4")["has_paintable_content"]
+
+
+def test_source_content_discounts_a_full_bleed_background_rect():
+    """A single background wash is a flat fill, not a composition."""
+    c = A.source_content("<svg><rect x='0' y='0' width='200' height='200' fill='#000'/></svg>")
+    assert c["background_rects"] == 1
+    assert not c["has_paintable_content"]
+
+
+def test_source_content_counts_real_foreground():
+    html = ("<svg><rect width='200' height='200' fill='#000'/>"
+            "<circle cx='50' cy='50' r='20'/><text x='1' y='2'>hi</text></svg>")
+    c = A.source_content(html)
+    assert c["foreground_elements"] == 2
+    assert c["has_paintable_content"]
+
+
+@pytest.mark.parametrize("html,expected", [
+    ("<svg><rect/></svg>", False),
+    ("<svg><rect/>", True),
+    ("<div><style>a{}</style>", True),
+    ("<div><style>a{}</style></div>", False),
+])
+def test_source_content_detects_truncation(html, expected):
+    assert A.source_content(html)["source_truncated"] is expected
+
+
+# ---------------------------------------------------------------- render classification
+
+def _stats(colors):
+    return {"distinct_colors": colors, "is_degenerate": colors <= A.DEGENERATE_MAX_COLORS}
+
+
+def test_classify_separates_render_failure_from_real_degeneracy():
+    """The whole point of the gate: a blank PNG has two very different causes."""
+    has = {"has_paintable_content": True}
+    empty = {"has_paintable_content": False}
+
+    assert A.classify_render(_stats(500), has) == "ok"
+    assert A.classify_render(_stats(2), has) == "render_failure"
+    assert A.classify_render(_stats(2), empty) == "degenerate_source"
+    assert A.classify_render(_stats(500), empty) == "unexpected_paint"
+
+
+def test_degenerate_threshold_is_inclusive():
+    has = {"has_paintable_content": True}
+    assert A.classify_render(_stats(A.DEGENERATE_MAX_COLORS), has) == "render_failure"
+    assert A.classify_render(_stats(A.DEGENERATE_MAX_COLORS + 1), has) == "ok"
+
+
+def test_png_stats_on_a_flat_image(tmp_path):
+    from PIL import Image
+
+    p = tmp_path / "flat.png"
+    Image.new("RGB", (40, 40), (10, 20, 30)).save(p)
+    s = A.png_stats(p)
+    assert s["distinct_colors"] == 1
+    assert s["dominant_rgb"] == [10, 20, 30]
+    assert s["dominant_frac"] == 1.0
+    assert s["is_degenerate"]
+
+
+def test_png_stats_on_a_busy_image(tmp_path):
+    from PIL import Image
+
+    p = tmp_path / "busy.png"
+    im = Image.new("RGB", (60, 60))
+    im.putdata([((x * 7) % 256, (x * 13) % 256, (x * 29) % 256) for x in range(60 * 60)])
+    im.save(p)
+    s = A.png_stats(p)
+    assert s["distinct_colors"] > A.DEGENERATE_MAX_COLORS
+    assert not s["is_degenerate"]
 
 
 def test_write_jsonl_atomic_roundtrip(tmp_path):

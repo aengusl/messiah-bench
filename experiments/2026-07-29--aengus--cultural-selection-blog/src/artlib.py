@@ -235,37 +235,138 @@ def stratified_sample(
 
 CHROMIUM = "/usr/bin/chromium"
 
-# Fragments come in wildly different intrinsic sizes (a 200x200 SVG, a 400x200
-# one, a div sized in %). Screenshotting them as-is would let frame-filling
-# artworks beat small ones on size alone, which is not the thing we are
-# measuring. So we measure the content box and scale it to fill the frame.
+# Rendering these fragments faithfully takes more care than it looks. Three
+# things bite, and all three were silently blanking most v7/v8 art:
+#
+#   1. Most source HTML is TRUNCATED mid-tag (v7 90.7%, v8 78.7%, minimal 0%) --
+#      the simulation's generator ran out of output tokens. An unclosed <style>
+#      swallows everything after it as CSS text, and an unclosed <svg> or a
+#      half-written attribute swallows it as markup. Anything we append after
+#      the artwork -- including our own scaling script -- disappears into it.
+#   2. Percentage-sized roots (<svg width='100%'>, <div style='height:100%'>)
+#      collapse to zero against an auto-sized parent, so nothing paints.
+#   3. CSS/SMIL animations are mid-flight when the screenshot is taken, and many
+#      of these artworks animate through opacity 0.
+#
+# So: repair the truncation, give the content a definite-size box, put our
+# script in <head> where truncated content cannot reach it, and pin animations
+# to a chosen frame.
+
+FILL_FRACTION = 0.92   # leave a small margin so nothing is flush to the edge
+FRAME_PX = 800         # definite-size box, so percentage-sized roots resolve
+FREEZE_AT_S = 0.0      # animation frame to hold; 0 = each animation's rest state
+# Kept deliberately short. Some artworks carry pathological SMIL durations (one
+# has dur='0.000000000000045s' with repeatCount='indefinite'); advancing virtual
+# time by seconds makes chromium grind through ~1e17 iterations and hang until
+# the 120s timeout. CSS animations are pinned by freeze_css, not by this budget,
+# so a short budget costs us nothing and avoids the hang.
+VIRTUAL_TIME_MS = 600
+
 _PAGE = """<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{{margin:0;padding:0;width:100%;height:100%;background:#ffffff;overflow:hidden}}
 body{{display:flex;align-items:center;justify-content:center}}
-#art-root{{transform-origin:center center}}
-</style></head><body><div id="art-root">{body}</div>
+#art-frame{{width:{frame}px;height:{frame}px;position:relative;
+  display:flex;align-items:center;justify-content:center;transform-origin:center center}}
+#art-frame>*{{max-width:none;max-height:none}}
+{freeze_css}
+</style>
 <script>
-(function(){{
-  var root = document.getElementById('art-root');
-  var r = root.getBoundingClientRect();
-  if (r.width > 1 && r.height > 1) {{
-    var fit = Math.min(window.innerWidth / r.width, window.innerHeight / r.height) * {fill};
-    if (isFinite(fit) && fit > 0) root.style.transform = 'scale(' + fit + ')';
+// In <head> and deferred to load: truncated artwork markup further down the
+// document can swallow a trailing <script>, but it cannot reach this one.
+window.addEventListener('load', function(){{
+  var frame = document.getElementById('art-frame');
+  if (!frame) return;
+  var kids = frame.children, box = null;
+  for (var i = 0; i < kids.length; i++) {{
+    var r = kids[i].getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) continue;
+    box = box ? {{l: Math.min(box.l, r.left), t: Math.min(box.t, r.top),
+                  r: Math.max(box.r, r.right), b: Math.max(box.b, r.bottom)}}
+              : {{l: r.left, t: r.top, r: r.right, b: r.bottom}};
   }}
-}})();
-</script></body></html>"""
+  if (!box) return;
+  var w = box.r - box.l, h = box.b - box.t;
+  if (w < 1 || h < 1) return;
+  var fit = Math.min(window.innerWidth / w, window.innerHeight / h) * {fill};
+  // Only ever scale UP to fill the frame; never shrink content that already fits.
+  if (isFinite(fit) && fit > 0 && Math.abs(fit - 1) > 0.01) {{
+    frame.style.transform = 'scale(' + fit + ')';
+  }}
+}});
+</script></head><body><div id="art-frame">{body}</div></body></html>"""
 
-FILL_FRACTION = 0.92  # leave a small margin so nothing is flush to the edge
+_FREEZE_CSS = (
+    "*,*::before,*::after{{animation-delay:-{at}s!important;"
+    "animation-play-state:paused!important;transition:none!important}}"
+)
 
 
-def wrap_html(html: str) -> str:
+def freeze_css(at_s: float | None) -> str:
+    """CSS that pins every CSS animation to one frame.
+
+    `animation-play-state: paused` with a negative delay holds the frame at
+    `at_s` into the cycle. at_s=0 is each animation's own 0% keyframe, which is
+    almost always its resting, visible state -- these artworks routinely animate
+    through opacity 0, so sampling a random mid-flight frame loses the art.
+    """
+    if at_s is None:
+        return ""
+    return _FREEZE_CSS.format(at=float(at_s))
+
+
+_OPEN_CLOSE = (("<style", "</style>"), ("<svg", "</svg>"), ("<div", "</div>"))
+
+
+def repair_truncated(html: str) -> str:
+    """Close tags the generator left open, so partial content still paints.
+
+    Most of this corpus was cut off mid-element by an output-token limit. A
+    browser tab shows whatever arrived before the cut; we want the same. We only
+    ever append closing tags -- no content is altered or invented.
+    """
+    out = html
+    # A cut in the middle of a tag or attribute leaves markup that swallows
+    # whatever follows. Drop that trailing partial tag before closing anything.
+    last_lt, last_gt = out.rfind("<"), out.rfind(">")
+    if last_lt > last_gt:
+        out = out[:last_lt]
+    # An odd number of quotes means the cut landed inside an attribute value.
+    tail = out[out.rfind("<"):] if "<" in out else ""
+    if tail.count("'") % 2 or tail.count('"') % 2:
+        out = out[:out.rfind("<")]
+
+    for open_tag, close_tag in _OPEN_CLOSE:
+        missing = out.count(open_tag) - out.count(close_tag)
+        if missing > 0:
+            out += close_tag * missing
+    return out
+
+
+def wrap_html(
+    html: str, repair: bool = True, freeze_at_s: float | None = FREEZE_AT_S
+) -> str:
     """Snapshot rows are bare fragments; minimal-run files are whole documents."""
     if re.search(r"<html[\s>]|<!doctype", html, re.IGNORECASE):
         return html
-    return _PAGE.format(body=html, fill=FILL_FRACTION)
+    if repair:
+        html = repair_truncated(html)
+    return _PAGE.format(
+        body=html,
+        fill=FILL_FRACTION,
+        frame=FRAME_PX,
+        freeze_css=freeze_css(freeze_at_s),
+    )
 
 
-def render_png(art: Artwork, render_dir: Path, tmp_dir: Path, force: bool = False) -> Path:
+def render_png(
+    art: Artwork,
+    render_dir: Path,
+    tmp_dir: Path,
+    force: bool = False,
+    repair: bool = True,
+    freeze_at_s: float | None = FREEZE_AT_S,
+    virtual_time_ms: int = VIRTUAL_TIME_MS,
+) -> Path:
     """Render one artwork to PNG with headless chromium. Free — no API calls."""
     render_dir = Path(render_dir)
     tmp_dir = Path(tmp_dir)
@@ -277,10 +378,11 @@ def render_png(art: Artwork, render_dir: Path, tmp_dir: Path, force: bool = Fals
         return out
 
     src = tmp_dir / f"{art.art_id}.html"
-    src.write_text(wrap_html(art.html))
+    src.write_text(wrap_html(art.html, repair=repair, freeze_at_s=freeze_at_s))
     staged = tmp_dir / f"{art.art_id}.png"
     if staged.exists():
         staged.unlink()
+    profile = tmp_dir / f"profile-{art.art_id}"
 
     cmd = [
         CHROMIUM,
@@ -291,22 +393,128 @@ def render_png(art: Artwork, render_dir: Path, tmp_dir: Path, force: bool = Fals
         "--force-device-scale-factor=1",
         f"--screenshot={staged}",
         "--window-size=800,800",
-        "--virtual-time-budget=4000",
-        f"--user-data-dir={tmp_dir / 'chrome-profile'}",
+        f"--virtual-time-budget={virtual_time_ms}",
+        # Per-render profile: chromium instances sharing a user-data-dir fight
+        # over the profile lock and silently produce no PNG.
+        f"--user-data-dir={profile}",
         src.as_uri(),
     ]
-    proc = subprocess.run(cmd, capture_output=True, timeout=120)
+    try:
+        proc = subprocess.run(cmd, capture_output=True, timeout=60)
+    except subprocess.TimeoutExpired:
+        # A handful of artworks carry SMIL durations small enough that any
+        # virtual-time budget makes chromium grind forever. Fall back to
+        # effectively t=0: we still capture the artwork's resting frame.
+        cmd = [c if not c.startswith("--virtual-time-budget") else
+               "--virtual-time-budget=1" for c in cmd]
+        shutil.rmtree(profile, ignore_errors=True)
+        proc = subprocess.run(cmd, capture_output=True, timeout=60)
     if not staged.exists():
         raise RuntimeError(
             f"chromium produced no PNG for {art.art_id}: {proc.stderr.decode()[-400:]}"
         )
     shutil.move(str(staged), str(out))  # temp+rename: never a half-written PNG
     src.unlink(missing_ok=True)
+    shutil.rmtree(profile, ignore_errors=True)
     return out
 
 
 def png_b64(path: Path) -> str:
     return base64.standard_b64encode(Path(path).read_bytes()).decode()
+
+
+# ---------------------------------------------------------------- render quality
+
+DEGENERATE_MAX_COLORS = 8  # <= this many distinct colours reads as blank/flat
+
+
+def png_stats(path: Path, sample_stride: int = 2) -> dict:
+    """Cheap paint check: how many distinct colours, and how much isn't background.
+
+    This is the metric that separates a render failure from genuine degeneracy.
+    It cannot tell them apart on its own -- that judgement needs the headful
+    comparison in `render_diagnosis` -- but it is what flags candidates.
+    """
+    from PIL import Image
+
+    with Image.open(path) as im:
+        im = im.convert("RGB")
+        if sample_stride > 1:
+            im = im.resize((im.width // sample_stride, im.height // sample_stride),
+                           Image.NEAREST)
+        colors = im.getcolors(maxcolors=1_000_000) or []
+        total = im.width * im.height
+        colors.sort(reverse=True)
+        dominant_count, dominant_rgb = colors[0] if colors else (0, (255, 255, 255))
+
+    return {
+        "distinct_colors": len(colors),
+        "dominant_rgb": list(dominant_rgb),
+        "dominant_frac": round(dominant_count / total, 4) if total else 1.0,
+        "is_degenerate": len(colors) <= DEGENERATE_MAX_COLORS,
+    }
+
+
+# Elements that actually put marks on the canvas. <g> is a grouping element, so
+# it only counts via its children; <defs>/<style> content never paints directly.
+# The trailing '>' matters: this corpus is full of tags the generator cut off
+# mid-attribute, and a half-written <circle cx='4 never paints. Counting those
+# as content mislabels genuinely-degenerate art as a render failure.
+_DRAWABLE = re.compile(
+    r"<(rect|circle|ellipse|path|line|polyline|polygon|text|tspan|image|use|"
+    r"foreignObject|img|p|span|h[1-6])\b[^>]*>",
+    re.IGNORECASE,
+)
+_FULL_BLEED_RECT = re.compile(
+    r"<rect\b[^>]*?width\s*=\s*['\"]?(100%|\d{3,})['\"]?[^>]*>", re.IGNORECASE
+)
+
+
+def source_content(html: str) -> dict:
+    """What the SOURCE could paint, ignoring <defs> and <style>.
+
+    This is the other half of the render-quality gate. A PNG with <=8 colours
+    means one of two very different things, and only the source can tell them
+    apart: the generator emitted nothing to draw (real degeneracy — the v7/v8
+    corpus is full of artworks truncated before any content), or it emitted
+    real content that our pipeline failed to paint (a render bug).
+    """
+    body = re.sub(r"<defs.*?(</defs>|$)", "", html, flags=re.S | re.I)
+    body = re.sub(r"<style.*?(</style>|$)", "", body, flags=re.S | re.I)
+
+    marks = _DRAWABLE.findall(body)
+    # A single full-bleed rect is a background wash, not a composition.
+    n_background = len(_FULL_BLEED_RECT.findall(body))
+    n_foreground = max(0, len(marks) - n_background)
+    return {
+        "drawable_elements": len(marks),
+        "background_rects": n_background,
+        "foreground_elements": n_foreground,
+        "has_paintable_content": n_foreground > 0,
+        "source_truncated": (
+            html.count("<svg") > html.count("</svg>")
+            or html.count("<style") > html.count("</style>")
+            or html.count("<div") > html.count("</div>")
+        ),
+    }
+
+
+def classify_render(stats: dict, content: dict) -> str:
+    """Cross the PNG against its source. Only this cross-check is trustworthy.
+
+    - ok                 : painted something, as expected
+    - degenerate_source  : blank PNG, and the source had nothing to paint. Real
+                           signal about the artwork, not a pipeline problem.
+    - render_failure     : blank PNG but the source HAD foreground content. This
+                           is the bucket that invalidates a comparison, and the
+                           one to drive to zero.
+    - unexpected_paint   : source looked empty yet something rendered (usually a
+                           gradient or background wash). Harmless; flagged so the
+                           heuristic can be audited rather than trusted blindly.
+    """
+    if not stats["is_degenerate"]:
+        return "ok" if content["has_paintable_content"] else "unexpected_paint"
+    return "render_failure" if content["has_paintable_content"] else "degenerate_source"
 
 
 # ---------------------------------------------------------------- pairing

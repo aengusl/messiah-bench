@@ -71,24 +71,77 @@ def load_sample() -> list[A.Artwork]:
     return A.manifest_to_artworks(rows)
 
 
-def phase_render(sample: list[A.Artwork], force: bool = False, limit: int | None = None) -> int:
+RENDER_REPORT = DATA / "render_report.jsonl"
+
+STATUS_COLOR = {
+    "ok": C.GREEN,
+    "degenerate_source": C.YELLOW,
+    "render_failure": C.RED,
+    "unexpected_paint": C.BLUE,
+}
+
+
+def phase_render(sample: list[A.Artwork], force: bool = False, limit: int | None = None,
+                 workers: int = 4) -> int:
     say(f"\n{C.BOLD}[render]{C.RESET} chromium -> PNG (free, no API calls)", C.CYAN)
     todo = sample[:limit] if limit else sample
     t0 = time.time()
-    ok = fail = 0
-    for i, art in enumerate(todo, 1):
+    rows: list[dict] = []
+    lock = threading.Lock()
+    done = 0
+
+    def one(art: A.Artwork) -> dict:
+        nonlocal done
+        content = A.source_content(art.html)
+        row = {"art_id": art.art_id, "regime": art.regime, "turn": art.turn, **content}
         try:
-            A.render_png(art, RENDERS, TMP, force=force)
-            ok += 1
-        except Exception as e:  # a broken artwork should not kill the batch
-            fail += 1
-            say(f"  {C.RED}FAIL{C.RESET} {art.art_id}: {e}", C.RED)
-        if i % 25 == 0 or i == len(todo):
-            rate = i / max(1e-9, time.time() - t0)
-            say(f"  {i}/{len(todo)} rendered  ({rate:.1f}/s)", C.DIM)
-    say(f"  ok={C.GREEN}{ok}{C.RESET} fail={C.RED if fail else C.DIM}{fail}{C.RESET} "
-        f"in {time.time()-t0:.1f}s -> {RENDERS}")
-    return ok
+            p = A.render_png(art, RENDERS, TMP, force=force)
+            stats = A.png_stats(p)
+            row.update(stats)
+            row["status"] = A.classify_render(stats, content)
+        except Exception as e:  # a broken artwork must not kill the batch
+            row.update({"status": "error", "error": f"{type(e).__name__}: {e}"[:200]})
+            say(f"  {C.RED}ERROR{C.RESET} {art.art_id}: {e}", C.RED)
+        with lock:
+            done += 1
+            n = done
+        if n % 25 == 0 or n == len(todo):
+            say(f"  {n}/{len(todo)} rendered  ({n/max(1e-9, time.time()-t0):.1f}/s)", C.DIM)
+        return row
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        rows = list(pool.map(one, todo))
+
+    A.write_jsonl_atomic(RENDER_REPORT, rows)
+    print_render_table(rows)
+    say(f"  wrote {RENDER_REPORT}", C.GREEN)
+    return sum(1 for r in rows if r.get("status") == "ok")
+
+
+def print_render_table(rows: list[dict]) -> None:
+    """Per-regime breakdown. The column that matters is render_failure."""
+    order = ["ok", "unexpected_paint", "degenerate_source", "render_failure", "error"]
+    say(f"\n{C.BOLD}[render quality]{C.RESET} "
+        f"{C.DIM}(<={A.DEGENERATE_MAX_COLORS} distinct colours = blank){C.RESET}", C.CYAN)
+    say(f"  {'regime':>8} {'n':>4} " + " ".join(f"{s:>17}" for s in order))
+    for r in A.REGIMES:
+        sub = [x for x in rows if x["regime"] == r]
+        if not sub:
+            continue
+        cells = []
+        for s in order:
+            k = sum(1 for x in sub if x.get("status") == s)
+            col = STATUS_COLOR.get(s, C.DIM) if k else C.DIM
+            cells.append(f"{col}{k:>4} ({100*k/len(sub):4.0f}%){C.RESET}")
+        say(f"  {r:>8} {len(sub):>4} " + " ".join(f"{c:>17}" for c in cells))
+
+    n_fail = sum(1 for x in rows if x.get("status") == "render_failure")
+    n_blank = sum(1 for x in rows if x.get("status") in ("render_failure", "degenerate_source"))
+    say(f"\n  blank PNGs: {n_blank}/{len(rows)} — of which {C.RED}{n_fail}{C.RESET} are "
+        f"render failures and {C.YELLOW}{n_blank-n_fail}{C.RESET} are genuinely empty source")
+    if n_fail:
+        ids = [x["art_id"] for x in rows if x.get("status") == "render_failure"][:10]
+        say(f"  render failures: {', '.join(ids)}", C.RED)
 
 
 def estimate_cost(n_pairs: int) -> dict:
@@ -339,7 +392,7 @@ def main() -> None:
     if args.dry_run:
         say(f"{C.BOLD}{C.MAGENTA}=== DRY RUN — no API calls ==={C.RESET}")
         sample = phase_sample(args.sample or 60, args.seed)
-        n_ok = phase_render(sample, force=args.render_force, limit=2)
+        n_ok = phase_render(sample, force=args.render_force, limit=2, workers=2)
         say(f"  render path verified on {n_ok} artwork(s)", C.GREEN)
         pairs = A.build_pairs(sample, n_pairs, seed=args.seed)
         cross = sum(1 for x, y in pairs
@@ -361,7 +414,7 @@ def main() -> None:
     if args.render or args.judge or args.results:
         sample = sample or load_sample()
     if args.render:
-        phase_render(sample, force=args.render_force)
+        phase_render(sample, force=args.render_force, workers=max(1, args.workers))
     if args.judge:
         print_plan(n_pairs, sample)
         phase_judge(sample, n_pairs, args.seed, workers=max(1, args.workers))
