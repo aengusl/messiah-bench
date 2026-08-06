@@ -26,5 +26,11 @@ runs/*/WATCHDOG.md
 /*.log
 runs/*/*.log
 
+# Raw run data from the minimal-cultural-selection engine (~600MB, never committed)
+outputs/
+
 # Agent worktrees
 .claude/worktrees/
+
+# Auto-created by engine imports during tests
+src/runs/

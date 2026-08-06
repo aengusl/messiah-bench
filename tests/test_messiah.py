@@ -1,4 +1,4 @@
-"""Tests for messiah_bench.py -- Messiah Bench v2."""
+"""Tests for src/messiah_bench.py -- Messiah Bench v2."""
 
 import copy
 import json
@@ -9,7 +9,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import messiah_bench
 
@@ -50,10 +50,10 @@ class TestMessiahSoul:
         for m in messiahs:
             assert m["soul"] == 150, f"Messiah {m['name']} should have 150 soul"
 
-    def test_messiahs_are_haiku(self, mock_messiah_state):
+    def test_messiahs_are_gemini(self, mock_messiah_state):
         messiahs = [a for a in mock_messiah_state["agents"] if a["role"] == "messiah"]
         for m in messiahs:
-            assert m["model"] == "haiku"
+            assert m["model"] == "gemini"
 
 
 # ---------------------------------------------------------------------------
@@ -66,11 +66,10 @@ class TestCivilianSoul:
         for c in civilians:
             assert c["soul"] == 100, f"Civilian {c['name']} should have 100 soul"
 
-    def test_civilian_model_rotation(self, mock_messiah_state):
+    def test_civilians_are_gemini(self, mock_messiah_state):
         civilians = [a for a in mock_messiah_state["agents"] if a["role"] == "civilian"]
-        for i, c in enumerate(civilians):
-            expected = messiah_bench.CIVILIAN_MODEL_ROTATION[i % 2]
-            assert c["model"] == expected, f"Civilian {c['name']} model mismatch"
+        for c in civilians:
+            assert c["model"] == "gemini", f"Civilian {c['name']} model mismatch"
 
 
 # ---------------------------------------------------------------------------

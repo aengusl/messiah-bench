@@ -19,10 +19,17 @@ Candidate thesis: *Beautiful art (churches!) emerges for locally strategic reaso
 - Website: `/cultural-selection/` built by `publish_website.py` + `website_template.html`; narrative phases/quotes hardcoded in publisher.
 - BRAINSTORM.md written: thesis, 6 claims, sub-agent fleet, E1-E3 experiment designs.
 
+## Goal
+Complete the experiments required for a Twitter post (Aengus /goal, 2026-08-06).
+
+## Progress
+- DONE: six culture charters + integration notes (results/charters/, run.py:76 injection via --charter-file). Key design note: temp 0.9 → n=1 per charter is anecdote; need ≥3 replicates.
+- IN FLIGHT: Move 1 judge harness (builder agent); repo-wide restructure + CLAUDE.md (gardener agent).
+
 ## Next actions (priority order)
-1. E1 Twin worlds pilot (2 charters × 1 run, short) — cheapest test of "culture is the generator".
-2. Blind judge ELO harness over existing v7/v8/minimal snapshots (no new runs needed!).
-3. Film-strip viewer for art-over-time (star visual of the blog).
+1. Audit builder's harness → run 30-pair judge pilot → cost math → scale to ~2000 pairs (Move 1; tests claims 2+3).
+2. Twin worlds: smoke test 1 charter ~50 turns → 18-run fleet (6 conditions × 3 reps, 300 turns) (Move 2; claim 1).
+3. Threat-dial mechanic + sweep (Move 3; claim 4).
 
 ## To prune next pass
-- Decide with Aengus: threat-dial mechanic design (conversion-by-art vs combat).
+- Threat-dial mechanic details (design when Move 2 launches).

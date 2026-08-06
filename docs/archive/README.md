@@ -3,6 +3,9 @@
 Historical root-level docs, kept for provenance. Nothing here is current.
 No script or live page references these files (checked with grep over `*.sh`, `*.py`, `*.html`).
 
+Current design docs live one level up in `docs/`; the current experiment docs live in
+`experiments/`. See `MAP.md`.
+
 | File | What it was | Why archived |
 |---|---|---|
 | `STATUS.md` | One-line live status ticker for the v2 run (tick 111/720) | v2 finished long ago; the number is frozen at a mid-run snapshot |

@@ -13,7 +13,7 @@ while true; do
         /bin/rm -f $DIR/runs/messiah-v4/world_state.json $DIR/runs/messiah-v4/index.html $DIR/runs/messiah-v4/sim.log
         
         # Launch v4
-        tmux new-session -d -s 260404-messiah-v4 "PYTHONUNBUFFERED=1 uv run python $DIR/messiah_bench_v4.py --run-dir=$DIR/runs/messiah-v4 2>&1 | tee $DIR/runs/messiah-v4/sim.log"
+        tmux new-session -d -s 260404-messiah-v4 "PYTHONUNBUFFERED=1 uv run python $DIR/src/messiah_bench_v4.py --run-dir=$DIR/runs/messiah-v4 2>&1 | tee $DIR/runs/messiah-v4/sim.log"
         echo "$(date -u) - v4 launched in tmux 260404-messiah-v4"
         exit 0
     fi

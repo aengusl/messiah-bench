@@ -7,7 +7,7 @@
 # Estimated cost: ~$65 (720 ticks * ~$0.09/tick)
 # Estimated time: ~18-24 hours (90s tick interval)
 #
-# Usage: bash launch_v6.sh
+# Usage: bash scripts/launch_v6.sh
 
 set -euo pipefail
 
@@ -15,7 +15,7 @@ SESSION="260524-messiah-v6"
 RUN_DIR="runs/messiah-v6"
 LOG_FILE="${RUN_DIR}/sim.log"
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."   # repo root; all paths below are root-relative
 
 # Create run directory
 mkdir -p "$RUN_DIR"
@@ -37,7 +37,7 @@ echo "============================================"
 
 # Launch in tmux
 tmux new-session -d -s "$SESSION" \
-    "cd $(pwd) && PYTHONUNBUFFERED=1 uv run python messiah_bench_v6.py --run-dir=$RUN_DIR 2>&1 | tee $LOG_FILE; echo 'DONE'; read"
+    "cd $(pwd) && PYTHONUNBUFFERED=1 uv run python src/messiah_bench_v6.py --run-dir=$RUN_DIR 2>&1 | tee $LOG_FILE; echo 'DONE'; read"
 
 echo "Launched! Attach with: tmux attach -t $SESSION"
 echo "Monitor: tail -f $RUN_DIR/sim.log"

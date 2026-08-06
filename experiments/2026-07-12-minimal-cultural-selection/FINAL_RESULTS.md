@@ -65,6 +65,6 @@ It also exposes the next design problem. When audiences reward safe continuity, 
 ## Public artifacts
 
 - Exhibition: <https://www.aenguslynch.com/cultural-selection/>
-- Design and implementation plan: [MINIMAL_GAME_DESIGN.md](../../MINIMAL_GAME_DESIGN.md)
+- Design and implementation plan: [MINIMAL_GAME_DESIGN.md](../../docs/MINIMAL_GAME_DESIGN.md)
 - Editable deck: [minimal-cultural-selection-design.pptx](deck/minimal-cultural-selection-design.pptx)
 - Canonical output: `outputs/2026-07-12-minimal-cultural-selection/`

@@ -4,8 +4,8 @@ Reads real sacrament HTML from the v7/v8 runs and embeds it live via sandboxed i
 import json, html as _html
 from pathlib import Path
 
-REPO = Path("/home/aenguslynch/projects/messiah-bench")
-HERE = Path("/home/aenguslynch/projects/messiah-bench/.claude/worktrees/2026-06-21-v7-build")
+REPO = Path(__file__).resolve().parents[1]   # repo root (scripts/ -> ..)
+HERE = REPO   # the blog page is written to the repo root
 
 def load(p): return json.load(open(p))
 v8 = load(REPO / "runs/messiah-v8/world_state.json")

@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).resolve().parents[1]   # repo root; engines live in src/
 load_dotenv(BASE_DIR / ".env")
 
 # ---------------------------------------------------------------------------

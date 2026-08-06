@@ -49,5 +49,5 @@ genuinely mortal (slowly die if not growing/winning), (c) art visibly improves u
 (d) the game can terminate within the $300 budget. Pilot ~15 ticks, eyeball, tune, then full run.
 
 ## Run artifacts
-- Code: `messiah_bench_v8.py`. Run dir: `runs/messiah-v8/`. Launcher: `launch_v8.sh`.
+- Code: `src/messiah_bench_v8.py`. Run dir: `runs/messiah-v8/`. Launcher: `scripts/launch_v8.sh`.
 - Aborted/older: v7 clean run at `runs/messiah-v7/`; v7 TPM-contaminated at `runs/messiah-v7-aborted-tpm-tick64/`.

@@ -3,12 +3,12 @@
 Build a full live-art gallery page per Messiah-Bench version (v1-v8) + an index,
 for the website. Writes into the aengusl.github.io site repo.
 
-Run: uv run python build_galleries.py
+Run from repo root: uv run python scripts/build_galleries.py
 """
 import json, html as ihtml
 from pathlib import Path
 
-REPO = Path("/home/aenguslynch/projects/messiah-bench")
+REPO = Path(__file__).resolve().parents[1]   # repo root (scripts/ -> ..)
 SITE = Path("/home/aenguslynch/projects/aengusl.github.io/messiah-bench")
 GAL = SITE / "galleries"
 GAL.mkdir(parents=True, exist_ok=True)

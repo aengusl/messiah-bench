@@ -71,7 +71,7 @@ _cost_lock = threading.Lock()
 # Run directory (set via --run-dir, default runs/v2/)
 # ---------------------------------------------------------------------------
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).resolve().parents[1]   # repo root; engines live in src/
 
 def _parse_run_dir():
     for arg in sys.argv:
