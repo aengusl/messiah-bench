@@ -54,3 +54,6 @@ Died at init: chromium timeout rendering seed art (launch contention), uncaught.
 
 ## 2026-08-06 06:55 UTC — FLEET COMPLETE, H1 confirmed
 18/18 worlds, $393, 0.2% errors. Final: adherence diagonal 4.7-88x (off-diag max 2.1x); doctrine cosine 0.324 within vs 0.021 across; art F-ratios animated 30.0, colors 10.2, bytes 6.0 (n_drawable 0.74 — element count does not separate). Launched: twin-art judged pass (800 pairs) + threat-dial stage-0 smoke (K=8, 30 turns).
+
+## 2026-08-06 09:25 UTC — Judged pass + dial smoke results
+Twin-art aesthetics (1,597 judgments, $2.03): ancestor 70% / ascetic 61% / baroque 59% > control 48% / futurist 47% > nihilist 37% across-charter win rate; judges agree on nihilist-last. Dial smoke (K=8, M=3, $2.12): total monoculture by turn 17 (Ash extinct at first test t9, Open Circuit absorbs all by t17). Pre-reg checkpoint: M=2 smoke launched before main sweep decision.

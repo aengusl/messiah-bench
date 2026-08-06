@@ -8,10 +8,11 @@ Experiments sufficient for a Twitter thread → blog post. Thesis: **culture, no
 **What I want to be true (guard against):** that culture charters cause big art divergence and competition improves art. Falsification attempts get priority.
 
 ## Hypothesis board (ordered by value-of-falsification)
-- **H1 Culture is the generator** — P ≈ 0.7. Charters cause persistent art-lineage divergence. Falsifier: twin worlds converge to indistinguishable art by blind-judge + embedding distance (charter effect ≤ replicate noise). If false: model prior is the artist → blog thesis rewritten around "the model is the culture."
-- **H3 Monoculture kills art** — P ≈ 0.6. Art quality (blind ELO) declines after ExpIX consolidation (~turn 272+). Falsifier: flat/rising ELO across collapse. If false: collapse tweet dies; pluralism framing weakens.
-- **H2 Competition breeds beauty** — P ≈ 0.5. Regime ranking: competitive regimes > locked pluralism. Early pilot signal (n=30 pairs): minimal 35 > v8 21 > v7 4 wins — but confounded (v7 art embeds text, render era differs). Falsifier: ranking driven by confounds or judge taste.
-- **H4 Threat sharpens art** — P ≈ 0.4. Untested until Move 3.
+- **H1 Culture is the generator — CONFIRMED (P ≈ 0.95).** 18 worlds: charter-vocab lift diagonal 4.7–88× (off-diag ≤2.1×), doctrine cosine 0.324 within vs 0.021 across, art F-ratios animated 30.0 / colors 10.2 / bytes 6.0. Files: results/twin_worlds_*.
+- **H1b (new) Culture moves judged beauty in both directions** — P ≈ 0.75. Across-charter blind win rates: ancestor 70% (n=30), ascetic 61%, baroque 59% > control 48% ≈ futurist 47% > nihilist 37% (both judges rank nihilist last independently). n=1,597 judgments; needs slot-debias + per-replicate CIs before publishing numbers. results/twin_worlds_judgments.jsonl.
+- **H4 Threat sharpens art** — P ≈ 0.4, design checkpoint tripped: K=8 smoke hit total monoculture by turn 17 (first art-only test kills a seed religion instantly; allegiance snowballs — shared taste prior). M=2 smoke running to see if pluralism survives; else sweep reframes to time-to-monoculture + pre-collapse quality.
+- **H3 Monoculture kills art** — P ≈ 0.6. Aesthetic test on ExpIX still open; production-collapse version proven (completeness curves). Smoke observation (allegiance snowballs to one artwork) is mechanism-consistent.
+- **H2 (reframed, landed)**: pay-per-edit → unrenderable fragments; adoption-gated → 100% paintable. P ≈ 0.85. Caveats pinned in LOG.
 
 ## State of the world (2026-08-06 04:45 UTC)
 - **RUNNING** fleet: 18 twin worlds × 300 turns in tmux (`260806-twin-*`), ETA 2-4h, per-world cap $40. Monitor bucr75ps2 (5-min watchdog: completion/crash/error-storm).
