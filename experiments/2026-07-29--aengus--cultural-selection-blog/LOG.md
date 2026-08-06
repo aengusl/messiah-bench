@@ -57,3 +57,6 @@ Died at init: chromium timeout rendering seed art (launch contention), uncaught.
 
 ## 2026-08-06 09:25 UTC — Judged pass + dial smoke results
 Twin-art aesthetics (1,597 judgments, $2.03): ancestor 70% / ascetic 61% / baroque 59% > control 48% / futurist 47% > nihilist 37% across-charter win rate; judges agree on nihilist-last. Dial smoke (K=8, M=3, $2.12): total monoculture by turn 17 (Ash extinct at first test t9, Open Circuit absorbs all by t17). Pre-reg checkpoint: M=2 smoke launched before main sweep decision.
+
+## 2026-08-06 10:45 UTC — THREAT-DIAL SWEEP COMPLETE ($110, 12/12)
+Control: 4/4 religions survive 120 turns, all reps. Any pressure -> total monoculture, dose-dependent speed (median last extinction: K16 t49, K8 t28, K4 t21). Production chilled: proposals 50 -> 44 -> 24 -> 20 by rising pressure despite identical opportunity. H4 (threat sharpens art) heading for reversal: pressure destroys pluralism and chills production. Judged quality pass launched.
