@@ -48,3 +48,6 @@ Builder ground-truthed our renders against runs/messiah-v7/rendered/ (independen
 
 ## 2026-08-06 05:20 UTC — Completeness analysis (670c604, 107 tests)
 Degradation curves without judges: v7 65%→18% paintable, v8 97%→27%, minimal flat 100%. Gate hypothesis FALSIFIED (rejected proposals as complete as accepted). Mechanism: elaboration correlates with truncation (truncated art larger). Files: results/completeness.csv/.md/.png.
+
+## 2026-08-06 05:40 UTC — futurist-r1 crash + relaunch
+Died at init: chromium timeout rendering seed art (launch contention), uncaught. Patched render_art (retry + placeholder fallback), relaunched. 18/18 running. Twin-worlds analysis pipeline built (0662b61, 140 tests); mid-run preview: adherence diagonal 6.4-68x, doctrine within/across cosine 0.268 vs 0.039. H1 looking strong on behavior/text; art-form clustering provisional.
