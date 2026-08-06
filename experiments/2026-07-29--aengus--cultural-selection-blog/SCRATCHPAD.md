@@ -3,36 +3,25 @@
 > **Usage:** This file holds ONLY the present: state of the world, hypothesis board, open uncertainties, next steps, budget. Closed rounds and narratives move to LOG.md the moment they stop being actionable. Overwrite stale content, never stack. Budget numbers are measured (COSTLOG.md), never estimated from memory. Point to evidence files; never inline evidence.
 
 ## Goal
-Experiments sufficient for a Twitter thread → blog post. Thesis: **culture, not the individual, is the artist; beauty is locally strategic.** (Claims list: BRAINSTORM.md. Motivation memory: cultural-selection-thesis.)
+Twitter thread → blog post. Thesis: **culture, not the individual, is the artist.** Thread draft: results/thread_draft.md. Evidence page: results/evidence_template.html → artifact 2a550846.
 
-**What I want to be true (guard against):** that culture charters cause big art divergence and competition improves art. Falsification attempts get priority.
+**What I want to be true (guard against):** that divergent seed art produces visibly different lineages. Falsification attempts get priority.
 
-## Hypothesis board (ordered by value-of-falsification)
-- **H1 Culture is the generator — CONFIRMED (P ≈ 0.95).** 18 worlds: charter-vocab lift diagonal 4.7–88× (off-diag ≤2.1×), doctrine cosine 0.324 within vs 0.021 across, art F-ratios animated 30.0 / colors 10.2 / bytes 6.0. Files: results/twin_worlds_*.
-- **H1b (new) Culture moves judged beauty in both directions** — P ≈ 0.75. Across-charter blind win rates: ancestor 70% (n=30), ascetic 61%, baroque 59% > control 48% ≈ futurist 47% > nihilist 37% (both judges rank nihilist last independently). n=1,597 judgments; needs slot-debias + per-replicate CIs before publishing numbers. results/twin_worlds_judgments.jsonl.
-- **H4 RESOLVED — three-way split (P ≈ 0.75 for "pressure sharpens surviving art").** 12-world sweep: control 4/4 religions survive; any pressure → monoculture (dose-dependent: t≈49/28/21); production chills 50→20 proposals; judged quality HIGHER under pressure (control 41% cross-K win rate vs 51-55%). Caveats: survivorship in canon, n=3/K. scripts/dial_winrates.py.
-- **H3 Monoculture kills art** — P ≈ 0.6. Aesthetic test on ExpIX still open; production-collapse version proven (completeness curves). Smoke observation (allegiance snowballs to one artwork) is mechanism-consistent.
-- **H2 (reframed, landed)**: pay-per-edit → unrenderable fragments; adoption-gated → 100% paintable. P ≈ 0.85. Caveats pinned in LOG.
+## Hypothesis board
+- **H1 confirmed (P≈0.95)**, H1b beauty-both-ways (P≈0.75), H2-reframed completeness (P≈0.85), H4 three-way (P≈0.75), H3 production-collapse proven / aesthetic version open (P≈0.6). Details + files: LOG.md 2026-08-06 entries and results/.
+- **NEW — H1-visual (P ≈ 0.8):** with divergent founding artworks + no-words rule, lineages stay *visibly* distinct at turn 300 (a human can sort final artworks by culture). Falsifier: lineages re-converge to the model's abstract-geometry attractor regardless of DNA. Weakness being fixed: v1 worlds all preserved the same seed-template circle (see baroque-r1 v9 vs ascetic-r2 v9 — same composition, different color).
 
-## State of the world (2026-08-06 04:45 UTC)
-- **RUNNING** fleet: 18 twin worlds × 300 turns in tmux (`260806-twin-*`), ETA 2-4h, per-world cap $40. Monitor bucr75ps2 (5-min watchdog: completion/crash/error-storm).
-- **RESOLVED (2 reversals, both logged in retractions):** (a) round-1 ELO ranking retracted — measured emptiness, not aesthetics; (b) auditor's "renderer artifact" cause overturned by builder's ground-truth check vs the v7 engine's own renders: **the art is genuinely blank.** v7: 90.7% truncated mid-tag, 60.7% nothing paintable; v8: 78.7%/42.6%; minimal: 0%. Cause = generator truncation (sim token limits), not renderer. Renderer hardened anyway (definite-size frame, truncation repair, animation pinning, per-render profile; render_report.jsonl gate) — 89 tests, commit 8ddf0e7. 2/300 unexplained render failures (flagged, not hidden).
-- **DECISION:** no cross-regime aesthetic ELO on this corpus (completeness confound, self-selected paintable subsample). Instead: **truncation/completeness rate is the claim-2 finding** — pay-per-edit regimes produced mostly unrenderable fragments; adoption-gated regime (make/choose) produced 100% paintable canon. Measurable from files, no judges needed. Aesthetic comparisons → twin-worlds corpora only (render 100%).
-- **FINDING (judge-free degradation curves, results/completeness_*):** paintable-art rate over each run's life: v7 65%→18%, v8 97%→27%, minimal flat 100%. v7 median drawable elements = 0.
-- **FALSIFIED: adoption-gate mechanism.** Rejected proposals as complete as accepted (0%/0% truncated) — the gate filtered nothing; minimal's advantage is upstream in generation. Surviving mechanism: **elaboration correlates with truncation** (truncated art is LARGER: v7 4314 vs 2844 median bytes) — works die spending their output budget on defs/keyframes preambles. State as correlation, not "token cap did it" (no hard byte ceiling in data).
-- Caveats pinned: minimal n=86 vs v7 4,445; different engine; completeness ≠ beauty (2 rectangles pass). Gemini judge slot-A bias (62%) noted for future judging.
-- Process bugs logged: dry-run must not write files; pair_index not unique across runs; chromium profile dirs must be per-render.
-- Built + committed: judge harness (68 tests), twin-worlds injection + launcher (79 tests), repo restructure, CLAUDE.md/MAP.md.
-- Known confounds for H2: artworks embed religion names/doctrine (not fully blind); v7 degenerate art renders blank (scores low, arguably correctly).
-- ANTHROPIC key: repo .env stale; working key = just-find-misalignment .env via env override.
+## State of the world (2026-08-06 ~18:30 UTC)
+- **BUILDING**: builder-dna constructing twin-worlds v2 (per-culture seed arts × 4 religions, --seed-art-dir + --no-words engine flags, prereg doc, tests). No launches until smoke gate.
+- All v1 experiments complete and committed; thread drafted; evidence explorer published.
+- Keys: repo .env ANTHROPIC stale; working key via just-find-misalignment .env env override.
 
-## Next steps (re-rank at each milestone)
-1. Judge tournament done → `--results` → ELO curves → update H2/H3 priors → independent spot-check agent on 10 random judgments.
-2. Smoke world done → validate charter reached prompts (world_state charter field, agent reasoning mentions asceticism) → launch 18-world fleet (~$400, staggered if 429s).
-3. Design Move 3 threat-dial pre-registration in docs/ before building.
-4. Progress artifact page (single URL, data-driven, retractions ledger).
+## Next steps
+1. Review builder-dna output → verify 24 seed arts render non-blank + pass no-words validator → commit.
+2. Smoke: 1 world (baroque DNA), 50 turns (~$3.50) → check lineage keeps its DNA (visual check at v5+).
+3. Fleet: 6×3×300 turns (~$400) overnight with watchdog → twin_worlds_report + judged pass → update thread/evidence page with v2 art.
+4. Human-sortability check: can Aengus (or a fresh agent) assign 18 final artworks to cultures blind?
 
-## Budget ledger (measured)
-- Judging: $0.086 (pilots incl. failed-key run) — COSTLOG.md
-- Smoke worlds: $0 (failed run) + ~$3 in flight (read final from run.log usage line)
-- Committed spend ceiling agreed with Aengus: lean pass ~$300, max ~$800.
+## Budget ledger (measured, cumulative $528 through v1)
+- v1 total: $528 (judging $12.3, smokes $7.6, twin fleet $393, dial sweep+judge $111.5, misc)
+- v2 planned: ~$412 (smoke $3.5 + fleet ~$400 + judged pass ~$8). Ceiling with Aengus: "do it" on ~$400 quote.
