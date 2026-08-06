@@ -1,12 +1,12 @@
 <title>Cultural Selection — Live Progress</title>
 <div id="data" hidden>{
-  "updated": "2026-08-06 09:30 UTC",
+  "updated": "2026-08-06 11:05 UTC",
   "goal": "Experiments sufficient for a Twitter thread → blog post. Thesis: culture, not the individual, is the artist — beauty is locally strategic.",
   "status": [
-    {"label": "Twin-worlds fleet", "value": "DONE · 18/18 · $393 · H1 confirmed", "state": "ok"},
-    {"label": "Threat dial", "value": "K=8 smoke: monoculture by t17 · M=2 smoke running", "state": "live"},
-    {"label": "Spend (measured)", "value": "$414 of ~$540 plan", "state": "ok"},
-    {"label": "Tests", "value": "163 experiment · 79 repo — green", "state": "ok"}
+    {"label": "All three moves", "value": "COMPLETE · thread drafted", "state": "ok"},
+    {"label": "Threat dial", "value": "12/12 · quality ↑ pluralism ↓ production ↓", "state": "ok"},
+    {"label": "Spend (measured)", "value": "$528 total", "state": "ok"},
+    {"label": "Next", "value": "Aengus review: thread_draft.md", "state": "ready"}
   ],
   "hypotheses": [
     {"name": "H1 · Culture is the generator — CONFIRMED", "prior": 0.95, "was": 0.7,
@@ -25,10 +25,10 @@
      "claim": "Pay-per-edit economies produced mostly unrenderable fragments; the adoption-gated economy produced 100% paintable canon.",
      "falsifier": "Completeness gap explained by engine/token-budget differences rather than incentive structure.",
      "evidence": "v7: 90.7% truncated, median drawable elements = 0; v8 78.7%; minimal 0%. Degradation over each run's life: v7 65%→18% paintable, v8 97%→27%, minimal flat 100%. Mechanism: elaboration correlates with truncation (truncated art is LARGER). Gate mechanism falsified — rejected proposals as complete as accepted."},
-    {"name": "H4 · Threat sharpens art", "prior": 0.4, "was": 0.4,
-     "claim": "Conquest-by-conversion pressure (allegiance decided by art alone) raises art quality.",
-     "falsifier": "Quality flat or decreasing in pressure; inverted-U = ambiguous per decision table.",
-     "evidence": "Pre-reg checkpoint tripped: K=8/M=3 smoke reached total monoculture by turn 17 (first pressure test killed a seed religion instantly). M=2 smoke running; sweep may reframe to time-to-monoculture + pre-collapse quality."}
+    {"name": "H4 · Threat sharpens art — RESOLVED, three-way", "prior": 0.75, "was": 0.4,
+     "claim": "Art-only allegiance pressure raises judged quality of surviving art — while destroying pluralism and chilling production.",
+     "falsifier": "Quality gap vanishes under survivorship correction or per-world CIs (n=3/setting; powered for large effects only).",
+     "evidence": "12-world sweep, $110: control keeps 4/4 religions 120 turns; ANY pressure → monoculture, dose-dependent (t≈49/28/21); proposals fall 50→20; judged quality: control wins only 41% cross-K vs 51–55% for pressure worlds (1,200 judgments, both judges rank control lowest)."}
   ],
   "findings": [
     {"title": "Same brain, different god, different art", "detail": "18 worlds, identical model and seed, six different founding creeds: each world's agents used their own creed's vocabulary 4.7–88× more than control, wrote doctrine 15× more self-similar within-creed, and produced structurally distinct art (animation F=30, color F=10). Blind judges then scored ascetic/baroque/ancestor art above control and nihilist far below it.", "file": "results/twin_worlds_summary.md"},
@@ -47,7 +47,9 @@
     {"item": "Smoke worlds (charter + dial K=8 + dial M=2)", "usd": "$7.55"},
     {"item": "Twin-worlds fleet (18 × 300 turns)", "usd": "$393"},
     {"item": "Twin-art judged pass (1,600 pairs)", "usd": "$2.03"},
-    {"item": "Threat-dial main sweep (pre-registered, gated)", "usd": "≈ $120 planned"}
+    {"item": "Threat-dial sweep (12 worlds) + judged pass", "usd": "$111.53"},
+    {"item": "Twin-fleet ($393) recount + misc pilots", "usd": "—"},
+    {"item": "TOTAL (COSTLOG.md + run logs)", "usd": "$528"}
   ],
   "links": [
     {"label": "PR #1 (live summary)", "url": "https://github.com/aengusl/messiah-bench/pull/1"},
