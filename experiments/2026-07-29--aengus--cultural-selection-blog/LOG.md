@@ -60,3 +60,6 @@ Twin-art aesthetics (1,597 judgments, $2.03): ancestor 70% / ascetic 61% / baroq
 
 ## 2026-08-06 10:45 UTC — THREAT-DIAL SWEEP COMPLETE ($110, 12/12)
 Control: 4/4 religions survive 120 turns, all reps. Any pressure -> total monoculture, dose-dependent speed (median last extinction: K16 t49, K8 t28, K4 t21). Production chilled: proposals 50 -> 44 -> 24 -> 20 by rising pressure despite identical opportunity. H4 (threat sharpens art) heading for reversal: pressure destroys pluralism and chills production. Judged quality pass launched.
+
+## 2026-08-06 11:00 UTC — DIAL JUDGED PASS: pressure sharpens surviving art
+1,200 judgments, $1.53, 0 errors: control 40.9% cross-K win rate vs k16 54.0%, k8 55.1%, k4 50.8%; both judges rank control lowest. H4 resolves three-way: quality up, pluralism dead, production chilled. All three moves complete.

@@ -10,8 +10,8 @@ while true; do
     echo "BOTH DONE. judge tail:"; tail -2 "$E/twin_judge.log" 2>/dev/null
     echo "smoke tail:"; tail -1 "$S/run.log" 2>/dev/null; exit 0
   fi
-  if grep -qE "Traceback|401" "$E/twin_judge.log" "$S/run.log" 2>/dev/null; then
-    echo "ERROR SIGNATURE:"; grep -hm1 -E "Traceback|401" "$E/twin_judge.log" "$S/run.log" 2>/dev/null | head -2; exit 1
+  if grep -qE "Traceback|Error code: 401|authentication_error" "$E/twin_judge.log" "$S/run.log" 2>/dev/null; then
+    echo "ERROR SIGNATURE:"; grep -hm1 -E "Traceback|Error code: 401|authentication_error" "$E/twin_judge.log" "$S/run.log" 2>/dev/null | head -2; exit 1
   fi
   sleep 120
 done
