@@ -45,3 +45,6 @@ Renderer fails on v7/v8 SVG/animation/blur art (38%/73%/100% render success, mon
 
 ## 2026-08-06 05:00 UTC — Reversal of the reversal: art is GENUINELY blank
 Builder ground-truthed our renders against runs/messiah-v7/rendered/ (independent pipeline): same blankness. v7 90.7% truncated mid-tag / 60.7% nothing paintable; v8 78.7%/42.6%; minimal 0%. Cause: generator truncation in sim harness, not renderer. Decision: truncation rate IS the claim-2 finding; cross-regime aesthetic ELO abandoned on this corpus; aesthetics measured only where render=100% (twin worlds). Renderer hardened + render_report gate added (8ddf0e7).
+
+## 2026-08-06 05:20 UTC — Completeness analysis (670c604, 107 tests)
+Degradation curves without judges: v7 65%→18% paintable, v8 97%→27%, minimal flat 100%. Gate hypothesis FALSIFIED (rejected proposals as complete as accepted). Mechanism: elaboration correlates with truncation (truncated art larger). Files: results/completeness.csv/.md/.png.
