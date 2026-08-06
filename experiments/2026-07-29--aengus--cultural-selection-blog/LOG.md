@@ -25,8 +25,14 @@
 - Renderer: /usr/bin/chromium headless screenshot
 - Gate: pilot 30 judgments → report cost math before scaling to ~2000.
 
+## Phase: MOVE 2 — twin worlds (task #2)
+- 2026-08-06 04:25 UTC: SMOKE RUNNING. ascetic × 50 turns in tmux 260806-twin-ascetic-r1 → outputs/2026-08-06-twin-smoke-fix-1/ascetic-r1/. Turn 4: 0 errors, $0.057/turn (≈$2.90 total). ETA ~15 min.
+- fix-1 because first smoke burned 20 turns on 100% auth errors: worktree had no .env (engines load ROOT/.env; .env is a gitignored secret in the main checkout). Fixed by /bin/cp of .env into worktree + engine fail-fast guard (abort after 3 all-error turns).
+- Fleet plan: 6 charters × 3 reps × 300 turns ≈ $400, 2-4h wallclock (Gemini rate limits are the constraint; consider staggering). Per-world cost cap $40.
+
 ## Monitors
-- (none running)
+- bf1ul9jmt: smoke world completion/crash watcher (20s poll, 30min timeout).
 
 ## Cumulative spend
-- $0.00
+- $0.09 (judge pilots incl. failed-key run) + smoke in flight ≈ $3
+- See COSTLOG.md for per-call detail.
