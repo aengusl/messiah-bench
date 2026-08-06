@@ -74,6 +74,9 @@ class Game:
         for d in ("artworks", "renders", "site"):
             (self.out / d).mkdir(exist_ok=True)
         self.system_prompt = (EXP_DIR / "prompts/agent_system.md").read_text()
+        self.charter = Path(args.charter_file).read_text().strip() if getattr(args, "charter_file", None) else ""
+        if self.charter:
+            self.system_prompt = self.system_prompt + "\n\n## The founding charter of this world\n\n" + self.charter
         self.turn_prompt = (EXP_DIR / "prompts/agent_turn.md").read_text()
         self.rng = random.Random(args.seed)
         self.client = None
@@ -107,6 +110,7 @@ class Game:
             "turn": 0,
             "seed": self.args.seed,
             "model": self.args.model,
+            "charter": self.charter,
             "initial_life": self.args.initial_life,
             "proposal_lifetime": self.args.proposal_lifetime,
             "agents": [], "religions": [], "versions": [], "proposals": [],
@@ -450,6 +454,8 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--workers", type=int, default=8); p.add_argument("--seed", type=int, default=46)
     p.add_argument("--cost-cap", type=float, default=100.0); p.add_argument("--dry-run", action="store_true")
     p.add_argument("--fresh", action="store_true")
+    p.add_argument("--charter-file", default=None,
+                   help="Path to a founding-charter markdown file injected into the system prompt")
     return p
 
 
