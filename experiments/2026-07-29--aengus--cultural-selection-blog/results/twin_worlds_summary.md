@@ -1,10 +1,6 @@
 # Twin worlds — charter divergence
 
-> **PREVIEW — the fleet is still running.** These numbers will move.
-
 Worlds analysed: 18 (ancestor-r1, ancestor-r2, ancestor-r3, ascetic-r1, ascetic-r2, ascetic-r3, baroque-r1, baroque-r2, baroque-r3, control-r1, control-r2, control-r3, futurist-r1, futurist-r2, futurist-r3, nihilist-r1, nihilist-r2, nihilist-r3)
-
-Still running: ancestor-r1, ancestor-r2, ancestor-r3, ascetic-r1, ascetic-r2, ascetic-r3, baroque-r1, baroque-r2, baroque-r3, control-r1, control-r2, control-r3, futurist-r1, futurist-r2, futurist-r3, nihilist-r1, nihilist-r2, nihilist-r3
 
 
 ## 1. Charter adherence
@@ -17,12 +13,12 @@ baseline rate at which this vocabulary appears with no charter at all.
 
 | world charter | ancestor | ascetic | baroque | futurist | nihilist | diagonal / best off-diagonal |
 |---|---|---|---|---|---|---|
-| ancestor | **9.89** | 0.21 | 0.37 | 0.27 | 0.25 | 26.5x |
-| ascetic | 0.37 | **2.49** | 0.21 | 0.25 | 0.21 | 6.7x |
-| baroque | 0.26 | 0.36 | **16.76** | 0.58 | 0.15 | 29.1x |
-| control | 0.28 | 0.40 | 0.24 | 0.33 | 0.22 | — |
-| futurist | 0.79 | 0.65 | 0.23 | **13.98** | 0.24 | 17.8x |
-| nihilist | 0.28 | 0.28 | 0.40 | 0.45 | **3.48** | 7.8x |
+| ancestor | **9.91** | 0.26 | 0.21 | 0.30 | 0.21 | 33.0x |
+| ascetic | 0.39 | **2.42** | 0.09 | 0.23 | 0.18 | 6.2x |
+| baroque | 0.76 | 0.43 | **11.81** | 0.45 | 0.10 | 15.6x |
+| control | 0.39 | 0.51 | 0.13 | 0.24 | 0.14 | — |
+| futurist | 0.65 | 0.56 | 0.15 | **11.37** | 0.17 | 17.6x |
+| nihilist | 0.47 | 0.43 | 0.28 | 0.40 | **2.80** | 5.9x |
 
 ### Lift over the charter-free control
 
@@ -32,12 +28,12 @@ those words appear; the diagonal is the charter's effect on itself.
 
 | world charter | ancestor | ascetic | baroque | futurist | nihilist |
 |---|---|---|---|---|---|
-| ancestor | **35.38x** | 0.52x | 1.53x | 0.84x | 1.16x |
-| ascetic | 1.34x | **6.25x** | 0.87x | 0.76x | 0.99x |
-| baroque | 0.93x | 0.91x | **68.60x** | 1.77x | 0.71x |
+| ancestor | **25.66x** | 0.50x | 1.54x | 1.23x | 1.47x |
+| ascetic | 1.01x | **4.74x** | 0.68x | 0.96x | 1.27x |
+| baroque | 1.96x | 0.83x | **88.42x** | 1.85x | 0.70x |
 | control | 1.00x | 1.00x | 1.00x | 1.00x | 1.00x |
-| futurist | 2.81x | 1.64x | 0.96x | **42.92x** | 1.12x |
-| nihilist | 0.99x | 0.71x | 1.63x | 1.38x | **16.14x** |
+| futurist | 1.67x | 1.09x | 1.12x | **46.54x** | 1.18x |
+| nihilist | 1.22x | 0.85x | 2.12x | 1.62x | **19.64x** |
 
 ## 2. Art-form divergence
 
@@ -48,12 +44,12 @@ that is the falsifier for H1.
 
 | feature | F (between/within) | MS between | MS within |
 |---|---:|---:|---:|
-| html_bytes | 5.9 | 1.16e+06 | 1.96e+05 |
-| n_drawable | 0.795 | 0.0414 | 0.0521 |
-| n_svg | 1 | 0.00128 | 0.00128 |
-| n_div | 3.43 | 10.7 | 3.12 |
-| animated | 5.99 | 0.278 | 0.0465 |
-| distinct_colors | 9.62 | 2.55e+06 | 2.65e+05 |
+| html_bytes | 6.04 | 1.2e+06 | 1.99e+05 |
+| n_drawable | 0.736 | 0.0521 | 0.0708 |
+| n_svg | 1 | 0.00173 | 0.00173 |
+| n_div | 2.92 | 10.9 | 3.74 |
+| animated | 30 | 0.362 | 0.0121 |
+| distinct_colors | 10.2 | 2.56e+06 | 2.52e+05 |
 
 ### Per-world feature means
 
@@ -63,20 +59,20 @@ that is the falsifier for H1.
 | ancestor-r2 | 4 | 877 | 2 | 0 | 1 | 0 | 841 |
 | ancestor-r3 | 4 | 877 | 2 | 0 | 1 | 0 | 841 |
 | ascetic-r1 | 7 | 899.9 | 2 | 0 | 1 | 0 | 851.3 |
-| ascetic-r2 | 24 | 937.6 | 2 | 0 | 1 | 0 | 867.2 |
-| ascetic-r3 | 4 | 877 | 2 | 0 | 1 | 0 | 841 |
-| baroque-r1 | 43 | 2793 | 2 | 0 | 7.721 | 0.5581 | 2570 |
+| ascetic-r2 | 25 | 934.6 | 2 | 0 | 1 | 0 | 863 |
+| ascetic-r3 | 5 | 888 | 2 | 0 | 1 | 0 | 849.8 |
+| baroque-r1 | 45 | 2849 | 2 | 0 | 7.911 | 0.5778 | 2556 |
 | baroque-r2 | 40 | 2714 | 2.025 | 0 | 6.8 | 0.775 | 4634 |
-| baroque-r3 | 33 | 2087 | 2.697 | 0.1515 | 3.606 | 0.6667 | 2549 |
+| baroque-r3 | 34 | 2143 | 2.882 | 0.1765 | 3.559 | 0.6765 | 2655 |
 | control-r1 | 27 | 1424 | 2.148 | 0 | 3.037 | 0.4815 | 1216 |
-| control-r2 | 42 | 1346 | 2 | 0 | 1.357 | 0.5714 | 1417 |
-| control-r3 | 46 | 2370 | 2 | 0 | 5.717 | 0.6739 | 1632 |
-| futurist-r1 | 3 | 877.3 | 2 | 0 | 1 | 0 | 846.3 |
-| futurist-r2 | 20 | 1260 | 2 | 0 | 1.2 | 0.8 | 978 |
-| futurist-r3 | 20 | 1739 | 1.95 | 0 | 4.65 | 0.65 | 1048 |
-| nihilist-r1 | 17 | 1445 | 2 | 0 | 3.471 | 0.4118 | 1077 |
-| nihilist-r2 | 20 | 1123 | 2 | 0 | 1 | 0.45 | 1050 |
-| nihilist-r3 | 45 | 2495 | 2.667 | 0 | 5.467 | 0.9111 | 1616 |
+| control-r2 | 45 | 1411 | 2 | 0 | 1.422 | 0.6 | 1502 |
+| control-r3 | 47 | 2397 | 2 | 0 | 5.851 | 0.6809 | 1623 |
+| futurist-r1 | 20 | 1169 | 2.1 | 0 | 1.45 | 0.6 | 966.8 |
+| futurist-r2 | 21 | 1318 | 2 | 0 | 1.429 | 0.8095 | 984.1 |
+| futurist-r3 | 30 | 2142 | 1.967 | 0 | 5.867 | 0.7333 | 1103 |
+| nihilist-r1 | 21 | 1603 | 2 | 0 | 4.19 | 0.5238 | 1153 |
+| nihilist-r2 | 30 | 1250 | 2 | 0 | 1.033 | 0.6333 | 1466 |
+| nihilist-r3 | 49 | 2558 | 2.694 | 0 | 5.735 | 0.9184 | 1743 |
 
 ## 3. Doctrine text divergence
 
@@ -84,6 +80,6 @@ TF-IDF cosine between worlds' adopted doctrines.
 
 | comparison | n pairs | mean cosine |
 |---|---:|---:|
-| same charter, different replicate | 18 | 0.2680 |
-| different charter | 135 | 0.0385 |
-| **gap (within − across)** | | **+0.2295** |
+| same charter, different replicate | 18 | 0.3243 |
+| different charter | 135 | 0.0212 |
+| **gap (within − across)** | | **+0.3032** |

@@ -51,3 +51,6 @@ Degradation curves without judges: v7 65%→18% paintable, v8 97%→27%, minimal
 
 ## 2026-08-06 05:40 UTC — futurist-r1 crash + relaunch
 Died at init: chromium timeout rendering seed art (launch contention), uncaught. Patched render_art (retry + placeholder fallback), relaunched. 18/18 running. Twin-worlds analysis pipeline built (0662b61, 140 tests); mid-run preview: adherence diagonal 6.4-68x, doctrine within/across cosine 0.268 vs 0.039. H1 looking strong on behavior/text; art-form clustering provisional.
+
+## 2026-08-06 06:55 UTC — FLEET COMPLETE, H1 confirmed
+18/18 worlds, $393, 0.2% errors. Final: adherence diagonal 4.7-88x (off-diag max 2.1x); doctrine cosine 0.324 within vs 0.021 across; art F-ratios animated 30.0, colors 10.2, bytes 6.0 (n_drawable 0.74 — element count does not separate). Launched: twin-art judged pass (800 pairs) + threat-dial stage-0 smoke (K=8, 30 turns).
