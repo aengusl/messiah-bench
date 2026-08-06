@@ -1,22 +1,26 @@
 <title>Cultural Selection — Live Progress</title>
 <div id="data" hidden>{
-  "updated": "2026-08-06 05:50 UTC",
+  "updated": "2026-08-06 09:30 UTC",
   "goal": "Experiments sufficient for a Twitter thread → blog post. Thesis: culture, not the individual, is the artist — beauty is locally strategic.",
   "status": [
-    {"label": "Twin-worlds fleet", "value": "18/18 running · mean turn 168/300", "state": "live"},
-    {"label": "Move 3 threat dial", "value": "Built + pre-registered · launch gated", "state": "ready"},
-    {"label": "Spend (measured)", "value": "$12.2 + fleet ≈ $130 accruing", "state": "ok"},
+    {"label": "Twin-worlds fleet", "value": "DONE · 18/18 · $393 · H1 confirmed", "state": "ok"},
+    {"label": "Threat dial", "value": "K=8 smoke: monoculture by t17 · M=2 smoke running", "state": "live"},
+    {"label": "Spend (measured)", "value": "$414 of ~$540 plan", "state": "ok"},
     {"label": "Tests", "value": "163 experiment · 79 repo — green", "state": "ok"}
   ],
   "hypotheses": [
-    {"name": "H1 · Culture is the generator", "prior": 0.8, "was": 0.7,
+    {"name": "H1 · Culture is the generator — CONFIRMED", "prior": 0.95, "was": 0.7,
      "claim": "Seeded charters cause persistent art/doctrine divergence across otherwise identical worlds.",
      "falsifier": "Twin worlds converge: charter effect ≤ replicate noise (blind judges + embeddings).",
-     "evidence": "Mid-run preview: charter-vocab adherence diagonal 6.4–68× (max off-diagonal 2.8×); same-charter doctrine cosine 0.268 vs 0.039 across. Art-form clustering still provisional."},
+     "evidence": "Final, 18 worlds: charter-vocab lift diagonal 4.7–88× (max off-diagonal 2.1×); doctrine cosine 0.324 within vs 0.021 across; art-form F-ratios: animated 30.0, colors 10.2, bytes 6.0. Same model, same seed, different creed → different art."},
+    {"name": "H1b · Culture moves judged beauty — both directions", "prior": 0.75, "was": 0.5,
+     "claim": "Charters shift blind-judged art quality up (ascetic, baroque, ancestor) and down (nihilist) vs a blank-charter control.",
+     "falsifier": "Effect vanishes under slot-debiasing or per-replicate CIs.",
+     "evidence": "1,597 judgments: across-charter win rates ancestor 70% (n=30), ascetic 61%, baroque 59% > control 48% ≈ futurist 47% > nihilist 37%; both judges independently rank nihilist last."},
     {"name": "H3 · Monoculture kills art", "prior": 0.6, "was": 0.6,
      "claim": "Art quality/novelty declines once one culture absorbs the rest.",
      "falsifier": "Flat or rising quality across the ExpIX collapse.",
-     "evidence": "Aesthetic test deferred to reliable corpora; completeness curves show collapse of art *production* in v7/v8 regimes."},
+     "evidence": "Production-collapse version proven (completeness curves). Mechanism sighting: in the dial smoke, art-only allegiance snowballed to total monoculture in 17 turns — shared taste priors concentrate fast."},
     {"name": "H2 · Regime shapes the art (reframed)", "prior": 0.85, "was": 0.5,
      "claim": "Pay-per-edit economies produced mostly unrenderable fragments; the adoption-gated economy produced 100% paintable canon.",
      "falsifier": "Completeness gap explained by engine/token-budget differences rather than incentive structure.",
@@ -24,9 +28,11 @@
     {"name": "H4 · Threat sharpens art", "prior": 0.4, "was": 0.4,
      "claim": "Conquest-by-conversion pressure (allegiance decided by art alone) raises art quality.",
      "falsifier": "Quality flat or decreasing in pressure; inverted-U = ambiguous per decision table.",
-     "evidence": "Untested. Mechanic built + pre-registered (K ∈ {∞,16,8,4} × 3 reps, $126 budget, powered for ~1 SD only)."}
+     "evidence": "Pre-reg checkpoint tripped: K=8/M=3 smoke reached total monoculture by turn 17 (first pressure test killed a seed religion instantly). M=2 smoke running; sweep may reframe to time-to-monoculture + pre-collapse quality."}
   ],
   "findings": [
+    {"title": "Same brain, different god, different art", "detail": "18 worlds, identical model and seed, six different founding creeds: each world's agents used their own creed's vocabulary 4.7–88× more than control, wrote doctrine 15× more self-similar within-creed, and produced structurally distinct art (animation F=30, color F=10). Blind judges then scored ascetic/baroque/ancestor art above control and nihilist far below it.", "file": "results/twin_worlds_summary.md"},
+    {"title": "Art-only allegiance snowballs to monoculture in 17 turns", "detail": "When agents re-chose religion by looking at artwork alone (no names, no doctrine, anonymized panels), one aesthetic absorbed all 24 agents within three tests — shared taste priors concentrate allegiance fast.", "file": "outputs/2026-08-06-dial-smoke/k8-r1/events.jsonl"},
     {"title": "Art stopped existing before it stopped being good", "detail": "In edit-paying regimes most 'artworks' contain no complete drawable element — v7's median is zero. The make/choose regime never produced an unpaintable canonical work. Measured from source files; no judges involved.", "file": "results/completeness_summary.md"},
     {"title": "Elaboration kills", "detail": "Truncated artworks are systematically larger (v7: 4314 vs 2844 median bytes). Works die spending their output on gradients and keyframes before drawing a shape. v8 grows more elaborate (7→11 elements) before collapsing to zero.", "file": "results/completeness.csv"},
     {"title": "Charters bite", "detail": "Every twin world uses its own charter's vocabulary 6.4–68× more than control worlds do; baroque leads at 68×. Same-charter doctrine is ~7× more self-similar than cross-charter. (Mid-run preview, not final.)", "file": "results/twin_worlds_summary.md"}
@@ -38,9 +44,10 @@
   ],
   "budget": [
     {"item": "Judge pilots + round 1 + killed round 2", "usd": "$8.77"},
-    {"item": "Smoke worlds (failed + passed)", "usd": "$3.41"},
-    {"item": "Twin-worlds fleet (18 × 300 turns, accruing)", "usd": "≈ $360 est"},
-    {"item": "Threat dial (pre-registered, not launched)", "usd": "$126 planned"}
+    {"item": "Smoke worlds (charter + dial K=8 + dial M=2)", "usd": "$7.55"},
+    {"item": "Twin-worlds fleet (18 × 300 turns)", "usd": "$393"},
+    {"item": "Twin-art judged pass (1,600 pairs)", "usd": "$2.03"},
+    {"item": "Threat-dial main sweep (pre-registered, gated)", "usd": "≈ $120 planned"}
   ],
   "links": [
     {"label": "PR #1 (live summary)", "url": "https://github.com/aengusl/messiah-bench/pull/1"},
