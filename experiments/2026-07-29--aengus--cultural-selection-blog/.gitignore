@@ -1,0 +1,5 @@
+data/
+results/**/*.png
+results/**/*.jsonl
+__pycache__/
+*.log
