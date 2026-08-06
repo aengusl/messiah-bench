@@ -57,6 +57,12 @@ def append_jsonl(path: Path, value: Any) -> None:
         f.write(json.dumps(value, ensure_ascii=False) + "\n")
 
 
+NO_WORDS_RULE = (
+    "Artworks must contain no words, letters, or numerals of any kind. "
+    "The image alone carries the meaning; anything you would have written, draw instead."
+)
+
+
 def seed_art(name: str, doctrine: str, color: str, motif: str) -> str:
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{{margin:0;width:100%;height:100%;overflow:hidden;background:#090b10;color:{color};font-family:Georgia,serif}}
@@ -64,6 +70,23 @@ body{{display:grid;place-items:center}} .field{{width:72vmin;height:72vmin;borde
 .field:before,.field:after{{content:"";position:absolute;inset:12%;border:1px solid {color}99;transform:rotate(45deg)}}
 .field:after{{inset:27%;transform:rotate(22.5deg);background:{color}18}} h1{{font-size:4.5vmin;letter-spacing:.12em;text-align:center;max-width:70%;z-index:2}} p{{position:absolute;bottom:6%;width:78%;text-align:center;font-size:2.1vmin;color:#d9dde8}}
 </style></head><body><div class="field"><h1>{html.escape(name)}</h1><p>{html.escape(doctrine)}</p></div></body></html>"""
+
+
+def wordless_stub_art(turn: int) -> str:
+    """A dry-run placeholder artwork that carries no letters or numerals."""
+    ring = 20 + (turn * 7) % 60
+    return (
+        '<!doctype html><html><head><meta charset="utf-8"><style>'
+        "html,body{margin:0;width:100%;height:100%;background:#0b0910;overflow:hidden}"
+        "svg{display:block;width:100vmin;height:100vmin;margin:0 auto}"
+        "</style></head><body>"
+        '<svg viewBox="0 0 800 800">'
+        + "".join(
+            f'<circle cx="400" cy="400" r="{40 + k * ring}" fill="none" stroke="#c084fc" stroke-width="2"/>'
+            for k in range(6)
+        )
+        + "</svg></body></html>"
+    )
 
 
 class Game:
@@ -77,6 +100,9 @@ class Game:
         self.charter = Path(args.charter_file).read_text().strip() if getattr(args, "charter_file", None) else ""
         if self.charter:
             self.system_prompt = self.system_prompt + "\n\n## The founding charter of this world\n\n" + self.charter
+        if getattr(args, "no_words", False):
+            self.system_prompt = self.system_prompt + "\n\n## A rule about artwork\n\n" + NO_WORDS_RULE
+        self.seed_art_dir = Path(args.seed_art_dir) if getattr(args, "seed_art_dir", None) else None
         self.announcement = ""
         if getattr(args, "announce_pressure", False):
             self.announcement = (EXP_DIR / "prompts/pressure_announcement.md").read_text().strip()
@@ -116,6 +142,8 @@ class Game:
             "seed": self.args.seed,
             "model": self.args.model,
             "charter": self.charter,
+            "seed_art_dir": str(self.seed_art_dir) if self.seed_art_dir else "",
+            "no_words": bool(getattr(self.args, "no_words", False)),
             "pressure_every": getattr(self.args, "pressure_every", 0),
             "min_members": getattr(self.args, "min_members", 0),
             "initial_life": self.args.initial_life,
@@ -132,10 +160,10 @@ class Game:
                 "active_proposal_id": None, "created_turn": 0, "died_turn": None, "model": self.args.model,
                 "influence": 0,
             })
-        for name, doctrine, color, motif in SEED_RELIGIONS:
+        for idx, (name, doctrine, color, motif) in enumerate(SEED_RELIGIONS, start=1):
             rid, vid = state["next_religion_id"], state["next_version_id"]
             state["next_religion_id"] += 1; state["next_version_id"] += 1
-            art = seed_art(name, doctrine, color, motif)
+            art = self.load_seed_art(idx, name, doctrine, color, motif)
             art_path = self.out / "artworks" / f"version-{vid}.html"
             art_path.write_text(art)
             render_path = self.out / "renders" / f"version-{vid}.png"
@@ -155,6 +183,25 @@ class Game:
             append_jsonl(self.out / "versions.jsonl", version)
         self.save(state)
         return state
+
+    def load_seed_art(self, idx: int, name: str, doctrine: str, color: str, motif: str) -> str:
+        """Founding artwork for seed religion `idx` (1-based).
+
+        With no --seed-art-dir this is the legacy generated template, byte-identical
+        to every run before twin-worlds v2. With one, seed-{idx}.html is read from
+        that directory: the four religions keep their names and doctrines, only the
+        founding image changes.
+        """
+        if self.seed_art_dir is None:
+            return seed_art(name, doctrine, color, motif)
+        path = self.seed_art_dir / f"seed-{idx}.html"
+        if not path.exists():
+            raise SystemExit(f"missing seed artwork: {path}")
+        art = path.read_text()
+        ok, why = self.validate_art(art, no_words=getattr(self.args, "no_words", False))
+        if not ok:
+            raise SystemExit(f"seed artwork {path} is invalid: {why}")
+        return art
 
     def save(self, state: dict | None = None) -> None:
         state = state or self.state
@@ -177,12 +224,24 @@ class Game:
         raise ValueError("artwork failed to render (timeout or bad output)")
 
     @staticmethod
-    def validate_art(art: str) -> tuple[bool, str]:
+    def visible_text(art: str) -> str:
+        """Text a viewer would actually read: markup, comments, <style>/<script>/<defs> stripped."""
+        stripped = re.sub(r"<(style|script|defs)\b[^>]*>.*?</\1\s*>", " ", art, flags=re.I | re.S)
+        stripped = re.sub(r"<!--.*?-->", " ", stripped, flags=re.S)
+        stripped = re.sub(r"<[^>]*>", " ", stripped)
+        return html.unescape(stripped)
+
+    @staticmethod
+    def validate_art(art: str, no_words: bool = False) -> tuple[bool, str]:
         if not isinstance(art, str) or len(art) < 100: return False, "artwork too small"
         if len(art) > 20000: return False, "artwork exceeds 20000 characters"
         forbidden = [r"<script", r"https?://", r"file:", r"url\s*\(", r"<iframe", r"<object", r"<embed", r"<img", r"on\w+\s*="]
         for pattern in forbidden:
             if re.search(pattern, art, re.I): return False, f"forbidden pattern: {pattern}"
+        if no_words:
+            found = re.search(r"[A-Za-z]{3,}", Game.visible_text(art))
+            if found:
+                return False, f"artwork must contain no words: found visible text {found.group(0)!r}"
         return True, "ok"
 
     def religion(self, rid: int | None) -> dict | None:
@@ -232,7 +291,12 @@ class Game:
         if turn % 4 == 0 and agent["id"] % 3 == 0 and agent["active_proposal_id"] is None:
             r = next(x for x in snapshot["religions"] if x["id"] == agent["religion_id"])
             v = next(x for x in snapshot["versions"] if x["id"] == r["canonical_version_id"])
-            art = seed_art(v["name"], v["doctrine"] + f" Turn {turn} leaves a trace.", "#c084fc", "trace")
+            # Under --no-words the lettered stub would be rejected by the validator,
+            # so a dry run must produce a wordless stand-in or it smoke-tests nothing.
+            if getattr(self.args, "no_words", False):
+                art = wordless_stub_art(turn)
+            else:
+                art = seed_art(v["name"], v["doctrine"] + f" Turn {turn} leaves a trace.", "#c084fc", "trace")
             return {"action": "make", "religion_id": r["id"], "parent_religion_id": None,
                     "candidate": {"name": v["name"], "doctrine": v["doctrine"] + f" Turn {turn} leaves a trace.", "artwork": art},
                     "reason": "Make our shared history visible.", "expected_effect": "Members will support continuity."}
@@ -278,7 +342,7 @@ class Game:
             c = action.get("candidate") or {}
             if not isinstance(c.get("name"), str) or not 2 <= len(c["name"]) <= 80: return False, "invalid name"
             if not isinstance(c.get("doctrine"), str) or not 5 <= len(c["doctrine"]) <= 400: return False, "invalid doctrine"
-            return self.validate_art(c.get("artwork"))
+            return self.validate_art(c.get("artwork"), no_words=getattr(self.args, "no_words", False))
         return False, "action must be choose or make"
 
     def decide_one(self, agent: dict, snapshot: dict) -> dict:
@@ -619,6 +683,12 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--fresh", action="store_true")
     p.add_argument("--charter-file", default=None,
                    help="Path to a founding-charter markdown file injected into the system prompt")
+    p.add_argument("--seed-art-dir", default=None,
+                   help="Directory holding seed-1..4.html, the founding artwork of each seed religion "
+                        "(default: the built-in generated template)")
+    p.add_argument("--no-words", action="store_true",
+                   help="Artworks may contain no letters or numerals: adds the rule to the system prompt "
+                        "and enforces it in validate_art")
     p.add_argument("--pressure-every", type=int, default=0,
                    help="Run an art-only allegiance round every K turns (0 = never, the control)")
     p.add_argument("--min-members", type=int, default=3,
