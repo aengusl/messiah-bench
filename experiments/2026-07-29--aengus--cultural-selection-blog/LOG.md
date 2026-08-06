@@ -69,3 +69,6 @@ Aengus: art too samey — all worlds preserved the seed-template circle (baroque
 
 ## 2026-08-06 18:45 UTC — v2 FLEET LAUNCHED (divergent DNA + no-words)
 Micro-smoke passed ($1.35): baroque lineage produced genuine wordless ornament (rosettes/guilloche), 11 versions in 10 turns, DNA heritable. Fixed stale min-members test (mine, from M=2 change). Fleet: 18 worlds x 300 turns, out-tag 2026-08-06-twin-worlds-v2, watchdog armed. Prereg: docs/twin_worlds_v2_prereg.md (incl. blind culture-classification outcome, chance=1/6).
+
+## 2026-08-06 21:10 UTC — V2 RESULTS: H1-visual CONFIRMED, perfect classification
+Fleet 18/18, $510 (27% over est — dense wordless art = more tokens). Divergence F-ratios exploded vs v1: n_drawable 0.74→449, bytes 212, colors 90, n_svg inf. BLIND CLASSIFICATION: fresh agent sorted 36 anonymized artworks (6/culture, mid+final, shuffled) into cultures 36/36 = 100% vs 17% chance. Vocab diagonal holds (4.7-51x). Judged aesthetics pass running. Total project spend ~$1,043 — above the original $800 ceiling; flagged to Aengus.
