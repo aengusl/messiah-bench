@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
@@ -430,7 +431,12 @@ def load_keys(env_path: Path = MB_ROOT / ".env") -> dict[str, str]:
     from dotenv import dotenv_values
 
     vals = dotenv_values(env_path)
-    return {k: v for k, v in vals.items() if v}
+    keys = {k: v for k, v in vals.items() if v}
+    # Environment overrides .env — the repo .env's ANTHROPIC_API_KEY is stale.
+    for k in ("ANTHROPIC_API_KEY", "GOOGLE_API_KEY"):
+        if os.environ.get(k):
+            keys[k] = os.environ[k]
+    return keys
 
 
 def parse_judgment(text: str) -> dict:
@@ -588,6 +594,62 @@ def judge_pair(
     }
 
 
+RETRYABLE_STATUS = {408, 409, 425, 429, 500, 502, 503, 504, 529}
+
+
+def is_retryable(exc: BaseException) -> bool:
+    """True for rate limits and transient server errors, false for bad requests.
+
+    Both SDKs surface a `status_code`, but a transport-level failure may not, so
+    we fall back to matching the class name and message.
+    """
+    code = getattr(exc, "status_code", None)
+    if code is None:
+        code = getattr(getattr(exc, "response", None), "status_code", None)
+    if isinstance(code, int):
+        return code in RETRYABLE_STATUS
+
+    name = type(exc).__name__.lower()
+    if any(w in name for w in
+           ("ratelimit", "overloaded", "internalserver", "serviceunavailable",
+            "connection", "timeout", "unavailable")):
+        return True
+    text = str(exc).lower()
+    return any(w in text for w in
+               ("429", "500", "502", "503", "504", "529",
+                "rate limit", "overloaded", "timeout", "temporarily unavailable"))
+
+
+def judge_pair_with_retry(
+    judge: str,
+    slot_a_png: Path,
+    slot_b_png: Path,
+    keys: dict[str, str],
+    retries: int = 2,
+    base_delay: float = 2.0,
+    sleep=time.sleep,
+    _judge_fn=None,
+) -> dict:
+    """`judge_pair` plus bounded retries on 429/5xx, with exponential backoff.
+
+    A malformed judge reply (ValueError from parse_judgment) is not retried —
+    retrying it would just burn money on the same broken output.
+    """
+    call = _judge_fn or judge_pair
+    attempt = 0
+    while True:
+        try:
+            res = call(judge, slot_a_png, slot_b_png, keys)
+            if attempt:
+                res = {**res, "retries": attempt}
+            return res
+        except Exception as e:
+            if attempt >= retries or not is_retryable(e):
+                raise
+            sleep(base_delay * (2 ** attempt))
+            attempt += 1
+
+
 # ---------------------------------------------------------------- cost tracking
 
 # $ per million tokens. Anthropic rates from the Claude API pricing table;
@@ -603,6 +665,40 @@ def cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
     if not p:
         return 0.0
     return (input_tokens * p["in"] + output_tokens * p["out"]) / 1_000_000
+
+
+class CostTracker:
+    """Per-judge token and dollar totals, safe to update from worker threads."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._by_judge: dict[str, dict] = {}
+        self.errors = 0
+
+    def add(self, judge: str, input_tokens: int, output_tokens: int, wall_s: float) -> None:
+        usd = cost_usd(judge, input_tokens, output_tokens)
+        with self._lock:
+            t = self._by_judge.setdefault(
+                judge, {"calls": 0, "in": 0, "out": 0, "usd": 0.0, "wall": 0.0}
+            )
+            t["calls"] += 1
+            t["in"] += input_tokens
+            t["out"] += output_tokens
+            t["usd"] += usd
+            t["wall"] += wall_s
+
+    def add_error(self) -> int:
+        with self._lock:
+            self.errors += 1
+            return self.errors
+
+    def snapshot(self) -> dict[str, dict]:
+        with self._lock:
+            return {j: dict(t) for j, t in self._by_judge.items()}
+
+    def total_usd(self) -> float:
+        with self._lock:
+            return sum(t["usd"] for t in self._by_judge.values())
 
 
 COSTLOG_HEADER = (
@@ -649,12 +745,22 @@ def write_jsonl_atomic(path: Path, rows) -> None:
     os.replace(tmp, path)
 
 
+_APPEND_LOCK = threading.Lock()
+
+
 def append_jsonl(path: Path, row: dict) -> None:
-    """Judgments are append-only. We never rewrite this file."""
+    """Judgments are append-only. We never rewrite this file.
+
+    Worker threads all append here, so the write is serialized: without the lock
+    two interleaved writes can produce a spliced line that no longer parses.
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as fh:
-        fh.write(json.dumps(row) + "\n")
+    line = json.dumps(row) + "\n"
+    with _APPEND_LOCK:
+        with open(path, "a") as fh:
+            fh.write(line)
+            fh.flush()
 
 
 def read_jsonl(path: Path) -> list[dict]:

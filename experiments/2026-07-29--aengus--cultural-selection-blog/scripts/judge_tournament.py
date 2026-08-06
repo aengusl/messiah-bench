@@ -124,9 +124,9 @@ def print_plan(n_pairs: int, sample: list[A.Artwork] | None) -> None:
     say(f"  {C.BOLD}estimated total: {C.YELLOW}${est['_total_usd']:.2f}{C.RESET}")
 
 
-def phase_judge(sample: list[A.Artwork], n_pairs: int, seed: int) -> None:
-    say(f"\n{C.BOLD}[judge]{C.RESET} {n_pairs} pairs x {len(A.JUDGES)} judges "
-        f"{C.YELLOW}(this spends money){C.RESET}", C.CYAN)
+def phase_judge(sample: list[A.Artwork], n_pairs: int, seed: int, workers: int = 8) -> None:
+    say(f"\n{C.BOLD}[judge]{C.RESET} {n_pairs} pairs x {len(A.JUDGES)} judges, "
+        f"{workers} workers {C.YELLOW}(this spends money){C.RESET}", C.CYAN)
     keys = A.load_keys()
     missing = [k for k in ("GOOGLE_API_KEY", "ANTHROPIC_API_KEY") if k not in keys]
     if missing:

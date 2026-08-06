@@ -30,10 +30,18 @@ prompts, results and status docs. `src/` is only for the shared long-lived engin
 | `messiah_bench_v8.py` | v8: PR-governed art + mortal messiahs. Art governance worked; the war kill-bonus did not |
 | `main.py` | Trivial entry stub |
 
+**Run directories.** Each engine sets `BASE_DIR = Path(__file__).resolve().parents[1]`,
+i.e. the repo root even though the engine lives in `src/`. `.env` and the default run
+directory both hang off that, so runs never write inside `src/`. Passing `--run-dir=` is
+cwd-relative and overrides the default — which is why everything runs from the repo root.
+Note `messiah_bench_v8.py` defaults to `runs/messiah-v7` (a pre-existing copy-paste bug);
+harmless, because `scripts/launch_v8.sh` always passes `--run-dir=runs/messiah-v8`.
+
 ## scripts/ — launch, publish, build
 
-Run all of these **from the repo root**; the launchers `cd` to the root themselves,
-so `bash scripts/launch_v8.sh` works from anywhere.
+Run all of these **from the repo root**. The launchers `cd "$(dirname "$0")/.."` first,
+so `bash scripts/launch_v8.sh` works from anywhere and `--run-dir=runs/messiah-vN`
+(a cwd-relative path) always lands in the repo-root `runs/`.
 
 - `launch_v5.sh` … `launch_v8.sh` — start the matching engine in a detached tmux session,
   writing to `runs/messiah-vN/` and teeing `sim.log`. Override with `SESSION=` / `RUN_DIR=`.

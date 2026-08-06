@@ -40,10 +40,15 @@ tmux attach -t 2026-06-22-messiah-v8
 tail -f runs/messiah-v8/sim.log
 ```
 
-Launchers `cd` to the repo root themselves and take `SESSION=` / `RUN_DIR=` overrides.
+**Always run from the repo root.** Launchers `cd` there themselves and take `SESSION=` /
+`RUN_DIR=` overrides; `--run-dir=` is cwd-relative. The engines resolve `BASE_DIR` to the
+repo root (not to `src/`), so `.env` loads and default run dirs land in `runs/` — don't
+change that to `Path(__file__).parent` or runs will start writing inside `src/`.
+
 Always smoke-test before a full launch: `--dry-run`, then `--debug --ticks=1`, then check
-cost and invalid-action rate before scaling. `uv run pytest tests/ -q` for the test suite
-(two failures in `test_messiah.py` are pre-existing model-config drift, not your fault).
+cost and invalid-action rate before scaling. `uv run pytest tests/ -q` should be **71 passed**.
+If you see failures about `haiku` or `CIVILIAN_MODEL_ROTATION`, you're running stale
+bytecode — `/bin/rm -rf tests/__pycache__ src/__pycache__ .pytest_cache` and rerun.
 
 ## Publishing to the website
 
