@@ -72,3 +72,6 @@ Micro-smoke passed ($1.35): baroque lineage produced genuine wordless ornament (
 
 ## 2026-08-06 21:10 UTC — V2 RESULTS: H1-visual CONFIRMED, perfect classification
 Fleet 18/18, $510 (27% over est — dense wordless art = more tokens). Divergence F-ratios exploded vs v1: n_drawable 0.74→449, bytes 212, colors 90, n_svg inf. BLIND CLASSIFICATION: fresh agent sorted 36 anonymized artworks (6/culture, mid+final, shuffled) into cultures 36/36 = 100% vs 17% chance. Vocab diagonal holds (4.7-51x). Judged aesthetics pass running. Total project spend ~$1,043 — above the original $800 ceiling; flagged to Aengus.
+
+## 2026-08-06 21:25 UTC — v2 judged pass ($2.04, 1600 judgments)
+Win rates: control 78% > futurist 63% > baroque 62% > ancestor 54% >> ascetic 21% > nihilist 12%. Model judges reward their own home aesthetic (dark glow emblem); 6x cultural range confirms culture moves judged beauty, but ranking = judge-prior-laden. Human curation is the quality signal (per Aengus goal memory). ALL v2 WORK COMPLETE.
