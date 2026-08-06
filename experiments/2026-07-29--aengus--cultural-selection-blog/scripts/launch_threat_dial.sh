@@ -30,7 +30,7 @@ MODEL="gemini-2.5-flash"
 INITIAL_LIFE=20
 PROPOSAL_LIFETIME=3
 WORKERS=8
-MIN_MEMBERS=3
+MIN_MEMBERS=2   # lowered from pre-reg's 3 after stage-0 checkpoint: M=3 K=8 hit monoculture by t17; M=2 held 2 religions at t30
 COST_CAP=15           # expected $9-10/world; unreachable in normal operation, catches a runaway
 # ------------------------------------------------------------------------------------------
 

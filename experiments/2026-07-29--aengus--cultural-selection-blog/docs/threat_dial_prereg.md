@@ -411,3 +411,6 @@ working, and it is exactly what the §7.4 mid-sweep checkpoint should be watchin
 hit monoculture in the first few rounds, the dial's high end is measuring collapse rather than
 competition and M needs lowering before the remaining worlds are launched. Pinned by
 `test_simultaneous_collapse_culls_every_religion_under_threshold`.
+
+### §9 addendum — stage-0 checkpoint deviation (2026-08-06 09:45 UTC)
+M lowered 3→2 for the main sweep. Evidence: K=8/M=3 smoke reached total monoculture by turn 17; K=8/M=2 smoke held 2 religions at turn 30 (0 errors, $2.16). Recorded by the orchestrator under the pre-registered checkpoint provision; K settings, replicates, outcomes unchanged.
