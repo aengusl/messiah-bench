@@ -66,3 +66,6 @@ Control: 4/4 religions survive 120 turns, all reps. Any pressure -> total monocu
 
 ## 2026-08-06 18:30 UTC — v1 closed out; scratchpad pruned; v2 (divergent DNA) opened
 Aengus: art too samey — all worlds preserved the seed-template circle (baroque-r1 v9 vs ascetic-r2 v9 = same composition, different color). Decision: twin worlds v2 with per-culture founding artworks + no-words rule, all else identical; claims unchanged, H1-visual added. Builder-dna constructing. Prior scratchpad state (04:45 snapshot with all v1 findings/process bugs) is preserved in git history and the entries above.
+
+## 2026-08-06 18:45 UTC — v2 FLEET LAUNCHED (divergent DNA + no-words)
+Micro-smoke passed ($1.35): baroque lineage produced genuine wordless ornament (rosettes/guilloche), 11 versions in 10 turns, DNA heritable. Fixed stale min-members test (mine, from M=2 change). Fleet: 18 worlds x 300 turns, out-tag 2026-08-06-twin-worlds-v2, watchdog armed. Prereg: docs/twin_worlds_v2_prereg.md (incl. blind culture-classification outcome, chance=1/6).
