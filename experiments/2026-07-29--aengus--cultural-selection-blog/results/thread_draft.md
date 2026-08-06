@@ -3,14 +3,14 @@
 *Every number below traces to a file in results/ or outputs/. [SLOT] = pending the dial judged pass. Visuals named per tweet.*
 
 **1 (hook).** As a kid I figured God made churches beautiful. So I built societies of AI agents — same model, same seed, different gods — and watched who made beautiful things, and why. What I found surprised me twice. 🧵
-*Visual: 2×3 grid of twin-world artworks, one per charter.*
+*Visual: 2×3 grid of v2 final artworks, one per creed (ascetic ink / baroque rosette / nihilist glitch / ancestor stained-glass / futurist grid / control emblem).*
 
 **2 (the control humans never had).** Every agent is literally the same neural network. Same weights, same temperature, same seed. The only difference between worlds: a one-paragraph founding creed. Any difference in the art is culture, not talent.
 
-**3 (culture is the generator).** 18 parallel worlds, six creeds. Each world used its own creed's vocabulary up to 88× more than control, wrote doctrine 15× more self-similar, and made structurally different art (animation F=30, color F=10). Same brain, different god, different art.
-*Visual: results/twin_worlds_divergence.png.*
+**3 (culture is the generator).** 18 parallel worlds, six creeds, each culture seeded with its own founding artwork and a rule: no words, the image alone carries meaning. 300 turns later a blind judge sorted every artwork back to its culture — **36 out of 36, where guessing gets 6**. Ascetic worlds converged on spare ink drawings; nihilists built beautiful neon wreckage; futurists raised Tron-monuments over starfields; the baroque gilded the gilding. Same brain, different god, different art.
+*Visual: 6-culture final-art grid (v2).*
 
-**4 (culture moves beauty — both directions).** Blind judges scored the art. Ascetic, baroque and ancestor-cult worlds beat the creed-less control (61%, 59%, 70% win rates); the nihilist creed — "we build monuments to no one" — came dead last at 37%, by both judges independently. The creed doesn't just change the style. It changes the quality.
+**4 (culture moves beauty — both directions).** Blind judges scored the art: a 6× spread in win rate purely from the founding creed (78% down to 12%; the nihilist creed — "we build monuments to no one" — last again, in both experiments and by both judges). One caveat we're honest about: AI judges favor art closest to their own taste prior, so the ranking is theirs; the *spread* is the finding.
 
 **5 (art can stop existing).** In earlier worlds that paid agents per edit, "art" collapsed into unrenderable fragments: 91% of one run's works were cut off mid-tag; the median artwork contained ZERO complete drawable elements. Paintable art fell 65%→18% over the run. The economy decided whether art existed at all.
 *Visual: results/completeness_over_time.png.*

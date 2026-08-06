@@ -1,37 +1,38 @@
 <title>Cultural Selection — Evidence Explorer</title>
 <div id="assets" hidden>__ASSETS__</div>
 <div id="data" hidden>{
-  "updated": "2026-08-06 18:00 UTC",
+  "updated": "2026-08-06 22:00 UTC",
   "claims": [
     {
       "id": "c1", "num": "Claim 1",
-      "title": "Culture is the generator",
-      "one_liner": "Same model, same seed, different creed → different art. 18 parallel worlds, six founding creeds, three replicates each.",
-      "verdict": "CONFIRMED", "prior": "P ≈ 0.95",
+      "title": "Culture is the generator — 36/36 blind classification",
+      "one_liner": "Same model, same seed, different creed and founding artwork, no words allowed. 18 worlds × 300 turns (v2 fleet). A blind judge then sorted every anonymized artwork back to its culture without a single error.",
+      "verdict": "CONFIRMED", "prior": "P ≈ 0.97",
       "numbers": [
-        {"v": "4.7–88×", "l": "own-creed vocabulary lift vs control (diagonal); max off-diagonal 2.1×"},
-        {"v": "0.324 vs 0.021", "l": "doctrine cosine similarity within-creed vs across-creed (15×)"},
-        {"v": "F = 30 / 10 / 6", "l": "between-creed variance ratio: animation, palette size, artwork bytes"}
+        {"v": "36/36", "l": "blind culture classification, chance = 1/6 ≈ 17% (p ≈ 10⁻²⁸)"},
+        {"v": "F = 449 / 212 / 90", "l": "between-creed variance ratio: drawable elements, artwork bytes, palette (v1 was 0.74 / 6 / 10 — the founding DNA did this)"},
+        {"v": "4.7–51×", "l": "own-creed vocabulary lift vs control; doctrine 7× more self-similar within-creed"}
       ],
-      "gallery": "twin", "galleryNote": "Three final artworks per world — click any to enlarge. Every artist is the same neural network.",
-      "plot": "plot-twin-divergence",
+      "gallery": "v2-final", "galleryNote": "Final-generation artworks, three per culture — click to enlarge. Every artist is the same neural network; only the founding creed and founding image differ.",
+      "gallery2": "v2-seeds", "gallery2Note": "The founding DNA: the seed artwork each culture inherited at turn 0.",
+      "gallery3": "v2-blind", "gallery3Note": "From the blind test: anonymized, shuffled, all correctly re-assigned to their cultures.",
       "quotes": true,
-      "files": ["results/twin_worlds_summary.md", "results/twin_worlds_features.csv", "outputs/2026-08-06-twin-worlds/"],
-      "caveats": "3 replicates per creed at temperature 0.9; art-element count (F=0.74) does not separate creeds — form diverges in style, not complexity."
+      "files": ["results/twin_worlds_summary.md", "outputs/2026-08-06-twin-worlds-v2/", "docs/twin_worlds_v2_prereg.md"],
+      "caveats": "v1 (shared seed template) had already confirmed vocab/doctrine divergence, but all worlds preserved the same visual composition — that round's art convergence is why v2 exists. 3 replicates per creed at temperature 0.9."
     },
     {
       "id": "c2", "num": "Claim 2",
-      "title": "Culture moves judged beauty — in both directions",
-      "one_liner": "Blind judges scored the twin-world art with all context stripped. Three creeds beat the blank-creed control; the nihilist creed came dead last.",
+      "title": "Culture moves judged beauty — a 6× spread",
+      "one_liner": "Blind judges scored the v2 art with all context stripped. The founding creed alone swings the judged win rate from 78% to 12%.",
       "verdict": "SUPPORTED", "prior": "P ≈ 0.75",
       "numbers": [
-        {"v": "70% · 61% · 59%", "l": "across-creed win rates: ancestor (n=30), ascetic, baroque"},
-        {"v": "48% · 47%", "l": "control and futurist — the creedless world sits mid-table"},
-        {"v": "37%", "l": "nihilist — ranked last by both judges independently"}
+        {"v": "78% · 63% · 62%", "l": "v2 across-creed win rates: control, futurist, baroque"},
+        {"v": "54% · 21% · 12%", "l": "ancestor, ascetic, nihilist — the nihilist creed came last in BOTH fleets, by both judges"},
+        {"v": "6×", "l": "spread in judged quality caused purely by the founding culture"}
       ],
-      "bars": [["ancestor",70],["ascetic",61],["baroque",59],["control",48],["futurist",47],["nihilist",37]],
-      "files": ["results/twin_worlds_judgments.jsonl (1,597 rows)"],
-      "caveats": "Judge taste shares the artists' model priors; per-replicate CIs and slot-debiasing pending before quoting exact figures publicly."
+      "bars": [["control",78],["futurist",63],["baroque",62],["ancestor",54],["ascetic",21],["nihilist",12]],
+      "files": ["results/twin_worlds_judgments.jsonl (v2 rows: last 1,600)"],
+      "caveats": "The RANKING is judge-prior-laden: model judges favor the style closest to their own taste (control's dark glowing emblem is the model's home aesthetic; ascetic minimalism reads as 'empty' to them). The SPREAD is the finding. Human curation outranks model judges for quality calls — by design."
     },
     {
       "id": "c3", "num": "Claim 3",
@@ -67,8 +68,8 @@
   ],
   "evolution": {
     "title": "Watch one culture's art evolve",
-    "note": "The Gilded Excess creed, world baroque-r1, religion 3 — twelve canonical versions over 300 turns; six shown. Drag the slider.",
-    "group": "twin-evolution"
+    "note": "The most interesting v2 lineage, founding seed to final form — drag the slider. (v1's baroque lineage, where every version kept the same template circle, is what this replaced.)",
+    "group": "v2-evolution"
   },
   "retractions": [
     {"claim": "Round-1 ELO ranking: minimal 1799 > v8 1433 > v7 1312", "why": "Judged emptiness, not aesthetics — most v7/v8 artworks are genuinely blank, and minimal's embed legible doctrine text judges cited.", "caught_by": "Independent audit agent: render-success rate (38/73/100%) exactly monotonic with the ELO headline."},
@@ -235,6 +236,8 @@ $('claims').innerHTML = D.claims.map(c => `
       <div class="nums">${c.numbers.map(n => `<div class="num"><div class="v">${n.v}</div><div class="l">${n.l}</div></div>`).join('')}</div>
       ${c.bars ? bars(c.bars) : ''}
       ${c.gallery ? `<div><p class="gnote">${c.galleryNote}</p>${thumbs(c.gallery)}</div>` : ''}
+      ${c.gallery2 ? `<div><p class="gnote">${c.gallery2Note}</p>${thumbs(c.gallery2)}</div>` : ''}
+      ${c.gallery3 ? `<div><p class="gnote">${c.gallery3Note}</p>${thumbs(c.gallery3)}</div>` : ''}
       ${c.plot && plotAsset(c.plot) ? `<img class="plotimg" loading="lazy" src="${plotAsset(c.plot).b64}" alt="chart for ${c.title}">` : ''}
       ${c.quotes ? '<div>' + ASSETS.quotes.map(q => `<div class="quote">“${q.text || q.quote}”<div class="who">${q.world} · turn ${q.turn}</div></div>`).join('') + '</div>' : ''}
       <div class="files">${c.files.map(f => `<span>${f}</span>`).join('')}</div>
