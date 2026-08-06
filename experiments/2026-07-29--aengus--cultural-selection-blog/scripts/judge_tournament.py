@@ -16,8 +16,10 @@ from __future__ import annotations
 import argparse
 import random
 import sys
+import threading
 import time
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 EXP = Path(__file__).resolve().parent.parent
@@ -35,6 +37,8 @@ JUDGMENTS = DATA / "judgments.jsonl"
 COSTLOG = EXP / "COSTLOG.md"
 
 PILOT_PAIRS = 30
+DEFAULT_WORKERS = 8
+RETRIES = 2  # per call, on 429/5xx only
 
 
 # ---------------------------------------------------------------- phases
@@ -145,70 +149,90 @@ def phase_judge(sample: list[A.Artwork], n_pairs: int, seed: int, workers: int =
     pairs = A.build_pairs(rendered, n_pairs, seed=seed)
     say(f"  built {len(pairs)} unique pairs")
 
+    # Slots are assigned here, in the main thread, so the A/B layout stays
+    # reproducible from the seed no matter how the pool interleaves the calls.
     rng = random.Random(seed + 1)
-    totals = defaultdict(lambda: {"calls": 0, "in": 0, "out": 0, "usd": 0.0, "wall": 0.0})
-    errors = 0
-    t0 = time.time()
-
+    tasks = []
     for i, (x, y) in enumerate(pairs, 1):
         slot_a, slot_b = A.assign_slots(x, y, rng)
-        png_a = by_id[slot_a].png_path(RENDERS)
-        png_b = by_id[slot_b].png_path(RENDERS)
         for judge in A.JUDGES:
-            row = {
-                "pair_index": i,
-                "judge": judge,
-                "slot_a_id": slot_a,
-                "slot_b_id": slot_b,
-                "slot_a_regime": by_id[slot_a].regime,
-                "slot_b_regime": by_id[slot_b].regime,
-                "slot_a_turn": by_id[slot_a].turn,
-                "slot_b_turn": by_id[slot_b].turn,
-                "ts": time.time(),
-            }
-            try:
-                res = A.judge_pair(judge, png_a, png_b, keys)
-                win, lose = A.derandomize(res["verdict"]["winner"], slot_a, slot_b)
-                usd = A.cost_usd(judge, res["tokens"]["input_tokens"],
-                                 res["tokens"]["output_tokens"])
-                row.update({
-                    "ok": True,
-                    "winner_slot": res["verdict"]["winner"],
-                    "winner_id": win,
-                    "loser_id": lose,
-                    "confidence": res["verdict"]["confidence"],
-                    "reason": res["verdict"]["reason"],
-                    "raw": res["raw"],
-                    "input_tokens": res["tokens"]["input_tokens"],
-                    "output_tokens": res["tokens"]["output_tokens"],
-                    "usd": usd,
-                    "wall_s": res["wall_s"],
-                })
-                t = totals[judge]
-                t["calls"] += 1
-                t["in"] += res["tokens"]["input_tokens"]
-                t["out"] += res["tokens"]["output_tokens"]
-                t["usd"] += usd
-                t["wall"] += res["wall_s"]
-            except Exception as e:
-                errors += 1
-                row.update({"ok": False, "error": f"{type(e).__name__}: {e}"})
-                say(f"  {C.RED}ERR{C.RESET} pair {i} {judge}: {e}", C.RED)
-            A.append_jsonl(JUDGMENTS, row)  # append-only, one line per call
+            tasks.append((i, judge, slot_a, slot_b))
 
-        if i % 10 == 0 or i == len(pairs):
-            spent = sum(t["usd"] for t in totals.values())
-            say(f"  {i}/{len(pairs)} pairs  spent=${spent:.3f}  errors={errors}", C.DIM)
+    tracker = A.CostTracker()
+    done = 0
+    progress_lock = threading.Lock()
+    t0 = time.time()
+
+    def run_one(task):
+        nonlocal done
+        i, judge, slot_a, slot_b = task
+        row = {
+            "pair_index": i,
+            "judge": judge,
+            "slot_a_id": slot_a,
+            "slot_b_id": slot_b,
+            "slot_a_regime": by_id[slot_a].regime,
+            "slot_b_regime": by_id[slot_b].regime,
+            "slot_a_turn": by_id[slot_a].turn,
+            "slot_b_turn": by_id[slot_b].turn,
+            "ts": time.time(),
+        }
+        try:
+            res = A.judge_pair_with_retry(
+                judge,
+                by_id[slot_a].png_path(RENDERS),
+                by_id[slot_b].png_path(RENDERS),
+                keys,
+                retries=RETRIES,
+            )
+            win, lose = A.derandomize(res["verdict"]["winner"], slot_a, slot_b)
+            row.update({
+                "ok": True,
+                "winner_slot": res["verdict"]["winner"],
+                "winner_id": win,
+                "loser_id": lose,
+                "confidence": res["verdict"]["confidence"],
+                "reason": res["verdict"]["reason"],
+                "raw": res["raw"],
+                "input_tokens": res["tokens"]["input_tokens"],
+                "output_tokens": res["tokens"]["output_tokens"],
+                "usd": A.cost_usd(judge, res["tokens"]["input_tokens"],
+                                  res["tokens"]["output_tokens"]),
+                "wall_s": res["wall_s"],
+                "retries": res.get("retries", 0),
+            })
+            tracker.add(judge, res["tokens"]["input_tokens"],
+                        res["tokens"]["output_tokens"], res["wall_s"])
+        except Exception as e:
+            # One bad call must not take the batch down with it.
+            n_err = tracker.add_error()
+            row.update({"ok": False, "error": f"{type(e).__name__}: {e}"})
+            say(f"  {C.RED}ERR{C.RESET} pair {i} {judge}: {e} (errors={n_err})", C.RED)
+
+        A.append_jsonl(JUDGMENTS, row)  # append-only, lock-serialized
+
+        with progress_lock:
+            done += 1
+            n = done
+        if n % 20 == 0 or n == len(tasks):
+            rate = n / max(1e-9, time.time() - t0)
+            eta = (len(tasks) - n) / max(1e-9, rate)
+            say(f"  {n}/{len(tasks)} calls  ${tracker.total_usd():.3f}  "
+                f"{rate:.1f}/s  eta {eta/60:.1f}m  errors={tracker.errors}", C.DIM)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        list(pool.map(run_one, tasks))
 
     wall = time.time() - t0
+    totals = tracker.snapshot()
     phase = "pilot" if len(pairs) <= PILOT_PAIRS else "full"
     say(f"\n{C.BOLD}[cost]{C.RESET}", C.CYAN)
     for judge, t in totals.items():
         line = A.append_costlog(COSTLOG, phase, judge, t["calls"], t["in"], t["out"],
                                 t["usd"], wall)
         say("  " + line.strip())
-    say(f"  total ${sum(t['usd'] for t in totals.values()):.4f} in {wall:.0f}s "
-        f"({errors} errors) -> {COSTLOG}", C.GREEN)
+    say(f"  total ${tracker.total_usd():.4f} in {wall:.0f}s "
+        f"({tracker.errors} errors, {workers} workers) -> {COSTLOG}", C.GREEN)
 
 
 def phase_results(sample: list[A.Artwork]) -> None:
@@ -298,6 +322,8 @@ def main() -> None:
     p.add_argument("--judge", action="store_true", help="run pairwise judging (SPENDS MONEY)")
     p.add_argument("--pairs", type=int, default=200, help="number of pairs to judge")
     p.add_argument("--pilot", action="store_true", help=f"pilot run: {PILOT_PAIRS} pairs")
+    p.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
+                   help=f"concurrent judge calls (default {DEFAULT_WORKERS})")
     p.add_argument("--results", action="store_true", help="write elo.csv + plot")
     p.add_argument("--dry-run", action="store_true",
                    help="print the plan and cost estimate; no API calls")
@@ -338,7 +364,7 @@ def main() -> None:
         phase_render(sample, force=args.render_force)
     if args.judge:
         print_plan(n_pairs, sample)
-        phase_judge(sample, n_pairs, args.seed)
+        phase_judge(sample, n_pairs, args.seed, workers=max(1, args.workers))
     if args.results:
         phase_results(sample)
 

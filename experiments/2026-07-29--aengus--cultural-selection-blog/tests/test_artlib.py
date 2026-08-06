@@ -301,3 +301,184 @@ def test_append_jsonl_never_truncates(tmp_path):
 
 def test_read_jsonl_missing_file(tmp_path):
     assert A.read_jsonl(tmp_path / "nope.jsonl") == []
+
+
+# ---------------------------------------------------------------- concurrency
+
+def test_append_jsonl_loses_nothing_under_thread_hammering(tmp_path):
+    """Every concurrent append lands exactly once and stays parseable.
+
+    Note this passes with the lock removed too: on Linux an O_APPEND write to a
+    regular file does not interleave. The lock is what makes that guarantee ours
+    rather than the platform's — `test_append_jsonl_serializes_writers` is the
+    test that actually pins it.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    p = tmp_path / "j.jsonl"
+    n = 400
+    rows = [{"i": i, "pad": "x" * 3000} for i in range(n)]
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        list(pool.map(lambda r: A.append_jsonl(p, r), rows))
+
+    lines = p.read_text().splitlines()
+    assert len(lines) == n, f"expected {n} lines, got {len(lines)}"
+    parsed = [json.loads(l) for l in lines]
+    assert sorted(r["i"] for r in parsed) == list(range(n))
+    assert all(len(r["pad"]) == 3000 for r in parsed)
+
+
+def test_append_jsonl_serializes_writers(tmp_path):
+    """Holding the module lock must block any other thread's append."""
+    import threading
+
+    p = tmp_path / "j.jsonl"
+    started = threading.Event()
+    finished = threading.Event()
+
+    def writer():
+        started.set()
+        A.append_jsonl(p, {"i": 1})
+        finished.set()
+
+    with A._APPEND_LOCK:
+        t = threading.Thread(target=writer, daemon=True)
+        t.start()
+        assert started.wait(2)
+        # Lock is held here, so the writer must not have gotten through.
+        assert not finished.wait(0.3), "append_jsonl wrote while the lock was held"
+
+    assert finished.wait(2), "append_jsonl never completed after the lock released"
+    t.join(2)
+    assert A.read_jsonl(p) == [{"i": 1}]
+
+
+def test_cost_tracker_totals_are_exact_under_threads():
+    from concurrent.futures import ThreadPoolExecutor
+
+    tracker = A.CostTracker()
+    n = 500
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        list(pool.map(lambda _: tracker.add(A.CLAUDE_MODEL, 1000, 100, 0.5), range(n)))
+
+    snap = tracker.snapshot()[A.CLAUDE_MODEL]
+    assert snap["calls"] == n
+    assert snap["in"] == 1000 * n
+    assert snap["out"] == 100 * n
+    assert snap["wall"] == pytest.approx(0.5 * n)
+    assert tracker.total_usd() == pytest.approx(A.cost_usd(A.CLAUDE_MODEL, 1000, 100) * n)
+
+
+def test_cost_tracker_error_count_under_threads():
+    from concurrent.futures import ThreadPoolExecutor
+
+    tracker = A.CostTracker()
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        seen = list(pool.map(lambda _: tracker.add_error(), range(300)))
+    assert tracker.errors == 300
+    assert sorted(seen) == list(range(1, 301))  # every caller got a distinct count
+
+
+def test_cost_tracker_snapshot_is_a_copy():
+    tracker = A.CostTracker()
+    tracker.add(A.GEMINI_MODEL, 10, 1, 0.1)
+    snap = tracker.snapshot()
+    snap[A.GEMINI_MODEL]["calls"] = 999
+    assert tracker.snapshot()[A.GEMINI_MODEL]["calls"] == 1
+
+
+# ---------------------------------------------------------------- retry
+
+@pytest.mark.parametrize("exc", [
+    type("RateLimitError", (Exception,), {})("429 too many requests"),
+    type("APIStatusError", (Exception,), {"status_code": 503})("unavailable"),
+    type("OverloadedError", (Exception,), {})("overloaded_error"),
+    type("APIConnectionError", (Exception,), {})("connection reset"),
+    type("Whatever", (Exception,), {"status_code": 529})("overloaded"),
+])
+def test_is_retryable_true_for_transient(exc):
+    assert A.is_retryable(exc)
+
+
+@pytest.mark.parametrize("exc", [
+    type("BadRequestError", (Exception,), {"status_code": 400})("bad request"),
+    type("AuthenticationError", (Exception,), {"status_code": 401})("bad key"),
+    type("NotFoundError", (Exception,), {"status_code": 404})("no model"),
+    ValueError("no JSON object in judge response"),
+])
+def test_is_retryable_false_for_permanent(exc):
+    assert not A.is_retryable(exc)
+
+
+def _flaky(n_failures, exc_factory):
+    """A fake judge_pair that fails n times then succeeds."""
+    state = {"calls": 0}
+
+    def fn(judge, a, b, keys):
+        state["calls"] += 1
+        if state["calls"] <= n_failures:
+            raise exc_factory()
+        return {"judge": judge, "raw": "{}", "verdict": {"winner": "A", "confidence": 3,
+                "reason": ""}, "tokens": {"input_tokens": 1, "output_tokens": 1},
+                "wall_s": 0.0}
+    return fn, state
+
+
+def test_retry_recovers_from_transient_failure():
+    rate_limit = type("RateLimitError", (Exception,), {"status_code": 429})
+    fn, state = _flaky(2, lambda: rate_limit("slow down"))
+    slept = []
+    res = A.judge_pair_with_retry("j", "a.png", "b.png", {}, retries=2,
+                                  sleep=slept.append, _judge_fn=fn)
+    assert res["verdict"]["winner"] == "A"
+    assert state["calls"] == 3          # 1 attempt + 2 retries
+    assert res["retries"] == 2
+    assert slept == [2.0, 4.0]          # exponential backoff
+
+
+def test_retry_gives_up_after_budget():
+    rate_limit = type("RateLimitError", (Exception,), {"status_code": 429})
+    fn, state = _flaky(99, lambda: rate_limit("slow down"))
+    with pytest.raises(Exception):
+        A.judge_pair_with_retry("j", "a.png", "b.png", {}, retries=2,
+                                sleep=lambda s: None, _judge_fn=fn)
+    assert state["calls"] == 3          # bounded, does not loop forever
+
+
+def test_retry_does_not_retry_permanent_errors():
+    """A malformed judge reply is deterministic — retrying it just burns money."""
+    fn, state = _flaky(99, lambda: ValueError("no JSON object"))
+    with pytest.raises(ValueError):
+        A.judge_pair_with_retry("j", "a.png", "b.png", {}, retries=2,
+                                sleep=lambda s: None, _judge_fn=fn)
+    assert state["calls"] == 1
+
+
+def test_retry_absent_key_when_first_attempt_succeeds():
+    fn, state = _flaky(0, lambda: RuntimeError("unused"))
+    res = A.judge_pair_with_retry("j", "a.png", "b.png", {}, _judge_fn=fn)
+    assert state["calls"] == 1
+    assert "retries" not in res
+
+
+# ---------------------------------------------------------------- key loading
+
+def test_load_keys_env_overrides_stale_dotenv(tmp_path, monkeypatch):
+    """The repo .env's ANTHROPIC_API_KEY is stale; the exported one must win."""
+    env_file = tmp_path / ".env"
+    env_file.write_text("ANTHROPIC_API_KEY=stale-from-file\nGOOGLE_API_KEY=g-from-file\n")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "fresh-from-env")
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+
+    keys = A.load_keys(env_file)
+    assert keys["ANTHROPIC_API_KEY"] == "fresh-from-env"
+    assert keys["GOOGLE_API_KEY"] == "g-from-file"  # .env still fills the gap
+
+
+def test_load_keys_drops_empty_values(tmp_path, monkeypatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("ANTHROPIC_API_KEY=\nGOOGLE_API_KEY=g\n")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    keys = A.load_keys(env_file)
+    assert "ANTHROPIC_API_KEY" not in keys
+    assert keys["GOOGLE_API_KEY"] == "g"
