@@ -14,7 +14,7 @@ while true; do
   if [ "$alive" -eq 0 ]; then
     echo "FLEET DEAD: tmux gone with $done_n/$EXPECTED complete, errs=$errs cost=\$$cost"; exit 1
   fi
-  if [ "$errs" -gt 2000 ]; then
+  if [ "$errs" -gt 10000 ]; then
     echo "FLEET ERROR STORM: errs=$errs done=$done_n alive=$alive cost=\$$cost"; exit 1
   fi
   sleep 300
