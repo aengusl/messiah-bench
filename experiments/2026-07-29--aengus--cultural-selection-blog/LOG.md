@@ -75,3 +75,6 @@ Fleet 18/18, $510 (27% over est — dense wordless art = more tokens). Divergenc
 
 ## 2026-08-06 21:25 UTC — v2 judged pass ($2.04, 1600 judgments)
 Win rates: control 78% > futurist 63% > baroque 62% > ancestor 54% >> ascetic 21% > nihilist 12%. Model judges reward their own home aesthetic (dark glow emblem); 6x cultural range confirms culture moves judged beauty, but ranking = judge-prior-laden. Human curation is the quality signal (per Aengus goal memory). ALL v2 WORK COMPLETE.
+
+## 2026-08-08 01:50 UTC — New-aesthetics fleet launched
+Six new culture packs committed (f9cd88f, 293 tests). Ukiyo micro-smoke passed ($0.85): lineage evolves within the woodblock tradition. Fleet: 12 worlds (6 cultures x 2 reps x 200 turns) ~ $220, out-tag 2026-08-08-new-aesthetics, watchdog armed. Results to artifact only per Aengus.
