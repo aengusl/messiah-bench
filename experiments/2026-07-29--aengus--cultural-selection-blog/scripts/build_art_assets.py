@@ -490,12 +490,10 @@ def add_degenerate():
 
 def add_plots():
     plots = [
-        ("completeness_over_time.png", "Completeness over time",
-         "Fraction of canonical artworks judged visually complete, by turn."),
-        ("twin_worlds_divergence.png", "Twin-worlds divergence",
-         "Aesthetic feature divergence between the six charter worlds."),
-        ("depth_breadth.png", "Revision regimes in the new cultures",
-         "Accepted revision depth against within-world visual dispersion."),
+        ("culture_signal.png", "Culture differences dwarfed repeat-run noise",
+         "Between-culture variation divided by variation among independent repeats."),
+        ("revision_regimes.png", "Two cultures occupied clearly different revision regimes",
+         "Repeat worlds show shallow cave lineages and unusually broad psychedelic variation."),
     ]
     for fname, label, caption in plots:
         p = RESULTS / fname

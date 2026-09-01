@@ -46,7 +46,10 @@
       ],
       "gallery": "v2-final",
       "caption_title": "The same kind of artist inherited a different visual world.",
-      "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it."
+      "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it.",
+      "plot": "plot-culture_signal",
+      "plotCaption_title": "Culture differences dwarfed repeat-run noise.",
+      "plotCaption": "Across eighteen worlds, differences between inherited traditions were 90 to 449 times the variation among repeats of the same culture. Creed and founding image changed together."
     },
     {
       "num": "05", "title": "Finding two: culture shaped the room for variation",
@@ -58,9 +61,9 @@
       "gallery": "new-aesthetics",
       "caption_title": "Different cultures may permit different distances from tradition.",
       "caption": "One mechanically selected late work from each of twelve newer worlds. The extremes repeat, but the evidence supports overlapping revision regimes—not six sealed genres.",
-      "plot": "plot-depth_breadth",
-      "plotCaption_title": "Cultures separate most clearly at the extremes.",
-      "plotCaption": "Accepted revision depth plotted against visual dispersion; lines connect replicated worlds. Twelve worlds are enough for a descriptive pattern, not a significance claim."
+      "plot": "plot-revision_regimes",
+      "plotCaption_title": "The extremes repeated; the middle cultures overlapped.",
+      "plotCaption": "Cave lineages stopped sooner, while psychedelic art varied much more widely. Each dot is one world. With two repeats per culture, this motivates the next experiment rather than settling a taxonomy."
     },
     {
       "num": "06", "title": "The emerging answer: distributed authorship",
@@ -131,7 +134,7 @@
         {"v": "extremes only", "l": "cave and psychedelic separate clearly; four middle cultures overlap"}
       ],
       "gallery": "new-aesthetics", "galleryNote": "One late canonical work from each replicate, selected mechanically rather than ranked for beauty.",
-      "plot": "plot-depth_breadth",
+      "plot": "plot-revision_regimes",
       "caveats": "This is descriptive, not an identified conformity effect. Six cultures with two replicates each is a small sample; cave-r1 contains five canonical works."
     },
     {
@@ -359,16 +362,9 @@ a{color:var(--live)}
   <a href="#brief">In brief · 1 min</a>
   <a href="#essay">The argument · 6 min</a>
   <a href="#evo">Read a culture inside</a>
-  <a href="#claims">Evidence cards</a>
-  <a href="#claim-tree">Audit trail</a>
+  <a href="/cultural-selection/claim-tree/">Claim tree ↗</a>
   <a href="#retractions">Retractions</a>
   <a href="#method">Method</a>
-  <div class="legend">
-    <span class="ev"><i></i>✓ evidenced</span>
-    <span class="pa"><i></i>◐ partial</span>
-    <span class="op"><i></i>○ open</span>
-    <span class="td"><i></i>TODO blocking</span>
-  </div>
 </aside>
 <main>
   <header>
@@ -384,7 +380,7 @@ a{color:var(--live)}
   </section>
   <article class="essay" id="essay">
     <h2>The argument · six minutes</h2>
-    <p class="section-intro">Start with the human question, then build the experiment one mechanism at a time. The evidence cards and audit trail below carry the technical detail.</p>
+    <p class="section-intro">Start with the human question, then build the experiment one mechanism at a time. Figures appear only where they carry part of the argument.</p>
     <div id="essay-body"></div>
   </article>
   <section class="trace-reader" id="evo">
@@ -403,13 +399,6 @@ a{color:var(--live)}
       </div>
     </div>
     <div class="trace-steps" id="trace-steps" aria-label="accepted revisions"></div>
-  </section>
-  <section id="claims"></section>
-  <section class="claim-tree" id="claim-tree">
-    <h2>Where the argument stands</h2>
-    <p class="section-intro">Each leaf is written so that a sceptical reader can ask “show me” and be pointed to a number or an explicit missing experiment.</p>
-    <div id="tree"></div>
-    <div class="unresolved"><h3>Unresolved / TODO</h3><ol id="unresolved"></ol></div>
   </section>
   <section id="retractions">
     <h2>The retractions ledger</h2>
@@ -480,36 +469,6 @@ $('essay-body').innerHTML = D.essay.map(s => {
   return `<section class="essay-chapter"><div class="essay-head"><span class="essay-roman">${s.num}</span><h3>${s.title}</h3></div><div class="essay-copy">${s.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>${gallery}${plot}</section>`;
 }).join('');
 wirePagers();
-$('claims').innerHTML = '<h2>The argument, ranked</h2><p class="section-intro">The cards run from the strongest and most consequential finding to the questions that would most change the research. Each says why it belongs and who may care.</p>' + D.claims.map((c,ci) => `
-  <div class="claim" id="${c.id}" style="margin-bottom:.8rem">
-    <button aria-expanded="false">
-      <span class="cnum">${c.num}</span>
-      <span class="ctitle">${c.title}</span>
-      <span class="badge ${['MIXED','PARTIAL','OPEN','TODO'].some(x=>c.verdict.includes(x))?'three':''}">${c.verdict} · ${c.prior}</span>
-      <span class="chev">›</span>
-    </button>
-    <div class="cbody">
-      <p class="oneline">${c.one_liner}</p>
-      <div class="claim-purpose"><div><b>Why it is here</b>${c.why}</div><div><b>Who may care</b>${c.audience}</div></div>
-      <div class="nums">${c.numbers.map(n => `<div class="num"><div class="v">${n.v}</div><div class="l">${n.l}</div></div>`).join('')}</div>
-      ${c.bars ? bars(c.bars) : ''}
-      ${c.gallery ? `<figure>${thumbs(c.gallery)}<figcaption><strong>Evidence plate C${ci+1}.a.</strong> ${c.galleryNote}</figcaption></figure>` : ''}
-      ${c.gallery2 ? `<figure>${thumbs(c.gallery2)}<figcaption><strong>Evidence plate C${ci+1}.b.</strong> ${c.gallery2Note}</figcaption></figure>` : ''}
-      ${c.plot && plotAsset(c.plot) ? `<figure><img class="plotimg" loading="lazy" src="${plotAsset(c.plot).b64}" alt="chart for ${c.title}"><figcaption><strong>Evidence plate C${ci+1}.${c.gallery?'b':'a'}.</strong> ${plotAsset(c.plot).caption}</figcaption></figure>` : ''}
-      ${c.quotes ? '<div>' + ASSETS.quotes.map(q => `<div class="quote">“${q.text || q.quote}”<div class="who">an agent's private reasoning · ${q.world} · turn ${q.turn}</div></div>`).join('') + '</div>' : ''}
-      <p class="cavs"><b>Fine print:</b> ${c.caveats}</p>
-    </div>
-  </div>`).join('');
-const statusLabel = {evidenced:'✓ evidenced',partial:'◐ partial',open:'○ open',todo:'TODO'};
-function treeNode(n, child=false){
-  return `<div class="tree-node ${child?'child':''}"><div class="tree-id">${n.id}</div><div class="tree-copy"><p>${n.claim} <span class="status ${n.status}">${statusLabel[n.status]}</span></p>${n.evidence?`<p class="tree-evidence">Evidence: ${n.evidence}</p>`:''}</div></div>`;
-}
-$('tree').innerHTML = D.claim_tree.map(n => treeNode(n) + n.children.map(c => treeNode(c,true)).join('')).join('');
-$('unresolved').innerHTML = D.unresolved.map(x => `<li>${x}</li>`).join('');
-document.querySelectorAll('.claim > button').forEach(b => b.addEventListener('click', () => {
-  const c = b.parentElement; c.classList.toggle('open');
-  b.setAttribute('aria-expanded', c.classList.contains('open'));
-}));
 document.querySelectorAll('.thumbs button').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation(); openLB(byGroup(b.dataset.g)[+b.dataset.i]);
 }));
@@ -536,5 +495,4 @@ $('retr-intro').textContent = D.retr_intro;
 $('retr').innerHTML = D.retractions.map(r => `<tr><td>${r.claim}</td><td>${r.why}</td><td class="by">${r.caught_by}</td></tr>`).join('');
 $('method').innerHTML = D.method.map(m => `<tr><td>${m.k}</td><td>${m.v}</td></tr>`).join('');
 $('links').innerHTML = D.links.map(l => `<a href="${l.url}">${l.label}</a>`).join('');
-document.querySelector('.claim > button').click();
 </script>
