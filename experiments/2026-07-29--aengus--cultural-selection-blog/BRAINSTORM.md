@@ -2,9 +2,9 @@
 
 ## The thesis
 
-**Culture, not the individual, is the artist. Beauty is locally strategic: art is the competitive infrastructure of cultural expansion.**
+**Art has makers, but a tradition has no single designer. Culture shapes the visual inheritance, the legitimate next move, and which experiments survive.**
 
-Hook for the blog: as an eight-year-old you figured God inspired churches to be amazing. The simulations suggest a colder answer — cultures that make beautiful things win converts, and converts are life. We can now test this, because LLM agents give us the control condition humans never had: *identical individuals* (same model, same weights), differing only in cultural context. Any variation in the art is variation caused by culture.
+Hook for the blog: a church is visibly authored, yet no one person designed the tradition that makes it intelligible. The simulations provide a control human history cannot: *identical individuals* (same model and weights), placed inside different cultural inheritances. The deepest question is not merely whether culture changes art, but how much guidance is explicit doctrine, inherited example, tacit convention, or selection across many local choices.
 
 ## The one big question
 
@@ -34,6 +34,17 @@ Hook for the blog: as an eight-year-old you figured God inspired churches to be 
 - **E2 Threat dial**: add a conversion-pressure knob (agents periodically re-choose allegiance based on art alone; shrinking cultures die). Sweep the dial, plot art quality (blind ELO) vs pressure. Tests H2.
 - **E3 Secular control**: strip religious vocabulary from prompts, keep mechanics. Tests claim 5.
 - Deliverable per run: film-strip of the canonical artwork over time + judge scores over time. The evolution-over-time visual is the star of the blog.
+
+## Next causal program: what kind of culture produces what kind of art?
+
+Hold the founding image, written creed, model, seed and opportunity to make fixed. Cross social structure independently so institutional effects are identifiable:
+
+- **Conformity:** reward similarity to the inherited canon ↔ reward legible deviation ↔ neutral adoption.
+- **Hierarchy:** one central patron/curator commissions and selects ↔ distributed proposal and adoption ↔ prestige-weighted intermediates.
+- **Population:** isolated native populations ↔ periodic migration ↔ continuous mixing, with ancestry labels hidden from judges.
+- **Transmission channel:** charter only ↔ visual ancestor only ↔ lineage history only ↔ combinations. This separates explicit instruction from visual and historical inheritance.
+
+Primary outcomes are inspectable cultural histories, not only scores: matched early/mid/late art, accepted revision notes, motif persistence and rupture, lineage depth, visual dispersion, borrowing after migration, and blinded human descriptions of what changed. A novelty metric may support the read, but cannot substitute for it.
 
 ## Blog shape (tweet → post)
 

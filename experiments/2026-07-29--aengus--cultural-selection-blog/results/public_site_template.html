@@ -6,9 +6,9 @@
   "hero_title": "Why are churches beautiful?",
   "hero_body": "Where does great art come from? We usually answer with artists: talent, taste, obsession. But a church is more than one person's imagination. It is inherited form, shared belief, patronage, rivalry and craft accumulating across generations. This project asks what culture contributes—and tries to separate those forces in a world where every artist begins with the same mind.",
   "tldr": [
-    {"label":"Culture leaves a visible inheritance","text":"Change only a society's creed and founding image, and otherwise identical agents make recognisably different art. A blind classifier identified 36 of 36 works correctly."},
-    {"label":"Selection has a price","text":"Aesthetic competition sometimes produced stronger survivors, but every pressured world collapsed to one religion and made less art."},
-    {"label":"Institutions determine what can exist","text":"When the economy rewarded edits, artists attempted elaborate work that failed before it rendered. Incentives shaped production before taste could act."}
+    {"label":"Culture changes what the same mind creates","text":"Change a society's creed and visual inheritance, and otherwise identical agents make recognisably different art. A blind classifier identified 36 of 36 works correctly."},
+    {"label":"A tradition can have authors without one designer","text":"Each revision has a maker and a reason. No agent chooses the culture-level endpoint. Coherent styles accumulate from many local acts of copying, modification and adoption."},
+    {"label":"The deepest distinction is still open","text":"The runs combine explicit creeds, inherited images and social selection. They show that culture matters, but not yet how much guidance is articulated, tacit or embedded in what already exists."}
   ],
   "essay": [
     {
@@ -19,68 +19,64 @@
       ]
     },
     {
-      "num": "02", "title": "Three forces can be pulled apart",
+      "num": "02", "title": "Who designed the tradition?",
       "paragraphs": [
-        "A culture can shape art in at least three places. <strong>Inheritance</strong> supplies forms and meanings worth carrying forward. <strong>Selection</strong> determines which works receive attention and which communities survive. <strong>Institutions</strong> set the practical incentives under which artists attempt, finish and circulate work. In history these forces arrive tangled together.",
-        "The experiment is a deliberately small causal sandbox. Each society contains 24 copies of the same AI model, operating with the same settings and rules. Agents propose, adopt and revise artworks over hundreds of turns. Between societies, I change a founding creed, a visual ancestor, the pressure to compete or the reward for production. The society—not the individual agent—is the experimental unit.",
-        "This is not a miniature history of human art. It is a controlled way to ask narrower questions: if the mind stays fixed, can inheritance change what it makes? If art determines allegiance, what survives? If the economy rewards the wrong step, does finished art appear at all?"
+        "Some artistic decisions are explicit. A patron commissions a chapel. A manifesto rejects ornament. An artist decides to add another arch. Other constraints are harder to name. Makers inherit a sense of what looks finished, which departures feel possible and which forms belong together. A tradition may be highly ordered even when nobody designed that order as a whole.",
+        "This is the larger idea behind Joseph Henrich's <a href=\"https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/\" target=\"_blank\" rel=\"noopener\"><em>The WEIRDest People in the World</em></a>. Henrich argues that institutions can reshape psychology and social life over generations, producing consequences far beyond any original rule-maker's plan. His book is not a theory of church aesthetics. It supplies a useful frame: culture is not only what people consciously believe; it is also a historical process that changes the people doing the choosing.",
+        "For art, the resulting question is precise: how much of a style comes from decisions its makers can state, and how much comes from inherited examples, tacit expectations and the accumulated survival of earlier choices?"
+      ]
+    },
+    {
+      "num": "03", "title": "A small world where inheritance can be changed",
+      "paragraphs": [
+        "Human history cannot supply a clean control. So I built a deliberately small causal sandbox. Each society contains 24 copies of the same AI model, operating with the same settings and rules. Agents propose, adopt and revise artworks over hundreds of turns. Between societies, I change the founding creed and visual ancestor. The society—not the individual agent—is the experimental unit.",
+        "The agents do make explicit decisions. Their charters are visible, and their revision notes sometimes cite them directly. But no agent plans the final style of its world. Each sees a local inheritance, proposes a change and reacts to what others accept. This lets us observe how stated reasons and accumulated artifacts compose a result at a higher level than any one decision.",
+        "That distinction matters. These runs can show that culture causes divergence and that a global style can emerge from distributed choices. They cannot yet tell us what fraction of the effect is verbal doctrine, visual imitation, tacit convention or selection after the fact."
       ],
       "gallery": "v2-seeds",
       "caption_title": "The experiment begins with ancestry, not a blank canvas.",
       "caption": "The six founding images given to the second fleet. Later works are descendants of these seeds, allowing the experiment to measure cultural revision rather than pretend creation starts from nothing."
     },
     {
-      "num": "03", "title": "Finding one: culture became visible",
+      "num": "04", "title": "Finding one: culture became visible",
       "paragraphs": [
         "After 300 turns, six cultures still made different kinds of objects. Ascetic worlds converged on sparse black geometry. Baroque worlds built crimson and gold rosettes. Futurist worlds retained grids, pyramids and starfields. An independent classifier saw 36 anonymised artworks and assigned every one to the correct culture. Chance would be expected to identify six.",
         "The important word is <em>inheritance</em>. An earlier experiment gave every culture the same circular seed. Their doctrines diverged, but their compositions kept returning to the circle. Once creed and visual ancestry varied together, the structural distance between cultures became 449 times the variation among repeated worlds of the same culture. Culture did not conjure style from pure ideas; it coordinated what to preserve while revising what came before.",
-        "Culture also changed model-judged preference: blind pairwise win rates ranged from 78 to 12 percent. That does not establish a universal ranking of beauty. The judges share priors with the models that made the art, and people have not yet been tested. The confident claim is that culture moved both recognisability and preference under a fixed procedure—not that the winning culture made objectively better art."
+        "This is the most consequential result because it bears directly on the origin of style. It says that variation between traditions need not begin with different kinds of minds. A common intelligence, placed inside a different inheritance, can learn to extend a different visual world. Artists and historians of style have the most to inspect here; the images matter more than the model-judge ranking."
       ],
       "gallery": "v2-final",
       "caption_title": "The same kind of artist inherited a different visual world.",
       "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it."
     },
     {
-      "num": "04", "title": "Finding two: selection chose winners—and erased alternatives",
+      "num": "05", "title": "Finding two: culture shaped the room for variation",
       "paragraphs": [
-        "Next, art became socially consequential. Every K turns, agents saw anonymised work from neighbouring religions and could change allegiance. With no competition, all four religions survived to turn 120 in every control world. With any tested level of competition, one religion absorbed the rest: nine monocultures in nine pressured worlds.",
-        "The canon sometimes became more attractive to the model judges, but the effect was not monotonic. Moderate-pressure art beat the peaceful control; the highest-pressure condition reached 50.8 percent and could not be distinguished cleanly from it. Meanwhile, average proposals fell from 50.3 without pressure to 23.0 at the highest pressure.",
-        "So selection did two reliable things: it chose survivors and reduced pluralism. It improved judged quality only in some regimes. This is closer to the history of patronage and religious competition than the slogan ‘pressure makes better art’: selection can concentrate resources on successful forms, but it can also silence rivals and shrink the amount attempted."
-      ],
-      "gallery": "dial",
-      "caption_title": "Competition selects a canon; it does not improve every work.",
-      "caption": "Late canonical works from a pressure-free world and a moderate-pressure world. The pressured examples are the religions that survived aesthetic competition—which is both the mechanism and the survivorship caveat."
-    },
-    {
-      "num": "05", "title": "Finding three: before art can win, it has to exist",
-      "paragraphs": [
-        "A more basic force appeared in an earlier generation of societies. Their economy rewarded agents for making edits. The art grew elaborate—long preambles of gradients, filters and animation—until agents exhausted their output before drawing the image. In one run, 90.7 percent of 4,445 canonical works ended mid-tag. The median work contained zero complete drawable elements. Paintable art fell from 65 to 18 percent over the society's life.",
-        "The failed works were larger than the successful ones. This was not laziness or minimalism; ambition consumed the production budget. I initially suspected that an adoption gate protected good work, but rejected proposals were just as complete as accepted ones. The cause sat further upstream, in what the economy encouraged artists to attempt.",
-        "Taste can select only among objects that institutions make possible. In human terms, materials, training, deadlines, commissions and prestige do not merely surround art. They shape the feasible work before an audience ever judges it."
-      ],
-      "plot": "plot-completeness",
-      "caption_title": "The production economy collapsed before taste could act.",
-      "caption": "The share of renderable art fell over time in a society that rewarded edits. Completeness is not beauty, but an unfinished object cannot enter a beauty contest."
-    },
-    {
-      "num": "06", "title": "The emerging answer",
-      "paragraphs": [
-        "Where does art come from? These experiments support a layered answer. Minds make objects, but culture supplies a memory of forms worth repeating. Selection directs attention and survival. Institutions determine which ambitions can be completed. Great art can emerge when these layers reinforce one another over time; the same forces can also produce monoculture, silence or elaborate failure.",
-        "A later fleet—botanical, brutalist, cave, psychedelic, quilt and ukiyo—suggests that cultures may also create different <em>revision regimes</em>. Cave worlds changed shallowly; psychedelic worlds ranged more widely in colour, size and structure. But there are only two worlds per culture and the middle groups overlap. This is a promising clue, not a settled taxonomy.",
-        "The experiment does not explain cathedrals, and AI societies are not compressed human civilizations. What it does provide is a causal demonstration of mechanisms that history usually entangles. The strongest result is simple: hold the artist fixed, change the inheritance, and a different visual tradition develops. The next essential test belongs to people—whether human viewers recognise these cultures, which work they value, and why."
+        "A second fleet suggests that traditions shape not only what art looks like, but how freely it moves. Cave worlds changed relatively shallowly. Psychedelic worlds ranged much more widely in colour, size and structure. Across twelve worlds, charter identity described 85.3 percent of the measured variation in accepted revision depth and visual dispersion; repeated worlds with the same charter sat about twice as close as worlds with different charters.",
+        "This looks like a spectrum between conformity and expressivity: some traditions preserve a narrow grammar, while others license larger departures. But that interpretation is not yet causal. The charters themselves explicitly differ—the cave creed says to draw only what has been hunted or feared; the psychedelic creed says a picture that lets the viewer rest has failed. There are only two worlds per charter, and the four cultures between the extremes overlap.",
+        "The result is interesting because it suggests a better experimental program. Instead of changing aesthetic content, hold the founding art fixed and vary the social structure: reward conformity or novelty; centralize patronage or distribute adoption; isolate native populations or allow migration and cultural mixing. Then ask what kinds of traditions—and what kinds of art—arise."
       ],
       "gallery": "new-aesthetics",
-      "caption_title": "Different cultures may develop different ways of revising art.",
+      "caption_title": "Different cultures may permit different distances from tradition.",
       "caption": "One mechanically selected late work from each of twelve newer worlds. The extremes repeat, but the evidence supports overlapping revision regimes—not six sealed genres.",
       "plot": "plot-depth_breadth",
       "plotCaption_title": "Cultures separate most clearly at the extremes.",
       "plotCaption": "Accepted revision depth plotted against visual dispersion; lines connect replicated worlds. Twelve worlds are enough for a descriptive pattern, not a significance claim."
+    },
+    {
+      "num": "06", "title": "The emerging answer: distributed authorship",
+      "paragraphs": [
+        "Where does art come from? The strongest answer here is not ‘the artist’ or ‘the culture,’ but a loop between them. Artists make explicit local choices inside an inheritance they did not choose. Their work becomes part of the inheritance facing the next maker. Selection—attention, adoption, patronage, conformity—decides which parts of that history remain available.",
+        "The result is <strong>distributed authorship</strong>. Every artifact has makers, but the tradition has no single designer. This is the level at which culture can be more involved than we notice: it shapes the option set, the visual grammar and the standard of a plausible next move before any artist begins explaining a decision.",
+        "The experiment does not yet measure how much of that guidance is tacit. Its explicit charters are a major causal input. The next decisive study should cross verbal rules, visual ancestors and social structures independently, then ask agents what they intended and compare those accounts with what the lineages actually inherited. That is how we move from ‘culture matters’ to a quantitative account of how culture thinks through artists."
+      ]
     }
   ],
   "claims": [
     {
       "id": "c1", "num": "Claim 1",
       "title": "Culture became visible in the work",
+      "why": "This is the foundational result: it establishes culture as a causal input to style, rather than merely a label applied after art exists.",
+      "audience": "Artists, art historians, cultural-evolution researchers and anyone interested in where style comes from.",
       "one_liner": "I ran eighteen worlds for 300 turns. Each began with one of six creeds and its own founding image; every agent otherwise used the same model and settings. At the end, an independent classifier matched all 36 anonymised samples to the right culture. The spare ink, gilded rosettes, neon wreckage and wireframe monuments were not individual signatures. They were inherited ways of seeing.",
       "verdict": "CONFIRMED", "prior": "36/36 blind test",
       "numbers": [
@@ -95,83 +91,91 @@
     },
     {
       "id": "c2", "num": "Claim 2",
-      "title": "Culture moved taste, but did not settle it",
-      "one_liner": "With names and doctrines removed, model judges still produced a six-fold spread in pairwise win rates. That makes culture consequential; it does not make the ranking universal. The judges preferred some inherited visual languages to others, and those preferences carry the judges' own priors. The honest result is the spread, not the podium.",
-      "verdict": "SUPPORTED", "prior": "6× spread",
+      "title": "The tradition had many authors but no central designer",
+      "why": "This is the bridge from individual intention to culture-level order. It explains how coherent styles can be real without being anyone's complete plan.",
+      "audience": "People interested in emergence, collective intelligence, institutions and the limits of individualist explanations of art.",
+      "one_liner": "Twenty-four agents made local proposals, gave reasons and adopted one another's revisions. No role specified the final form of a culture. Yet repeated worlds developed coherent, recognisable styles. The endpoint was not inexplicable, but it was distributed across a sequence of choices no participant controlled as a whole.",
+      "verdict": "SUPPORTED", "prior": "inspect the lineage",
       "numbers": [
-        {"v": "78% → 12%", "l": "highest to lowest culture win rate under blind pairwise judging (1,600 judgments)"},
-        {"v": "2 fleets · 2 judges", "l": "the nihilist creed ranked last every time it was measured"}
+        {"v": "24 agents", "l": "independent local decision-makers in each society"},
+        {"v": "300 turns", "l": "over which proposals, adoptions and revisions accumulated"},
+        {"v": "36/36", "l": "the resulting culture-level signature remained perfectly classifiable"}
       ],
-      "bars": [["control",78],["futurist",63],["baroque",62],["ancestor",54],["ascetic",21],["nihilist",12]],
-      "caveats": "The ranking is the judges' taste, and AI judges favor art nearest their own priors — the spread is the finding, not the podium. Which culture's art YOU prefer is the better question; look at the galleries and disagree."
+      "quotes": true,
+      "caveats": "This supports distributed authorship, not unconscious authorship. Agents often state explicit aesthetic reasons and can see their charter. The emergent object is the culture-level trajectory, not necessarily each local choice."
     },
     {
       "id": "c3", "num": "Claim 3",
-      "title": "The economy decided whether art survived",
-      "one_liner": "Earlier societies rewarded agents for making edits. Their art grew elaborate until it failed to render: one run ended with nine in ten canonical works cut off mid-tag and a median of zero complete drawable elements. The broken works were larger, not smaller. They spent their budget on flourishes and died before drawing the picture.",
-      "verdict": "CONFIRMED", "prior": "measured from files",
+      "title": "How much cultural guidance was unspoken remains unknown",
+      "why": "This is the deep unresolved question. Answering it would distinguish direct instruction from inherited taste, tacit convention and selection.",
+      "audience": "Cognitive scientists, anthropologists, artists and researchers of tacit knowledge or cultural transmission.",
+      "one_liner": "The experiment deliberately combines a written creed, a visible founding image and a history of accepted work. Agents sometimes cite the creed explicitly; they also preserve visual structures that were never stated as rules. We know the bundle changes art. We have not yet identified the contribution of each channel.",
+      "verdict": "OPEN QUESTION", "prior": "not identified",
       "numbers": [
-        {"v": "90.7%", "l": "of one run's 4,445 canonical artworks truncated mid-tag; median complete drawable elements: zero"},
-        {"v": "65% → 18%", "l": "paintable-art rate over that society's lifetime — art production collapsing in real time"},
-        {"v": "larger, not smaller", "l": "truncated works out-size complete ones — elaboration is what kills"}
+        {"v": "explicit", "l": "agents can read the charter and sometimes cite it in revision notes"},
+        {"v": "inherited", "l": "a shared circular seed persisted across otherwise different first-fleet cultures"},
+        {"v": "unmeasured", "l": "the share attributable to tacit convention or unarticulated visual learning"}
       ],
-      "gallery": "degenerate", "galleryNote": "Left: what the pay-per-edit societies' art actually renders. Right: complete works from the adoption-gated society.",
-      "plot": "plot-completeness",
-      "caveats": "Different engines and corpus sizes; completeness is not beauty. And a hypothesis we liked — that the adoption gate filters bad art — was falsified: rejected proposals were exactly as complete as accepted ones. The difference is upstream, in what each economy asks artists to attempt."
+      "caveats": "Private model reasoning is not a transparent measure of cognition, and absence from a written reason would not prove an influence was unconscious. A factorial intervention is needed, not a stronger interpretation of the current traces."
     },
     {
       "id": "c4", "num": "Claim 4",
-      "title": "Competition sharpened some art and destroyed pluralism",
-      "one_liner": "Next I made beauty consequential: every K turns, agents chose a religion from anonymised art alone. Any amount of pressure ended in monoculture; the peaceful controls kept all four religions. Proposal-making also fell sharply. Moderate-pressure worlds beat the control in blind judging, but the highest-pressure condition did not cleanly separate from it. Competition selected survivors. It did not improve everything.",
-      "verdict": "MIXED RESULT", "prior": "audited",
-      "numbers": [
-        {"v": "4/4 vs 1", "l": "religions surviving 120 turns without pressure vs with ANY pressure (nine of nine pressure worlds ended in monoculture)"},
-        {"v": "49 → 29 → 21", "l": "median turn of the final extinction at K=16, K=8 and K=4; n=3 per setting"},
-        {"v": "50.3 → 23.0", "l": "mean proposals in control versus highest pressure; K=8 and K=4 do not separate"},
-        {"v": "40.9% / 55.1% / 50.8%", "l": "control, K=8 and K=4 judged win rates; K=4 overlaps control in uncertainty"}
-      ],
-      "gallery": "dial", "galleryNote": "Final canonical art: pressure-free worlds vs a pressure world's sole survivor.",
-      "caveats": "Survivorship is the mechanism: the pressured canon is what remained after selection. There are only three worlds per pressure setting, so extinction direction is clearer than the exact timing gradient."
-    },
-    {
-      "id": "c5", "num": "Claim 5",
-      "title": "New cultures occupied different revision regimes",
-      "one_liner": "A second fleet replaced the original six visual traditions with botanical, brutalist, cave, psychedelic, quilt and ukiyo cultures. The extremes repeated: cave worlds revised shallowly, while psychedelic worlds ranged much more widely in visual structure. The four cultures between those poles overlap, so this is evidence for loose regimes—not six sealed genres.",
+      "title": "Cultures may set different balances of conformity and expression",
+      "why": "This moves beyond visual genre toward a theory of cultural creativity: traditions may shape how far a legitimate revision is allowed to travel.",
+      "audience": "Artists, creative organizations, cultural sociologists and researchers studying innovation versus conformity.",
+      "one_liner": "In the newer fleet, cave worlds revised shallowly while psychedelic worlds ranged widely across colour, size and structure. Replicates of the same culture tended to sit closer together. The extremes are suggestive; the middle cultures overlap, and the charters explicitly encode different attitudes toward deviation.",
       "verdict": "PARTIAL", "prior": "2 replicates each",
       "numbers": [
-        {"v": "85.3%", "l": "descriptive variance in revision depth and visual dispersion associated with charter identity"},
-        {"v": "5.82×", "l": "between-charter versus within-charter sum-of-squares ratio"},
-        {"v": "0.96 vs 1.91", "l": "mean replicate distance versus between-charter distance in z-scored depth/breadth space"}
+        {"v": "85.3%", "l": "descriptive depth/dispersion variance associated with charter identity"},
+        {"v": "0.96 vs 1.91", "l": "within-charter versus between-charter distance"},
+        {"v": "extremes only", "l": "cave and psychedelic separate clearly; four middle cultures overlap"}
       ],
       "gallery": "new-aesthetics", "galleryNote": "One late canonical work from each replicate, selected mechanically rather than ranked for beauty.",
       "plot": "plot-depth_breadth",
-      "caveats": "Six cultures with two replicates each is a descriptive result, not a significance test. Cave-r1 contains only five canonical artworks. The vocabulary-adherence metric has no creed-less control in this fleet and is deliberately excluded."
+      "caveats": "This is descriptive, not an identified conformity effect. Six cultures with two replicates each is a small sample; cave-r1 contains five canonical works."
+    },
+    {
+      "id": "c5", "num": "Claim 5",
+      "title": "The next test changes social structure, not aesthetic content",
+      "why": "This experiment would reveal whether institutions generate artistic character rather than merely transmitting a supplied style.",
+      "audience": "Researchers of institutions, governance, cultural mixing, organizational creativity and AI-agent societies.",
+      "one_liner": "Hold the visual ancestor and creed fixed, then independently vary conformity pressure, hierarchy and population mixing. Compare centralized patronage with distributed adoption; cultural isolation with migration; rewards for canonical fidelity with rewards for novelty. Inspect both the art and the revision traces.",
+      "verdict": "TODO", "prior": "research agenda",
+      "numbers": [
+        {"v": "conformity", "l": "reward canonical fidelity ↔ reward surprising deviation"},
+        {"v": "hierarchy", "l": "central patron/curator ↔ distributed adoption"},
+        {"v": "population", "l": "isolated native traditions ↔ migration and cultural mixing"}
+      ],
+      "caveats": "This is a proposed factorial fleet, not a completed result. It should use identical founding art and doctrine across cells so institutional effects are interpretable."
     }
   ],
   "claim_tree": [
-    {"id":"C1","status":"partial","claim":"Founding culture changes what otherwise identical agents make.","children":[
+    {"id":"C1","status":"partial","claim":"Culture causally changes what otherwise identical makers produce.","children":[
       {"id":"C1.1","status":"evidenced","claim":"A blind classifier assigned 36 of 36 v2 artworks to the correct culture.","evidence":"LOG.md (2026-08-06 21:10); keyed blind set recorded in results/art_assets.json; chance expectation 6/36"},
       {"id":"C1.2","status":"evidenced","claim":"Charter identity produced between/within feature ratios of 449 for drawable elements, 212 for bytes and 90 for colour count in v2.","evidence":"v2 fleet; 18 worlds"},
-      {"id":"C1.3","status":"open","claim":"Human viewers recognise and prefer the same cultural distinctions.","evidence":"Requires a blinded human curation study"}]},
-    {"id":"C2","status":"partial","claim":"Culture changes model-judged preference without establishing a universal beauty ranking.","children":[
-      {"id":"C2.1","status":"evidenced","claim":"Pairwise win rates ranged from 78% to 12% across six v2 cultures.","evidence":"1,600 blind judgments"},
-      {"id":"C2.2","status":"partial","claim":"The nihilist culture ranked last across two fleets and two model judges.","evidence":"Repeated model-judge result; human comparison absent"}]},
-    {"id":"C3","status":"evidenced","claim":"Production incentives can determine whether canonical art remains renderable.","children":[
-      {"id":"C3.1","status":"evidenced","claim":"One pay-per-edit run truncated 90.7% of 4,445 canonical artworks mid-tag.","evidence":"results/completeness.md"},
-      {"id":"C3.2","status":"evidenced","claim":"Its paintable-art rate fell from 65% to 18% over time.","evidence":"results/completeness_over_time.png"}]},
-    {"id":"C4","status":"partial","claim":"Selection on aesthetic appeal trades pluralism and production for uneven gains in judged quality.","children":[
-      {"id":"C4.1","status":"evidenced","claim":"All 9 pressured worlds ended with one religion while all 3 controls retained four.","evidence":"outputs/2026-08-06-threat-dial; turn 120"},
-      {"id":"C4.2","status":"evidenced","claim":"Mean proposals fell from 50.3 in control to 23.0 at K=4.","evidence":"results/pressure_rederivation.md; n=3 per cell"},
-      {"id":"C4.3","status":"partial","claim":"K=8 and K=16 beat control in model judging while K=4 remained uncertain.","evidence":"1,200 judgments with Wilson intervals"}]},
-    {"id":"C5","status":"partial","claim":"The six new aesthetics form reproducible extreme revision regimes with overlap in the middle.","children":[
-      {"id":"C5.1","status":"partial","claim":"Charter identity accounts descriptively for 85.3% of depth/breadth variance.","evidence":"results/depth_breadth_summary.md; 12 worlds"},
-      {"id":"C5.2","status":"todo","claim":"Vocabulary adherence in the new fleet remains unvalidated.","evidence":"No charter-free control; current word lists show column effects"}]}
+      {"id":"C1.3","status":"partial","claim":"An earlier shared-seed fleet retained the same circular composition across different creeds, showing that visual ancestry constrains doctrine.","evidence":"v1 versus v2 structural comparison; n_drawable F-ratio 0.74 versus 449"}]},
+    {"id":"C2","status":"partial","claim":"Coherent culture-level styles can arise from distributed local choices without a central designer.","children":[
+      {"id":"C2.1","status":"evidenced","claim":"Each world accumulated proposals and adoptions from 24 agents; no role selected a target final style.","evidence":"simulation rules and accepted-version histories"},
+      {"id":"C2.2","status":"evidenced","claim":"Matched Open Circuit lineages visibly diverged inside ascetic, baroque and charter-free worlds.","evidence":"interactive trace reader; six accepted snapshots per world"},
+      {"id":"C2.3","status":"partial","claim":"The culture-level trajectory was unplanned even when individual revisions cited explicit aesthetic reasons.","evidence":"accepted-version reasons in outputs/2026-08-06-twin-worlds-v2"}]},
+    {"id":"C3","status":"open","claim":"Some artistic guidance is transmitted without being explicitly represented by the maker.","children":[
+      {"id":"C3.1","status":"evidenced","claim":"The present design bundles a written charter, visible ancestor and adoption history, so their separate effects are not identified.","evidence":"v2 design and preregistration"},
+      {"id":"C3.2","status":"open","claim":"The fraction of artistic divergence caused by explicit doctrine versus visual inheritance or tacit convention is unknown.","evidence":"Requires factorial ablation; traces alone cannot identify it"},
+      {"id":"C3.3","status":"todo","claim":"Cross charter presence, visual ancestor and access to lineage history independently.","evidence":"Proposed 2×2×2 causal design"}]},
+    {"id":"C4","status":"partial","claim":"Cultures may create different balances between conformity and expressive range.","children":[
+      {"id":"C4.1","status":"partial","claim":"Charter identity accounts descriptively for 85.3% of accepted-depth and visual-dispersion variance across 12 worlds.","evidence":"results/depth_breadth_summary.md"},
+      {"id":"C4.2","status":"partial","claim":"Cave and psychedelic worlds separate at the extremes while four middle cultures overlap.","evidence":"two replicates per culture; cave-r1 is sparse"},
+      {"id":"C4.3","status":"todo","claim":"Hold aesthetics fixed and manipulate conformity rewards to test whether the social rule causes expressive range.","evidence":"Proposed fleet"}]},
+    {"id":"C5","status":"todo","claim":"Hierarchy and population structure may generate distinct artistic traditions.","children":[
+      {"id":"C5.1","status":"todo","claim":"Compare centralized patronage with distributed proposal and adoption.","evidence":"Proposed hierarchy intervention"},
+      {"id":"C5.2","status":"todo","claim":"Compare isolated native populations with migration and cultural mixing.","evidence":"Proposed population intervention"},
+      {"id":"C5.3","status":"open","claim":"Human viewers recognise, value and explain the resulting differences.","evidence":"Requires blinded human study"}]}
   ],
   "unresolved": [
-    "Run a blinded human preference and recognisability study — owner: Aengus.",
-    "Add a charter-free control fleet or a held-out calibrated lexicon for the six new aesthetics — owner: experiment pipeline.",
-    "Add replicates before treating the depth/breadth regimes as inferential rather than descriptive — owner: experiment pipeline.",
-    "Choose an automatic site-update mechanism (/loop, scheduled agent, or post-commit hook) — owner: Aengus."
+    "Factor verbal charter, visual ancestor and lineage-history access independently to identify explicit versus inherited guidance.",
+    "Run the social-structure fleet: conformity versus novelty, centralized patronage versus distributed adoption, isolation versus migration.",
+    "Add replicates before treating conformity/expressivity regimes as inferential rather than descriptive.",
+    "Run a blinded human recognisability study, followed by interviews about which visual cues people used."
   ],
   "evolution": {
     "title": "Watch one culture's art evolve",
@@ -190,6 +194,8 @@
     {"k": "Chapters", "v": "Experiment IX (the make/choose society this page previously chronicled) is preserved in full at the link below"}
   ],
   "links": [
+    {"label": "Joseph Henrich — The WEIRDest People in the World", "url": "https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/"},
+    {"label": "Cultural evolution—of the arts", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13150773/"},
     {"label": "Experiment IX — the long-run collapse chronicle", "url": "/cultural-selection/experiment-ix/"},
     {"label": "Twin Worlds — full evidence deep-dive", "url": "/cultural-selection/twin-worlds/"},
     {"label": "Messiah Bench — earlier civilizations & galleries", "url": "/messiah-bench/"},
@@ -272,6 +278,9 @@ h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;col
 .cbody{display:none;padding:.6rem 1.2rem 2rem;flex-direction:column;gap:1.4rem}
 .claim.open .cbody{display:flex}
 .oneline{margin:0;font-size:1.06rem;max-width:61ch}
+.claim-purpose{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.claim-purpose div{border-top:1px solid var(--line);padding-top:.6rem;font-size:.8rem;line-height:1.5;color:var(--muted)}
+.claim-purpose b{display:block;font:700 .62rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
 .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.6rem}
 .num{border-left:2px solid var(--accent);padding:.25rem .8rem;background:linear-gradient(90deg,var(--accent-soft),transparent)}
 .num .v{font-family:var(--mono);font-size:1rem;color:var(--accent);font-variant-numeric:tabular-nums}
@@ -299,6 +308,25 @@ figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.8rem;color:var(--muted);
 .evo img{max-width:100%;max-height:24rem;display:block}
 .evo input{width:100%;accent-color:var(--accent)}
 .evo .fcap{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:center;margin-top:.3rem}
+.trace-reader{background:var(--panel);border:1px solid var(--line);padding:clamp(1.2rem,3vw,2rem)}
+.trace-tabs{display:flex;gap:.45rem;flex-wrap:wrap;margin:1rem 0}
+.trace-tabs button{border:1px solid var(--line);background:transparent;padding:.55rem .8rem;font:700 .68rem var(--mono);text-transform:uppercase;cursor:pointer;color:var(--muted)}
+.trace-tabs button.on,.trace-tabs button:hover,.trace-tabs button:focus-visible{background:var(--ink);border-color:var(--ink);color:var(--ground)}
+.trace-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(16rem,.9fr);gap:1.5rem;align-items:start}
+.trace-image{background:#090b10;min-height:24rem;display:grid;place-items:center;cursor:zoom-in;overflow:hidden}
+.trace-image img{display:block;max-width:100%;max-height:32rem}
+.trace-note{border-top:4px solid var(--accent);padding-top:1rem}
+.trace-meta{font:700 .67rem var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+.trace-note h3{font:400 1.8rem/1.08 var(--display);margin:.55rem 0 1rem}
+.trace-note blockquote{font-size:1rem;line-height:1.55;margin:0 0 1rem;padding-left:1rem;border-left:1px solid var(--line)}
+.trace-guide{font:600 .83rem/1.5 var(--sans);background:var(--accent-soft);padding:.75rem .85rem;margin:0 0 1rem}.trace-guide b{color:var(--accent)}
+.trace-doctrine{font-size:.78rem;color:var(--muted);line-height:1.5}
+.trace-disclosure{font:400 .7rem/1.5 var(--sans);color:var(--muted);border-top:1px dashed var(--line);padding-top:.7rem;margin-top:1rem}
+.trace-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:.45rem;margin-top:1rem}
+.trace-steps button{all:unset;cursor:pointer;border:2px solid transparent;position:relative;background:#090b10;aspect-ratio:1;overflow:hidden}
+.trace-steps button.on{border-color:var(--accent)}.trace-steps button:focus-visible{outline:2px solid var(--accent)}
+.trace-steps img{width:100%;height:100%;object-fit:cover;display:block;opacity:.72}.trace-steps button.on img,.trace-steps button:hover img{opacity:1}
+.trace-steps span{position:absolute;right:.2rem;bottom:.15rem;color:#fff;background:#090b10cc;font:700 .6rem var(--mono);padding:.08rem .25rem}
 table{width:100%;border-collapse:collapse;font-size:.84rem}
 th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--line)}
 td{padding:.55rem .6rem .55rem 0;border-bottom:1px solid var(--line);vertical-align:top}
@@ -319,7 +347,7 @@ a{color:var(--live)}
 #lightbox img{max-width:min(92vw,50rem);max-height:80vh;border-radius:6px}
 #lightbox .lcap{color:#e7e6df;font-family:var(--mono);font-size:.78rem;text-align:center;margin-top:.8rem;max-width:60ch}
 @media(max-width:900px){.page-shell{grid-template-columns:1fr;gap:2rem}.toc{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.toc .mark,.toc h2,.toc .legend{grid-column:1/-1}.toc .legend{display:none}header{padding-top:0}}
-@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.claim-purpose,.trace-stage{grid-template-columns:1fr}.trace-image{min-height:15rem}.trace-steps{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.essay-head{grid-template-columns:2rem 1fr}.essay-copy{margin-left:0}.essay-copy p{font-size:1.03rem}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.chev{transition:none}}
 </style>
@@ -330,9 +358,9 @@ a{color:var(--live)}
   <h2>Contents</h2>
   <a href="#brief">In brief · 1 min</a>
   <a href="#essay">The argument · 6 min</a>
+  <a href="#evo">Read a culture inside</a>
   <a href="#claims">Evidence cards</a>
   <a href="#claim-tree">Audit trail</a>
-  <a href="#evo">A lineage evolves</a>
   <a href="#retractions">Retractions</a>
   <a href="#method">Method</a>
   <div class="legend">
@@ -359,19 +387,29 @@ a{color:var(--live)}
     <p class="section-intro">Start with the human question, then build the experiment one mechanism at a time. The evidence cards and audit trail below carry the technical detail.</p>
     <div id="essay-body"></div>
   </article>
+  <section class="trace-reader" id="evo">
+    <h2>Read a culture from the inside</h2>
+    <p class="section-intro">The same named lineage—The Open Circuit—developed inside three cultural worlds. Switch worlds, move through accepted revisions, and compare what the image inherits with what its maker says it changed.</p>
+    <div class="trace-tabs" id="trace-tabs" role="tablist" aria-label="choose cultural world"></div>
+    <div class="trace-stage">
+      <div class="trace-image" id="trace-image"><img id="trace-img" alt="accepted artwork revision"></div>
+      <div class="trace-note">
+        <div class="trace-meta" id="trace-meta"></div>
+        <h3 id="trace-title"></h3>
+        <p class="trace-guide" id="trace-guide"></p>
+        <blockquote id="trace-reason"></blockquote>
+        <div class="trace-doctrine" id="trace-doctrine"></div>
+        <p class="trace-disclosure">These are public reasons stored with accepted versions, edited only by truncation for display—not hidden chain-of-thought. A stated reason shows explicit intent; the image lets you inspect what was inherited beyond that statement.</p>
+      </div>
+    </div>
+    <div class="trace-steps" id="trace-steps" aria-label="accepted revisions"></div>
+  </section>
   <section id="claims"></section>
   <section class="claim-tree" id="claim-tree">
     <h2>Where the argument stands</h2>
     <p class="section-intro">Each leaf is written so that a sceptical reader can ask “show me” and be pointed to a number or an explicit missing experiment.</p>
     <div id="tree"></div>
     <div class="unresolved"><h3>Unresolved / TODO</h3><ol id="unresolved"></ol></div>
-  </section>
-  <section class="evo" id="evo">
-    <h2 id="evo-title"></h2>
-    <p class="gnote" id="evo-note"></p>
-    <div class="frame"><img id="evo-img" alt="artwork version"></div>
-    <input type="range" id="evo-range" min="0" value="0" step="1" aria-label="artwork version slider">
-    <div class="fcap" id="evo-cap"></div>
   </section>
   <section id="retractions">
     <h2>The retractions ledger</h2>
@@ -442,16 +480,17 @@ $('essay-body').innerHTML = D.essay.map(s => {
   return `<section class="essay-chapter"><div class="essay-head"><span class="essay-roman">${s.num}</span><h3>${s.title}</h3></div><div class="essay-copy">${s.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>${gallery}${plot}</section>`;
 }).join('');
 wirePagers();
-$('claims').innerHTML = '<h2>The findings</h2><p class="section-intro">Five claims survived the latest audit. Open each one for its evidence, images and limiting conditions.</p>' + D.claims.map((c,ci) => `
+$('claims').innerHTML = '<h2>The argument, ranked</h2><p class="section-intro">The cards run from the strongest and most consequential finding to the questions that would most change the research. Each says why it belongs and who may care.</p>' + D.claims.map((c,ci) => `
   <div class="claim" id="${c.id}" style="margin-bottom:.8rem">
     <button aria-expanded="false">
       <span class="cnum">${c.num}</span>
       <span class="ctitle">${c.title}</span>
-      <span class="badge ${c.verdict.includes('MIXED')||c.verdict.includes('PARTIAL')?'three':''}">${c.verdict} · ${c.prior}</span>
+      <span class="badge ${['MIXED','PARTIAL','OPEN','TODO'].some(x=>c.verdict.includes(x))?'three':''}">${c.verdict} · ${c.prior}</span>
       <span class="chev">›</span>
     </button>
     <div class="cbody">
       <p class="oneline">${c.one_liner}</p>
+      <div class="claim-purpose"><div><b>Why it is here</b>${c.why}</div><div><b>Who may care</b>${c.audience}</div></div>
       <div class="nums">${c.numbers.map(n => `<div class="num"><div class="v">${n.v}</div><div class="l">${n.l}</div></div>`).join('')}</div>
       ${c.bars ? bars(c.bars) : ''}
       ${c.gallery ? `<figure>${thumbs(c.gallery)}<figcaption><strong>Evidence plate C${ci+1}.a.</strong> ${c.galleryNote}</figcaption></figure>` : ''}
@@ -474,14 +513,25 @@ document.querySelectorAll('.claim > button').forEach(b => b.addEventListener('cl
 document.querySelectorAll('.thumbs button').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation(); openLB(byGroup(b.dataset.g)[+b.dataset.i]);
 }));
-const evoFrames = byGroup(D.evolution.group);
-$('evo-title').textContent = D.evolution.title;
-$('evo-note').textContent = D.evolution.note;
-const range = $('evo-range'); range.max = evoFrames.length - 1;
-function showEvo(i){ const a = evoFrames[i]; $('evo-img').src = a.b64; $('evo-cap').textContent = a.label + ' — ' + a.caption; }
-range.addEventListener('input', () => showEvo(+range.value));
-showEvo(0);
-$('evo-img').addEventListener('click', () => openLB(evoFrames[+range.value]));
+const assetById = id => ASSETS.assets.find(a => a.id === id);
+let traceIndex = 0, traceStep = 0;
+function shortReason(s, max=430){ return s.length > max ? s.slice(0,max).replace(/\s+\S*$/, '') + '…' : s; }
+function renderTrace(){
+  const trace = ASSETS.traces[traceIndex], frame = trace.frames[traceStep], a = assetById(frame.asset_id);
+  $('trace-img').src = a.b64; $('trace-img').alt = `${trace.charter} culture, turn ${frame.turn}`;
+  $('trace-meta').textContent = `${trace.charter} world · turn ${frame.turn} · version ${frame.version}`;
+  $('trace-title').textContent = frame.agent === 'founding culture' ? 'The inherited starting point' : `${frame.agent}'s accepted revision`;
+  $('trace-guide').innerHTML = `<b>What to look for:</b> ${trace.guide}`;
+  $('trace-reason').textContent = shortReason(frame.reason);
+  $('trace-doctrine').textContent = `Canonical doctrine at this step: “${frame.doctrine}”`;
+  document.querySelectorAll('#trace-tabs button').forEach((b,i)=>b.classList.toggle('on',i===traceIndex));
+  $('trace-steps').innerHTML = trace.frames.map((f,i)=>{const x=assetById(f.asset_id);return `<button class="${i===traceStep?'on':''}" data-step="${i}" aria-label="show turn ${f.turn}"><img src="${x.b64}" alt=""><span>${f.turn}</span></button>`}).join('');
+  document.querySelectorAll('#trace-steps button').forEach(b=>b.addEventListener('click',()=>{traceStep=+b.dataset.step;renderTrace()}));
+}
+$('trace-tabs').innerHTML = ASSETS.traces.map((t,i)=>`<button role="tab" data-trace="${i}">${t.charter}</button>`).join('');
+document.querySelectorAll('#trace-tabs button').forEach(b=>b.addEventListener('click',()=>{traceIndex=+b.dataset.trace;traceStep=0;renderTrace()}));
+$('trace-image').addEventListener('click',()=>openLB(assetById(ASSETS.traces[traceIndex].frames[traceStep].asset_id)));
+renderTrace();
 $('retr-intro').textContent = D.retr_intro;
 $('retr').innerHTML = D.retractions.map(r => `<tr><td>${r.claim}</td><td>${r.why}</td><td class="by">${r.caught_by}</td></tr>`).join('');
 $('method').innerHTML = D.method.map(m => `<tr><td>${m.k}</td><td>${m.v}</td></tr>`).join('');

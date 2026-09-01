@@ -156,6 +156,7 @@ def pick_rep_world(charter):
 
 assets = []
 notes = {}
+traces = []
 
 
 def add_twin():
@@ -301,6 +302,69 @@ def add_v2_evolution():
             run / v["render_path"], max_side=360, quality=75,
         ))
     notes["v2_evolution"] = {"world": world, "religion_id": rid, "versions": vids}
+
+
+# A matched lineage for human reading. In each world religion 4 begins as
+# "The Open Circuit"; only the surrounding charter and its visual DNA differ.
+# We expose accepted-version reasons, not hidden chain-of-thought.
+CULTURE_TRACES = {
+    "ascetic": ("ascetic-r1", 4, [4, 10, 21, 31, 36, 38]),
+    "baroque": ("baroque-r1", 4, [4, 11, 23, 39, 51, 54]),
+    "control": ("control-r2", 4, [4, 14, 23, 29, 46, 58]),
+}
+
+TRACE_GUIDE = {
+    "ascetic": "An early structural reworking settles into a sparse line–curve–dot grammar; later changes remain inside that limited vocabulary.",
+    "baroque": "The inherited rosette remains dominant while successive revisions intensify its centre, layering and gilded density.",
+    "control": "One large early transformation is followed by smaller additions of nodes, glow and connection around a stable circuit.",
+}
+
+
+def add_culture_traces():
+    """Build inspectable image + decision-note sequences for one lineage.
+
+    These are deliberately matched on religion name/id. They show distributed
+    trajectory formation, but do not isolate verbal charter from visual seed.
+    """
+    for charter, (world, rid, vids) in CULTURE_TRACES.items():
+        run, idx = v2_index(world)
+        agent_names = {}
+        with open(run / "decisions.jsonl") as f:
+            for line in f:
+                rec = json.loads(line)
+                agent_names[rec["agent_id"]] = rec["agent_name"]
+        frames = []
+        for step, vid in enumerate(vids, 1):
+            v = idx[vid]
+            eid = f"trace-{charter}-{world}-v{vid}"
+            a = entry(
+                eid, f"trace-{charter}",
+                f"{charter} · turn {v['created_turn']} · version-{vid}",
+                f'“{v["name"]}” — accepted revision {step}/{len(vids)}',
+                run / v["render_path"], max_side=560, quality=82,
+            )
+            assets.append(a)
+            frames.append({
+                "asset_id": eid,
+                "version": vid,
+                "turn": v["created_turn"],
+                "agent": agent_names.get(v.get("creator_id"), "founding culture"),
+                "reason": v.get("reason") or "Seed culture",
+                "doctrine": v.get("doctrine") or "",
+                "parent_version": v.get("parent_version_id"),
+            })
+        traces.append({
+            "charter": charter,
+            "world": world,
+            "religion_id": rid,
+            "lineage": idx[vids[0]]["name"],
+            "guide": TRACE_GUIDE[charter],
+            "frames": frames,
+        })
+    notes["culture_traces"] = {
+        c: {"world": w, "religion_id": rid, "versions": vids}
+        for c, (w, rid, vids) in CULTURE_TRACES.items()
+    }
 
 
 def add_v2_blind():
@@ -504,6 +568,7 @@ def main():
     print("v2 final...");    add_v2_final()
     print("v2 seeds...");    add_v2_seeds()
     print("v2 evolution..."); add_v2_evolution()
+    print("culture traces..."); add_culture_traces()
     print("v2 blind...");    add_v2_blind()
     print("new aesthetics..."); add_new_aesthetics()
     print("dial...");        add_dial()
@@ -522,6 +587,7 @@ def main():
         "generated_by": "scripts/build_art_assets.py",
         "notes": notes,
         "quotes": quotes,
+        "traces": traces,
         "assets": assets,
     }
     OUT.write_text(json.dumps(bundle))
