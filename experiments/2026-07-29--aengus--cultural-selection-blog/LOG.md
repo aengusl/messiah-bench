@@ -88,3 +88,6 @@ Redesigned the public page as an editorial research monograph with a sticky cont
 
 ## 2026-09-01 19:15 UTC — Short-form blog essay added
 Expanded the public page from an evidence report into a seven-part concise essay: question and control, cultural inheritance, judged preference, selection pressure, production failure, new-aesthetic regimes, and the bounded implication for churches. Artifacts now lead the narrative in always-visible plates; expandable findings and the claim tree remain as the audit layer. No claim values changed. Desktop and mobile Chromium render checks passed.
+
+## 2026-09-01 20:00 UTC — Reader-state rewrite + paged art plates
+Rebuilt the public narrative around the motivating human problem: where art comes from when no individual artist contains the whole explanation. The page now gives a one-minute three-claim answer, then stages the argument as problem → inheritance/selection/institutions → controlled sandbox → three findings → bounded answer and human-study next step. The essay is 930 words; audited evidence cards and the claim tree remain below it. Dense essay galleries now show six works at a time with accessible previous/next controls, while every narrative caption begins with a bold claim. No numerical claim changed. JSON/build checks, desktop/mobile Chromium renders, and the full focused suite (293 tests) passed.

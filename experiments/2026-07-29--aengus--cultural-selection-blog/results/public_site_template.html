@@ -2,72 +2,79 @@
 <div id="assets" hidden>__ASSETS__</div>
 <div id="data" hidden>{
   "updated": "2026-09-01",
-  "hero_kicker": "Field report 01 · Cultural selection",
+  "hero_kicker": "An eight-minute field report · Cultural selection",
   "hero_title": "Why are churches beautiful?",
-  "hero_body": "As a child, I assumed God had something to do with it. Years later I tried a stranger test: build small societies of identical AI agents, give each one a different creed and founding image, then let culture do the rest. The artists began with the same brain. What separated them was what their world taught them to notice.",
+  "hero_body": "Where does great art come from? We usually answer with artists: talent, taste, obsession. But a church is more than one person's imagination. It is inherited form, shared belief, patronage, rivalry and craft accumulating across generations. This project asks what culture contributes—and tries to separate those forces in a world where every artist begins with the same mind.",
+  "tldr": [
+    {"label":"Culture leaves a visible inheritance","text":"Change only a society's creed and founding image, and otherwise identical agents make recognisably different art. A blind classifier identified 36 of 36 works correctly."},
+    {"label":"Selection has a price","text":"Aesthetic competition sometimes produced stronger survivors, but every pressured world collapsed to one religion and made less art."},
+    {"label":"Institutions determine what can exist","text":"When the economy rewarded edits, artists attempted elaborate work that failed before it rendered. Incentives shaped production before taste could act."}
+  ],
   "essay": [
     {
-      "num": "I", "title": "The question behind the experiment",
+      "num": "01", "title": "The problem is larger than the artist",
       "paragraphs": [
-        "Churches are not beautiful for one reason. Wealth, power, craft, devotion, competition and the long accumulation of convention all matter. But they point to a narrower question that can be tested: can a culture make the same kind of mind produce a different kind of art?",
-        "Human history cannot give us a clean control. Artists arrive with different bodies, training, patrons and circumstances. So I built an artificial one. Every society contained the same model, with the same settings and decision rules. I changed the founding creed and image, then let agents propose, adopt and revise artworks over hundreds of turns. The society—not the individual artist—was the experimental unit."
-      ],
-      "gallery": "v2-final",
-      "caption": "Eighteen late works from the second twin-world fleet: three replicates from each of six founding cultures."
+        "Stand inside a great church and the usual story of art—one gifted person expressing an idea—feels incomplete. The building carries decisions made by people who never met: a plan inherited, symbols repeated, techniques taught, failures discarded and ambitions financed. No single maker contains the whole explanation.",
+        "That is the problem this research studies. What are the cultural forces behind art? Why do some forms persist, why do some traditions become distinctive, and when does competition improve a canon rather than simply narrowing it? Churches make the question vivid, but it applies to any art made inside a living tradition."
+      ]
     },
     {
-      "num": "II", "title": "Culture became a generator",
+      "num": "02", "title": "Three forces can be pulled apart",
       "paragraphs": [
-        "The first result is the strongest. After 300 turns, the cultures were still visually distinct. Ascetic worlds converged on sparse black geometry. Baroque worlds built crimson and gold rosettes. Futurist worlds retained grids, pyramids and starfields. An independent classifier received 36 anonymised artworks and assigned all 36 to the correct culture; random guessing would be expected to get six.",
-        "That result needed a failed experiment to become interpretable. In the first fleet, every world inherited the same circular founding image. Their doctrines diverged, but their compositions largely kept the circle. The second fleet gave each creed its own visual ancestor and prohibited words inside the art. Structural separation then became very large: the between-culture variance in drawable elements was 449 times the within-culture variance.",
-        "The implication is narrower than ‘ideas determine art.’ Creed and visual ancestry worked together. Culture did not invent from nothing; it taught agents what to preserve while revising what they inherited."
+        "A culture can shape art in at least three places. <strong>Inheritance</strong> supplies forms and meanings worth carrying forward. <strong>Selection</strong> determines which works receive attention and which communities survive. <strong>Institutions</strong> set the practical incentives under which artists attempt, finish and circulate work. In history these forces arrive tangled together.",
+        "The experiment is a deliberately small causal sandbox. Each society contains 24 copies of the same AI model, operating with the same settings and rules. Agents propose, adopt and revise artworks over hundreds of turns. Between societies, I change a founding creed, a visual ancestor, the pressure to compete or the reward for production. The society—not the individual agent—is the experimental unit.",
+        "This is not a miniature history of human art. It is a controlled way to ask narrower questions: if the mind stays fixed, can inheritance change what it makes? If art determines allegiance, what survives? If the economy rewards the wrong step, does finished art appear at all?"
       ],
       "gallery": "v2-seeds",
-      "caption": "The six founding images. The experiment shows descent with modification, not creation without ancestry."
+      "caption_title": "The experiment begins with ancestry, not a blank canvas.",
+      "caption": "The six founding images given to the second fleet. Later works are descendants of these seeds, allowing the experiment to measure cultural revision rather than pretend creation starts from nothing."
     },
     {
-      "num": "III", "title": "Culture moved judged beauty, not beauty itself",
+      "num": "03", "title": "Finding one: culture became visible",
       "paragraphs": [
-        "When model judges compared anonymised artworks pairwise, win rates ranged from 78 percent to 12 percent across the six cultures. The nihilist culture ranked last in two fleets and under both judges. A founding creed therefore changed what these judges preferred, not merely what they could recognise.",
-        "The ranking is not a universal scale of beauty. The judges share visual priors with the models that made the art, and they strongly preferred the glowing emblem produced by the control worlds. The defensible finding is the six-fold spread under a fixed judging procedure. Whether people see the same distinctions—and whether they prefer the same work—remains open. The images are included so that the reader can disagree with the scoreboard."
-      ]
+        "After 300 turns, six cultures still made different kinds of objects. Ascetic worlds converged on sparse black geometry. Baroque worlds built crimson and gold rosettes. Futurist worlds retained grids, pyramids and starfields. An independent classifier saw 36 anonymised artworks and assigned every one to the correct culture. Chance would be expected to identify six.",
+        "The important word is <em>inheritance</em>. An earlier experiment gave every culture the same circular seed. Their doctrines diverged, but their compositions kept returning to the circle. Once creed and visual ancestry varied together, the structural distance between cultures became 449 times the variation among repeated worlds of the same culture. Culture did not conjure style from pure ideas; it coordinated what to preserve while revising what came before.",
+        "Culture also changed model-judged preference: blind pairwise win rates ranged from 78 to 12 percent. That does not establish a universal ranking of beauty. The judges share priors with the models that made the art, and people have not yet been tested. The confident claim is that culture moved both recognisability and preference under a fixed procedure—not that the winning culture made objectively better art."
+      ],
+      "gallery": "v2-final",
+      "caption_title": "The same kind of artist inherited a different visual world.",
+      "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it."
     },
     {
-      "num": "IV", "title": "Selection made beauty consequential",
+      "num": "04", "title": "Finding two: selection chose winners—and erased alternatives",
       "paragraphs": [
-        "I then changed the social world rather than the founding culture. Every K turns, agents saw anonymised art from the religions around them and could switch allegiance. In the control condition, all four religions survived to turn 120 in all three worlds. Under every tested level of pressure, one religion absorbed the rest: nine monocultures in nine pressured worlds.",
-        "Stronger pressure accelerated the final extinction. Median collapse arrived at turns 49, 29 and 21 for K=16, K=8 and K=4. Production also fell: the mean number of proposals dropped from 50.3 in control to 23.0 at the highest pressure. Selection did not simply demand better work. It narrowed the field and made agents propose less.",
-        "The quality result was mixed. K=16 and K=8 art beat the peaceful control in blind model judging, but K=4 reached only 50.8 percent and its uncertainty overlapped control. The safe conclusion is that competition selected stronger survivors in some regimes while reliably destroying pluralism. ‘Pressure improves art’ is too broad."
+        "Next, art became socially consequential. Every K turns, agents saw anonymised work from neighbouring religions and could change allegiance. With no competition, all four religions survived to turn 120 in every control world. With any tested level of competition, one religion absorbed the rest: nine monocultures in nine pressured worlds.",
+        "The canon sometimes became more attractive to the model judges, but the effect was not monotonic. Moderate-pressure art beat the peaceful control; the highest-pressure condition reached 50.8 percent and could not be distinguished cleanly from it. Meanwhile, average proposals fell from 50.3 without pressure to 23.0 at the highest pressure.",
+        "So selection did two reliable things: it chose survivors and reduced pluralism. It improved judged quality only in some regimes. This is closer to the history of patronage and religious competition than the slogan ‘pressure makes better art’: selection can concentrate resources on successful forms, but it can also silence rivals and shrink the amount attempted."
       ],
       "gallery": "dial",
-      "caption": "Late canonical works from a pressure-free world and a K=8 world. The pressured examples are survivors, which is the mechanism as well as the caveat."
+      "caption_title": "Competition selects a canon; it does not improve every work.",
+      "caption": "Late canonical works from a pressure-free world and a moderate-pressure world. The pressured examples are the religions that survived aesthetic competition—which is both the mechanism and the survivorship caveat."
     },
     {
-      "num": "V", "title": "Before beauty, art has to survive production",
+      "num": "05", "title": "Finding three: before art can win, it has to exist",
       "paragraphs": [
-        "An earlier generation of societies exposed a more basic constraint. Those economies rewarded agents for making edits. Their artworks became elaborate HTML fragments that often exhausted the available output before drawing anything. In one run, 90.7 percent of 4,445 canonical works ended mid-tag; the median contained zero complete drawable elements. Paintable art fell from 65 percent to 18 percent over the life of the society.",
-        "The broken works were larger than the complete ones. They were not minimal or lazy; they died during elaborate preambles of gradients, filters and animation. A mechanism I initially favoured—that an adoption gate filtered bad work—was falsified. Rejected proposals were as complete as accepted ones. The difference arose upstream, in what the economy encouraged agents to attempt."
+        "A more basic force appeared in an earlier generation of societies. Their economy rewarded agents for making edits. The art grew elaborate—long preambles of gradients, filters and animation—until agents exhausted their output before drawing the image. In one run, 90.7 percent of 4,445 canonical works ended mid-tag. The median work contained zero complete drawable elements. Paintable art fell from 65 to 18 percent over the society's life.",
+        "The failed works were larger than the successful ones. This was not laziness or minimalism; ambition consumed the production budget. I initially suspected that an adoption gate protected good work, but rejected proposals were just as complete as accepted ones. The cause sat further upstream, in what the economy encouraged artists to attempt.",
+        "Taste can select only among objects that institutions make possible. In human terms, materials, training, deadlines, commissions and prestige do not merely surround art. They shape the feasible work before an audience ever judges it."
       ],
       "plot": "plot-completeness",
-      "caption": "Renderability over time. Completeness is not beauty, but missing art cannot enter a beauty contest."
+      "caption_title": "The production economy collapsed before taste could act.",
+      "caption": "The share of renderable art fell over time in a society that rewarded edits. Completeness is not beauty, but an unfinished object cannot enter a beauty contest."
     },
     {
-      "num": "VI", "title": "The newer cultures suggest regimes, not boxes",
+      "num": "06", "title": "The emerging answer",
       "paragraphs": [
-        "A later fleet tested six less familiar visual traditions: botanical, brutalist, cave, psychedelic, quilt and ukiyo. Two replicates per culture again produced visible differences. Cave worlds revised shallowly; psychedelic worlds ranged much more widely in size, colour and structure. Charter identity accounted descriptively for 85.3 percent of the measured depth-and-breadth variance, and same-charter replicates sat closer together than different-charter worlds.",
-        "This evidence is suggestive rather than final. There are only twelve worlds, one cave replicate produced five canonical artworks, and the four cultures between the clearest extremes overlap. The vocabulary-adherence analysis is excluded because this fleet had no creed-less control and the uncalibrated lexicons showed column effects. The honest description is loose regimes with a blurred middle."
+        "Where does art come from? These experiments support a layered answer. Minds make objects, but culture supplies a memory of forms worth repeating. Selection directs attention and survival. Institutions determine which ambitions can be completed. Great art can emerge when these layers reinforce one another over time; the same forces can also produce monoculture, silence or elaborate failure.",
+        "A later fleet—botanical, brutalist, cave, psychedelic, quilt and ukiyo—suggests that cultures may also create different <em>revision regimes</em>. Cave worlds changed shallowly; psychedelic worlds ranged more widely in colour, size and structure. But there are only two worlds per culture and the middle groups overlap. This is a promising clue, not a settled taxonomy.",
+        "The experiment does not explain cathedrals, and AI societies are not compressed human civilizations. What it does provide is a causal demonstration of mechanisms that history usually entangles. The strongest result is simple: hold the artist fixed, change the inheritance, and a different visual tradition develops. The next essential test belongs to people—whether human viewers recognise these cultures, which work they value, and why."
       ],
       "gallery": "new-aesthetics",
-      "caption": "One late canonical work from each of twelve new-aesthetic worlds, selected mechanically rather than ranked for beauty.",
+      "caption_title": "Different cultures may develop different ways of revising art.",
+      "caption": "One mechanically selected late work from each of twelve newer worlds. The extremes repeat, but the evidence supports overlapping revision regimes—not six sealed genres.",
       "plot": "plot-depth_breadth",
-      "plotCaption": "Accepted revision depth against visual dispersion. Lines connect replicate worlds."
-    },
-    {
-      "num": "VII", "title": "What this says about churches",
-      "paragraphs": [
-        "The experiment does not explain cathedrals. It isolates three mechanisms that can help a tradition become visually powerful: inherited forms constrain later invention; shared values coordinate what makers preserve; and competition can concentrate attention on successful forms. It also exposes the costs. Strong selection can erase rival traditions and suppress production, while an economy that rewards the wrong intermediate behaviour can prevent finished art from appearing at all.",
-        "So the answer is not that belief magically makes beauty. A culture supplies a memory, a standard and a field of selection. Under some conditions those forces make distinctive work that survives. Under others they produce monoculture, silence or elaborate failure. The most confident result is also the simplest: give the same mind a different inheritance and it learns to make a different world visible."
-      ]
+      "plotCaption_title": "Cultures separate most clearly at the extremes.",
+      "plotCaption": "Accepted revision depth plotted against visual dispersion; lines connect replicated worlds. Twelve worlds are enough for a descriptive pattern, not a significance claim."
     }
   ],
   "claims": [
@@ -221,6 +228,12 @@ header .lede{font-size:1.2rem;margin:2rem 0 0;max-width:54ch;line-height:1.58}
 .stamp{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:.9rem}
 h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;color:var(--muted);margin:0 0 .9rem}
 .section-intro{font-size:1.05rem;max-width:58ch;margin:-.25rem 0 1.5rem}
+.brief{background:var(--ink);color:var(--ground);padding:clamp(1.4rem,4vw,2.4rem);position:relative;overflow:hidden}
+.brief:after{content:"03";position:absolute;right:-.25rem;bottom:-1.6rem;font:400 8rem/1 var(--display);color:#ffffff0b}
+.brief h2{color:#d8d2c5}.brief-intro{font:400 clamp(1.45rem,3vw,2.1rem)/1.15 var(--display);max-width:26ch;margin:.2rem 0 1.6rem}
+.brief-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;position:relative;z-index:1}
+.brief-item{border-top:1px solid #f3f0e850;padding-top:.8rem}.brief-num{font:700 .65rem var(--mono);color:#d48a70}
+.brief-item h3{font:500 .92rem/1.25 var(--sans);margin:.45rem 0;color:#fff}.brief-item p{font-size:.84rem;line-height:1.5;color:#d8d2c5;margin:0}
 .essay{border-top:4px solid var(--ink);padding-top:1.4rem}
 .essay-chapter{padding:1.2rem 0 3.6rem;border-bottom:1px solid var(--line)}
 .essay-chapter:last-child{border-bottom:0;padding-bottom:0}
@@ -233,7 +246,19 @@ h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;col
 .essay-figure{margin:2rem 0 0}
 .essay-figure .thumbs{grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
 .essay-figure .thumbs button{border-radius:0}
-.essay-figure figcaption{max-width:60ch}
+.essay-figure figcaption{max-width:67ch;margin-top:1rem}
+.essay-figure figcaption strong{display:block;font:600 .9rem/1.35 var(--sans);color:var(--ink);margin-bottom:.2rem}
+.paged-gallery{border-top:1px solid var(--line);padding-top:.8rem}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+.gallery-grid button{all:unset;cursor:zoom-in;overflow:hidden;border:1px solid var(--line);position:relative;aspect-ratio:1;background:#090b10}
+.gallery-grid button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gallery-grid img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.gallery-grid button:hover img{transform:scale(1.025)}
+.gallery-grid .cap{position:absolute;inset:auto 0 0 0;background:#090b10cc;color:#e7e6df;font-size:.62rem;padding:.28rem .4rem;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gallery-controls{display:flex;align-items:center;justify-content:flex-end;gap:.65rem;margin-bottom:.7rem;font:600 .68rem var(--mono);color:var(--muted)}
+.gallery-controls button{border:1px solid var(--line);background:transparent;color:var(--ink);width:2rem;height:2rem;cursor:pointer;font-size:1rem}
+.gallery-controls button:hover:not(:disabled),.gallery-controls button:focus-visible{border-color:var(--accent);color:var(--accent)}
+.gallery-controls button:disabled{opacity:.25;cursor:default}.gallery-position{min-width:5rem;text-align:center;font-variant-numeric:tabular-nums}
 .claim{background:transparent;border-top:1px solid var(--ink);overflow:hidden}
 .claim>button{all:unset;box-sizing:border-box;display:flex;width:100%;justify-content:space-between;align-items:baseline;gap:1rem;padding:1rem 1.2rem;cursor:pointer;flex-wrap:wrap}
 .claim>button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -264,7 +289,7 @@ h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;col
 .bar.low .fill{background:var(--crit)}
 .bar .pct{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
 .plotimg{width:100%;border:1px solid var(--line);background:#fff}
-figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.78rem;color:var(--muted);line-height:1.45}figcaption strong{color:var(--ink);font-family:var(--sans)}
+figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.8rem;color:var(--muted);line-height:1.5}figcaption strong{color:var(--ink);font-family:var(--sans)}
 .quote{border-left:3px solid var(--accent);padding:.2rem 0 .2rem .9rem;margin:0 0 .7rem;font-size:.85rem}
 .quote .who{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.25rem}
 .cavs{font-size:.78rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:.6rem;margin:0}
@@ -294,7 +319,8 @@ a{color:var(--live)}
 #lightbox img{max-width:min(92vw,50rem);max-height:80vh;border-radius:6px}
 #lightbox .lcap{color:#e7e6df;font-family:var(--mono);font-size:.78rem;text-align:center;margin-top:.8rem;max-width:60ch}
 @media(max-width:900px){.page-shell{grid-template-columns:1fr;gap:2rem}.toc{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.toc .mark,.toc h2,.toc .legend{grid-column:1/-1}.toc .legend{display:none}header{padding-top:0}}
-@media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.essay-head{grid-template-columns:2rem 1fr}.essay-copy{margin-left:0}.essay-copy p{font-size:1.03rem}.essay-figure .thumbs{grid-template-columns:repeat(2,minmax(0,1fr))}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
+@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.essay-head{grid-template-columns:2rem 1fr}.essay-copy{margin-left:0}.essay-copy p{font-size:1.03rem}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.chev{transition:none}}
 </style>
 
@@ -302,10 +328,10 @@ a{color:var(--live)}
 <aside class="toc" aria-label="Contents">
   <div class="mark">Cultural<br>Selection</div>
   <h2>Contents</h2>
-  <a href="#orientation">Orientation</a>
-  <a href="#essay">The essay</a>
-  <a href="#claims">The findings</a>
-  <a href="#claim-tree">Claim tree</a>
+  <a href="#brief">In brief · 1 min</a>
+  <a href="#essay">The argument · 6 min</a>
+  <a href="#claims">Evidence cards</a>
+  <a href="#claim-tree">Audit trail</a>
   <a href="#evo">A lineage evolves</a>
   <a href="#retractions">Retractions</a>
   <a href="#method">Method</a>
@@ -323,13 +349,14 @@ a{color:var(--live)}
     <p class="lede" id="lede"></p>
     <div class="stamp" id="stamp"></div>
   </header>
-  <section id="orientation">
-    <h2>How to read this research</h2>
-    <p class="section-intro">This is a causal sandbox, not a general theory of beauty. Identical models make culture unusually easy to isolate; model judges, synthetic societies and small replicate counts make human extrapolation unusually easy to overstate. The page separates what the runs directly show from what they merely suggest.</p>
+  <section class="brief" id="brief">
+    <h2>In brief · one minute</h2>
+    <p class="brief-intro">Art is made by people. But what gets made, finished and remembered is also shaped by culture.</p>
+    <div class="brief-grid" id="brief-grid"></div>
   </section>
   <article class="essay" id="essay">
-    <h2>The essay</h2>
-    <p class="section-intro">A concise account of what the experiments show, what they do not, and why the artifacts matter.</p>
+    <h2>The argument · six minutes</h2>
+    <p class="section-intro">Start with the human question, then build the experiment one mechanism at a time. The evidence cards and audit trail below carry the technical detail.</p>
     <div id="essay-body"></div>
   </article>
   <section id="claims"></section>
@@ -370,6 +397,7 @@ $('kicker').textContent = D.hero_kicker;
 $('title').textContent = D.hero_title;
 $('lede').textContent = D.hero_body;
 $('stamp').textContent = 'updated ' + D.updated + ' · every number links to code and data on GitHub';
+$('brief-grid').innerHTML = D.tldr.map((x,i) => `<div class="brief-item"><span class="brief-num">0${i+1}</span><h3>${x.label}</h3><p>${x.text}</p></div>`).join('');
 const lb = $('lightbox');
 function openLB(a){ $('lb-img').src = a.b64; $('lb-img').alt = a.label; $('lb-cap').textContent = a.label + ' — ' + a.caption; lb.classList.add('on'); }
 lb.addEventListener('click', () => lb.classList.remove('on'));
@@ -378,6 +406,30 @@ function thumbs(group){
   return '<div class="thumbs">' + byGroup(group).map((a,i) =>
     `<button data-g="${group}" data-i="${i}" aria-label="enlarge ${a.label}"><img loading="lazy" src="${a.b64}" alt="${a.label}"><span class="cap">${a.label}</span></button>`).join('') + '</div>';
 }
+let pagerId = 0;
+function galleryPager(group, size=6){
+  const id = `gallery-${++pagerId}`;
+  return `<div class="paged-gallery" id="${id}" data-group="${group}" data-page="0" data-size="${size}"><div class="gallery-controls"><button class="gallery-prev" aria-label="previous artworks">←</button><span class="gallery-position" aria-live="polite"></span><button class="gallery-next" aria-label="next artworks">→</button></div><div class="gallery-grid"></div></div>`;
+}
+function renderPager(el){
+  const items = byGroup(el.dataset.group), size = +el.dataset.size;
+  const pages = Math.max(1, Math.ceil(items.length / size));
+  const page = Math.max(0, Math.min(+el.dataset.page, pages - 1));
+  el.dataset.page = page;
+  const start = page * size;
+  el.querySelector('.gallery-grid').innerHTML = items.slice(start,start+size).map((a,i) => `<button data-i="${start+i}" aria-label="enlarge ${a.label}"><img loading="lazy" src="${a.b64}" alt="${a.label}"><span class="cap">${a.label}</span></button>`).join('');
+  el.querySelector('.gallery-position').textContent = `${page+1} / ${pages}`;
+  el.querySelector('.gallery-prev').disabled = page === 0;
+  el.querySelector('.gallery-next').disabled = page === pages - 1;
+  el.querySelectorAll('.gallery-grid button').forEach(b => b.addEventListener('click', () => openLB(items[+b.dataset.i])));
+}
+function wirePagers(){
+  document.querySelectorAll('.paged-gallery').forEach(el => {
+    el.querySelector('.gallery-prev').addEventListener('click', () => { el.dataset.page = +el.dataset.page - 1; renderPager(el); });
+    el.querySelector('.gallery-next').addEventListener('click', () => { el.dataset.page = +el.dataset.page + 1; renderPager(el); });
+    renderPager(el);
+  });
+}
 function bars(rows){
   return '<div class="bars">' + rows.map(([l,v]) =>
     `<div class="bar ${v<45?'low':''}"><span>${l}</span><span class="track"><span class="fill" style="width:${v}%"></span></span><span class="pct">${v}%</span></div>`).join('') + '</div>';
@@ -385,10 +437,11 @@ function bars(rows){
 const plotAsset = id => ASSETS.assets.find(a => a.id === id) || byGroup('plots').find(a => a.id.includes(id.replace('plot-','')));
 let essayFigure = 0;
 $('essay-body').innerHTML = D.essay.map(s => {
-  const gallery = s.gallery ? (() => { essayFigure++; return `<figure class="essay-figure">${thumbs(s.gallery)}<figcaption><strong>Figure ${essayFigure}.</strong> ${s.caption}</figcaption></figure>`; })() : '';
-  const plot = s.plot && plotAsset(s.plot) ? (() => { essayFigure++; const a=plotAsset(s.plot); return `<figure class="essay-figure"><img class="plotimg" loading="lazy" src="${a.b64}" alt="${s.title}"><figcaption><strong>Figure ${essayFigure}.</strong> ${s.plotCaption || s.caption || a.caption}</figcaption></figure>`; })() : '';
+  const gallery = s.gallery ? (() => { essayFigure++; return `<figure class="essay-figure">${galleryPager(s.gallery)}<figcaption><strong>Figure ${essayFigure}: ${s.caption_title}</strong>${s.caption}</figcaption></figure>`; })() : '';
+  const plot = s.plot && plotAsset(s.plot) ? (() => { essayFigure++; const a=plotAsset(s.plot); return `<figure class="essay-figure"><img class="plotimg" loading="lazy" src="${a.b64}" alt="${s.title}"><figcaption><strong>Figure ${essayFigure}: ${s.plotCaption_title || s.caption_title}</strong>${s.plotCaption || s.caption || a.caption}</figcaption></figure>`; })() : '';
   return `<section class="essay-chapter"><div class="essay-head"><span class="essay-roman">${s.num}</span><h3>${s.title}</h3></div><div class="essay-copy">${s.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>${gallery}${plot}</section>`;
 }).join('');
+wirePagers();
 $('claims').innerHTML = '<h2>The findings</h2><p class="section-intro">Five claims survived the latest audit. Open each one for its evidence, images and limiting conditions.</p>' + D.claims.map((c,ci) => `
   <div class="claim" id="${c.id}" style="margin-bottom:.8rem">
     <button aria-expanded="false">
@@ -401,9 +454,9 @@ $('claims').innerHTML = '<h2>The findings</h2><p class="section-intro">Five clai
       <p class="oneline">${c.one_liner}</p>
       <div class="nums">${c.numbers.map(n => `<div class="num"><div class="v">${n.v}</div><div class="l">${n.l}</div></div>`).join('')}</div>
       ${c.bars ? bars(c.bars) : ''}
-      ${c.gallery ? `<figure>${thumbs(c.gallery)}<figcaption><strong>Figure ${ci+1}a.</strong> ${c.galleryNote}</figcaption></figure>` : ''}
-      ${c.gallery2 ? `<figure>${thumbs(c.gallery2)}<figcaption><strong>Figure ${ci+1}b.</strong> ${c.gallery2Note}</figcaption></figure>` : ''}
-      ${c.plot && plotAsset(c.plot) ? `<figure><img class="plotimg" loading="lazy" src="${plotAsset(c.plot).b64}" alt="chart for ${c.title}"><figcaption><strong>Figure ${ci+1}${c.gallery?'b':'a'}.</strong> ${plotAsset(c.plot).caption}</figcaption></figure>` : ''}
+      ${c.gallery ? `<figure>${thumbs(c.gallery)}<figcaption><strong>Evidence plate C${ci+1}.a.</strong> ${c.galleryNote}</figcaption></figure>` : ''}
+      ${c.gallery2 ? `<figure>${thumbs(c.gallery2)}<figcaption><strong>Evidence plate C${ci+1}.b.</strong> ${c.gallery2Note}</figcaption></figure>` : ''}
+      ${c.plot && plotAsset(c.plot) ? `<figure><img class="plotimg" loading="lazy" src="${plotAsset(c.plot).b64}" alt="chart for ${c.title}"><figcaption><strong>Evidence plate C${ci+1}.${c.gallery?'b':'a'}.</strong> ${plotAsset(c.plot).caption}</figcaption></figure>` : ''}
       ${c.quotes ? '<div>' + ASSETS.quotes.map(q => `<div class="quote">“${q.text || q.quote}”<div class="who">an agent's private reasoning · ${q.world} · turn ${q.turn}</div></div>`).join('') + '</div>' : ''}
       <p class="cavs"><b>Fine print:</b> ${c.caveats}</p>
     </div>
