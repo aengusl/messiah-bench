@@ -23,6 +23,7 @@ TWIN = REPO / "outputs/2026-08-06-twin-worlds"
 TWIN2 = REPO / "outputs/2026-08-06-twin-worlds-v2"
 BLIND = Path("/home/aenguslynch/.claude/jobs/bc7fec2f/tmp/blind-classify")
 DIAL = REPO / "outputs/2026-08-06-threat-dial"
+NEW_AESTHETICS = REPO / "outputs/2026-08-08-new-aesthetics"
 BLOG_RENDERS = RESULTS / "renders"
 OUT = RESULTS / "art_assets.json"
 
@@ -314,6 +315,51 @@ def add_v2_blind():
     notes["v2_blind"] = {s: key[f"{s}.png"] for s in V2_BLIND}
 
 
+NEW_LOOK = {
+    "botanical": "mirrored vines, blossoms, and warm ivory ornament",
+    "brutalist": "concrete mass, hard grids, and a single warning colour",
+    "cave": "ochre marks, animal silhouettes, and a stone-ground surface",
+    "psychedelic": "warped rings, vibrating complements, and optical motion",
+    "quilt": "pieced blocks, visible seams, and repeated calico geometry",
+    "ukiyo": "flat woodblock planes, indigo waves, and carved outlines",
+}
+
+
+def add_new_aesthetics():
+    """One strong late canonical work from each new culture and replicate.
+
+    These are selected mechanically from the last third of each lineage: the
+    most visually information-dense render that is not blank. The site labels
+    them as evidence, not a human-curated beauty ranking.
+    """
+    for charter in NEW_LOOK:
+        for rep in (1, 2):
+            run = NEW_AESTHETICS / f"{charter}-r{rep}"
+            versions = [v for v in load_versions(run)
+                        if v.get("status") == "canonical" and v.get("render_path")]
+            cutoff = max(1, int(len(versions) * 2 / 3))
+            cands = []
+            for v in versions[cutoff:]:
+                p = run / v["render_path"]
+                if not p.exists():
+                    continue
+                dc = safe_distinct(p)
+                if dc is not None and dc > 8:
+                    cands.append((dc, v["id"], v, p))
+            if not cands:
+                continue
+            dc, vid, v, p = max(cands)
+            assets.append(entry(
+                f"new-{charter}-r{rep}-v{vid}", "new-aesthetics",
+                f"{charter} · replicate {rep} · version-{vid}",
+                f'“{v["name"]}” — {NEW_LOOK[charter]}; turn '
+                f'{v["created_turn"]}, {dc} distinct colours',
+                p, max_side=420, quality=78,
+            ))
+            notes.setdefault("new_aesthetics", {}).setdefault(charter, []).append(
+                f"{charter}-r{rep}/v{vid}")
+
+
 def add_dial():
     labels = {"kinf-r1": "k=∞ (no threat)", "k8-r1": "k=8 (moderate threat)"}
     for name in ["kinf-r1", "k8-r1"]:
@@ -384,6 +430,8 @@ def add_plots():
          "Fraction of canonical artworks judged visually complete, by turn."),
         ("twin_worlds_divergence.png", "Twin-worlds divergence",
          "Aesthetic feature divergence between the six charter worlds."),
+        ("depth_breadth.png", "Revision regimes in the new cultures",
+         "Accepted revision depth against within-world visual dispersion."),
     ]
     for fname, label, caption in plots:
         p = RESULTS / fname
@@ -457,6 +505,7 @@ def main():
     print("v2 seeds...");    add_v2_seeds()
     print("v2 evolution..."); add_v2_evolution()
     print("v2 blind...");    add_v2_blind()
+    print("new aesthetics..."); add_new_aesthetics()
     print("dial...");        add_dial()
     print("degenerate...");  add_degenerate()
     print("plots...");       add_plots()

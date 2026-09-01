@@ -2,8 +2,9 @@
 
 > **Usage:** This file holds ONLY the present: state of the world, hypothesis board, open uncertainties, next steps, budget. Closed rounds and narratives move to LOG.md the moment they stop being actionable. Overwrite stale content, never stack. Budget numbers are measured (COSTLOG.md), never estimated from memory. Point to evidence files; never inline evidence.
 
-## Goal
-Twitter thread → blog post. Thesis: **culture, not the individual, is the artist.** Thread draft: results/thread_draft.md. Evidence page: results/evidence_template.html → artifact 2a550846.
+## Goal (dual, per Aengus 2026-08-06)
+1. Twitter thread → blog post. Thesis: **culture, not the individual, is the artist.** Thread draft: results/thread_draft.md. Evidence page: artifact 2a550846.
+2. **The art itself must be genuinely cool to humans.** Claims are scaffolding; the product is art worth staring at. Every design decision gets judged against both: does it test the claim AND raise the ceiling on the art? Human reaction (Aengus first, then site visitors) outranks model-judge scores.
 
 **What I want to be true (guard against):** that divergent seed art produces visibly different lineages. Falsification attempts get priority.
 

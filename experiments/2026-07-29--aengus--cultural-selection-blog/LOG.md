@@ -78,3 +78,10 @@ Win rates: control 78% > futurist 63% > baroque 62% > ancestor 54% >> ascetic 21
 
 ## 2026-08-08 01:50 UTC — New-aesthetics fleet launched
 Six new culture packs committed (f9cd88f, 293 tests). Ukiyo micro-smoke passed ($0.85): lineage evolves within the woodblock tradition. Fleet: 12 worlds (6 cultures x 2 reps x 200 turns) ~ $220, out-tag 2026-08-08-new-aesthetics, watchdog armed. Results to artifact only per Aengus.
+
+## 2026-09-01 18:57 UTC — Claim audit + public-site redesign
+Re-derived the threat-dial headlines from raw world state, events, and decisions. Absorption remains exact (9/9 pressure worlds monoculture; 3/3 controls retain four religions); median final-extinction turns corrected to 49/29/21; proposal endpoint corrected from 20 to 23.0, with K=8/K=4 not separating. Judged win rates remain control 40.9%, K16 54.0%, K8 55.1%, K4 50.8%; K4 uncertainty overlaps control, so the page no longer claims uniform improvement under all pressure.
+
+New-aesthetics depth/breadth analysis is descriptive: charter identity accounts for 85.3% of the two-feature variance across 12 worlds, between/within SS ratio 5.82, replicate vs between-charter distance 0.96 vs 1.91. Cave and psychedelic define the clearest extremes; the middle four overlap. The vocabulary-adherence table is excluded from claims because this fleet has no charter-free control and its uncalibrated word lists show strong column effects.
+
+Redesigned the public page as an editorial research monograph with a sticky contents rail, five audited findings, figure captions, status-tagged nested claim tree, explicit caveats, and unresolved/TODO ledger. Added 12 new-aesthetics art examples and the depth/breadth plot to the evidence bundle. Desktop/mobile Chromium render checks passed; focused suite 293/293 passed.

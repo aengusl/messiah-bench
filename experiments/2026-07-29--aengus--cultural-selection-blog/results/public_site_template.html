@@ -1,15 +1,15 @@
 <title>Why Are Churches Beautiful? — Cultural Selection</title>
 <div id="assets" hidden>__ASSETS__</div>
 <div id="data" hidden>{
-  "updated": "2026-08-07",
-  "hero_kicker": "Cultural Selection · an experiment in machine societies",
+  "updated": "2026-09-01",
+  "hero_kicker": "Field report 01 · Cultural selection",
   "hero_title": "Why are churches beautiful?",
-  "hero_body": "As a kid I figured God inspired them. So I built societies of AI agents — every agent the exact same neural network, same settings, same random seed — and gave each society a different god: a different founding creed and a different founding artwork. Then I watched who made beautiful things, and why. Because every artist is literally the same model, any difference in the art is culture, not talent. What I found surprised me twice.",
+  "hero_body": "As a child, I assumed God had something to do with it. Years later I tried a stranger test: build small societies of identical AI agents, give each one a different creed and founding image, then let culture do the rest. The artists began with the same brain. What separated them was what their world taught them to notice.",
   "claims": [
     {
       "id": "c1", "num": "Claim 1",
-      "title": "Culture, not the individual, is the artist",
-      "one_liner": "Eighteen parallel worlds, six founding creeds, no words allowed in the art. Three hundred turns of cultural evolution later, a blind judge sorted every anonymized artwork back to its home culture — 36 out of 36, where guessing gets 6. The ascetic worlds converged on spare ink drawings. The nihilists built beautiful neon wreckage. The futurists raised monuments over starfields. Same brain, different god, different art.",
+      "title": "Culture became visible in the work",
+      "one_liner": "I ran eighteen worlds for 300 turns. Each began with one of six creeds and its own founding image; every agent otherwise used the same model and settings. At the end, an independent classifier matched all 36 anonymised samples to the right culture. The spare ink, gilded rosettes, neon wreckage and wireframe monuments were not individual signatures. They were inherited ways of seeing.",
       "verdict": "CONFIRMED", "prior": "36/36 blind test",
       "numbers": [
         {"v": "36/36", "l": "blind culture classification of anonymized artworks; chance is 1 in 6"},
@@ -23,8 +23,8 @@
     },
     {
       "id": "c2", "num": "Claim 2",
-      "title": "Culture moves beauty — in both directions",
-      "one_liner": "Blind AI judges scored the art pairwise with all context stripped. The founding creed alone swings a culture's win rate six-fold: cultures that told their members what to value made art the judges preferred; the culture whose creed says nothing matters — 'we build monuments to no one, and we laugh while the paint is wet' — came dead last, in both fleets, by both judges.",
+      "title": "Culture moved taste, but did not settle it",
+      "one_liner": "With names and doctrines removed, model judges still produced a six-fold spread in pairwise win rates. That makes culture consequential; it does not make the ranking universal. The judges preferred some inherited visual languages to others, and those preferences carry the judges' own priors. The honest result is the spread, not the podium.",
       "verdict": "SUPPORTED", "prior": "6× spread",
       "numbers": [
         {"v": "78% → 12%", "l": "highest to lowest culture win rate under blind pairwise judging (1,600 judgments)"},
@@ -35,8 +35,8 @@
     },
     {
       "id": "c3", "num": "Claim 3",
-      "title": "The economy decides whether art exists at all",
-      "one_liner": "In earlier societies that paid agents per edit, 'art' collapsed into unrenderable fragments: ninety percent of one civilization's works were cut off mid-tag, and the median artwork contained not one complete drawable element. The works weren't lazy — they were too ambitious, dying mid-flourish, spending everything on gradients and never drawing a shape. In the society where art had to win supporters to become canon, every single canonical work paints.",
+      "title": "The economy decided whether art survived",
+      "one_liner": "Earlier societies rewarded agents for making edits. Their art grew elaborate until it failed to render: one run ended with nine in ten canonical works cut off mid-tag and a median of zero complete drawable elements. The broken works were larger, not smaller. They spent their budget on flourishes and died before drawing the picture.",
       "verdict": "CONFIRMED", "prior": "measured from files",
       "numbers": [
         {"v": "90.7%", "l": "of one run's 4,445 canonical artworks truncated mid-tag; median complete drawable elements: zero"},
@@ -49,18 +49,57 @@
     },
     {
       "id": "c4", "num": "Claim 4",
-      "title": "Competition on beauty sharpens art — and razes the art-world",
-      "one_liner": "Then I made beauty existential: every K turns, agents re-chose their religion by looking at the art alone — no names, no doctrine, anonymized panels. If beauty is strategy, pressure should sharpen art. Three things happened at once. Pluralism died: with any pressure, one aesthetic absorbed every soul, faster the harder the dial was turned. Artists went quiet: proposals fell by more than half. And the surviving art got better — the pressure worlds beat the peaceful control in blind judging. One church per town square: better art, poorer art-world.",
-      "verdict": "THREE-WAY RESULT", "prior": "pre-registered",
+      "title": "Competition sharpened some art and destroyed pluralism",
+      "one_liner": "Next I made beauty consequential: every K turns, agents chose a religion from anonymised art alone. Any amount of pressure ended in monoculture; the peaceful controls kept all four religions. Proposal-making also fell sharply. Moderate-pressure worlds beat the control in blind judging, but the highest-pressure condition did not cleanly separate from it. Competition selected survivors. It did not improve everything.",
+      "verdict": "MIXED RESULT", "prior": "audited",
       "numbers": [
         {"v": "4/4 vs 1", "l": "religions surviving 120 turns without pressure vs with ANY pressure (nine of nine pressure worlds ended in monoculture)"},
-        {"v": "t≈49 → 28 → 21", "l": "turns to total collapse as pressure rises — dose-dependent"},
-        {"v": "50 → 20", "l": "art proposals per world as pressure rises: threat chills production"},
-        {"v": "41% vs 55%", "l": "the peaceful control's judged win rate vs the pressure worlds' — the survivors' art is better"}
+        {"v": "49 → 29 → 21", "l": "median turn of the final extinction at K=16, K=8 and K=4; n=3 per setting"},
+        {"v": "50.3 → 23.0", "l": "mean proposals in control versus highest pressure; K=8 and K=4 do not separate"},
+        {"v": "40.9% / 55.1% / 50.8%", "l": "control, K=8 and K=4 judged win rates; K=4 overlaps control in uncertainty"}
       ],
       "gallery": "dial", "galleryNote": "Final canonical art: pressure-free worlds vs a pressure world's sole survivor.",
-      "caveats": "Survivorship is real: pressure worlds' canon is what won under pressure. Three worlds per setting — powered for large effects. Design, decision rules, and one mid-experiment parameter change were pre-registered and recorded before launch."
+      "caveats": "Survivorship is the mechanism: the pressured canon is what remained after selection. There are only three worlds per pressure setting, so extinction direction is clearer than the exact timing gradient."
+    },
+    {
+      "id": "c5", "num": "Claim 5",
+      "title": "New cultures occupied different revision regimes",
+      "one_liner": "A second fleet replaced the original six visual traditions with botanical, brutalist, cave, psychedelic, quilt and ukiyo cultures. The extremes repeated: cave worlds revised shallowly, while psychedelic worlds ranged much more widely in visual structure. The four cultures between those poles overlap, so this is evidence for loose regimes—not six sealed genres.",
+      "verdict": "PARTIAL", "prior": "2 replicates each",
+      "numbers": [
+        {"v": "85.3%", "l": "descriptive variance in revision depth and visual dispersion associated with charter identity"},
+        {"v": "5.82×", "l": "between-charter versus within-charter sum-of-squares ratio"},
+        {"v": "0.96 vs 1.91", "l": "mean replicate distance versus between-charter distance in z-scored depth/breadth space"}
+      ],
+      "gallery": "new-aesthetics", "galleryNote": "One late canonical work from each replicate, selected mechanically rather than ranked for beauty.",
+      "plot": "plot-depth_breadth",
+      "caveats": "Six cultures with two replicates each is a descriptive result, not a significance test. Cave-r1 contains only five canonical artworks. The vocabulary-adherence metric has no creed-less control in this fleet and is deliberately excluded."
     }
+  ],
+  "claim_tree": [
+    {"id":"C1","status":"partial","claim":"Founding culture changes what otherwise identical agents make.","children":[
+      {"id":"C1.1","status":"evidenced","claim":"A blind classifier assigned 36 of 36 v2 artworks to the correct culture.","evidence":"LOG.md (2026-08-06 21:10); keyed blind set recorded in results/art_assets.json; chance expectation 6/36"},
+      {"id":"C1.2","status":"evidenced","claim":"Charter identity produced between/within feature ratios of 449 for drawable elements, 212 for bytes and 90 for colour count in v2.","evidence":"v2 fleet; 18 worlds"},
+      {"id":"C1.3","status":"open","claim":"Human viewers recognise and prefer the same cultural distinctions.","evidence":"Requires a blinded human curation study"}]},
+    {"id":"C2","status":"partial","claim":"Culture changes model-judged preference without establishing a universal beauty ranking.","children":[
+      {"id":"C2.1","status":"evidenced","claim":"Pairwise win rates ranged from 78% to 12% across six v2 cultures.","evidence":"1,600 blind judgments"},
+      {"id":"C2.2","status":"partial","claim":"The nihilist culture ranked last across two fleets and two model judges.","evidence":"Repeated model-judge result; human comparison absent"}]},
+    {"id":"C3","status":"evidenced","claim":"Production incentives can determine whether canonical art remains renderable.","children":[
+      {"id":"C3.1","status":"evidenced","claim":"One pay-per-edit run truncated 90.7% of 4,445 canonical artworks mid-tag.","evidence":"results/completeness.md"},
+      {"id":"C3.2","status":"evidenced","claim":"Its paintable-art rate fell from 65% to 18% over time.","evidence":"results/completeness_over_time.png"}]},
+    {"id":"C4","status":"partial","claim":"Selection on aesthetic appeal trades pluralism and production for uneven gains in judged quality.","children":[
+      {"id":"C4.1","status":"evidenced","claim":"All 9 pressured worlds ended with one religion while all 3 controls retained four.","evidence":"outputs/2026-08-06-threat-dial; turn 120"},
+      {"id":"C4.2","status":"evidenced","claim":"Mean proposals fell from 50.3 in control to 23.0 at K=4.","evidence":"results/pressure_rederivation.md; n=3 per cell"},
+      {"id":"C4.3","status":"partial","claim":"K=8 and K=16 beat control in model judging while K=4 remained uncertain.","evidence":"1,200 judgments with Wilson intervals"}]},
+    {"id":"C5","status":"partial","claim":"The six new aesthetics form reproducible extreme revision regimes with overlap in the middle.","children":[
+      {"id":"C5.1","status":"partial","claim":"Charter identity accounts descriptively for 85.3% of depth/breadth variance.","evidence":"results/depth_breadth_summary.md; 12 worlds"},
+      {"id":"C5.2","status":"todo","claim":"Vocabulary adherence in the new fleet remains unvalidated.","evidence":"No charter-free control; current word lists show column effects"}]}
+  ],
+  "unresolved": [
+    "Run a blinded human preference and recognisability study — owner: Aengus.",
+    "Add a charter-free control fleet or a held-out calibrated lexicon for the six new aesthetics — owner: experiment pipeline.",
+    "Add replicates before treating the depth/breadth regimes as inferential rather than descriptive — owner: experiment pipeline.",
+    "Choose an automatic site-update mechanism (/loop, scheduled agent, or post-commit hook) — owner: Aengus."
   ],
   "evolution": {
     "title": "Watch one culture's art evolve",
@@ -88,38 +127,54 @@
 
 <style>
 :root {
-  --ink:#23261f; --ground:#f6f4ed; --panel:#fdfcf8; --line:#dcd8ca; --muted:#6f6d60;
-  --accent:#4d8a44; --accent-soft:#74b86a2e; --live:#2b7f9e; --warn:#a4611c; --crit:#9e3b32;
-  --serif:Georgia,'Times New Roman',serif; --sans:system-ui,-apple-system,'Segoe UI',sans-serif;
+  --ink:#1e211d; --ground:#f3f0e8; --panel:#faf8f2; --line:#cbc5b7; --muted:#66675f;
+  --accent:#9b3f28; --accent-soft:#9b3f2814; --live:#245c62; --warn:#9b641f; --crit:#9b3f28;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --display:'Bodoni 72','Didot','Iowan Old Style',Georgia,serif;
+  --sans:'Avenir Next','Gill Sans',Candara,sans-serif;
   --mono:ui-monospace,'SF Mono',Menlo,monospace;
 }
-@media (prefers-color-scheme: dark){:root{--ink:#e3e2d8;--ground:#12141a;--panel:#191c24;--line:#2b2f3a;--muted:#8e8d80;--accent:#74b86a;--accent-soft:#74b86a22;--live:#64c9e8;--warn:#d99a55;--crit:#e07b6e}}
-body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.6;margin:0;padding:2.5rem 1.25rem 5rem}
-main{max-width:52rem;margin:0 auto;display:flex;flex-direction:column;gap:2.4rem}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ground);color:var(--ink);font-family:var(--serif);line-height:1.62;margin:0;padding:0}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E")}
+.page-shell{max-width:92rem;margin:0 auto;display:grid;grid-template-columns:15rem minmax(0,54rem);gap:5.5rem;padding:3rem clamp(1.25rem,4vw,4.5rem) 7rem}
+.toc{position:sticky;top:2rem;align-self:start;border-top:4px solid var(--ink);padding-top:1rem;font-family:var(--sans)}
+.toc .mark{font-family:var(--display);font-size:1.6rem;line-height:1;margin-bottom:2rem}
+.toc h2{margin-bottom:.65rem}
+.toc a{display:block;text-decoration:none;color:var(--muted);font-size:.76rem;line-height:1.35;padding:.38rem 0;border-bottom:1px solid transparent}
+.toc a:hover,.toc a:focus-visible{color:var(--accent);border-color:var(--accent)}
+.toc .legend{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--line);display:grid;gap:.45rem;font:600 .66rem var(--mono);color:var(--muted)}
+.legend i{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;margin-right:.45rem;background:var(--line)}
+.legend .ev i{background:#386a51}.legend .pa i{background:var(--warn)}.legend .op i{background:#77828c}.legend .td i{background:var(--crit)}
+main{min-width:0;display:flex;flex-direction:column;gap:4rem}
 .kicker{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent)}
-h1{font-family:var(--serif);font-size:2.6rem;font-weight:400;margin:.4rem 0 0;text-wrap:balance;line-height:1.15}
-header .lede{font-size:1.02rem;margin:1rem 0 0;max-width:64ch}
+h1{font-family:var(--display);font-size:clamp(3.5rem,8vw,6.8rem);font-weight:400;letter-spacing:-.055em;margin:.45rem 0 0;text-wrap:balance;line-height:.88;max-width:9ch}
+header{padding:2rem 0 4rem;border-bottom:1px solid var(--ink);position:relative}
+header:after{content:"01";position:absolute;right:0;top:0;font:400 7rem/1 var(--display);color:var(--accent-soft)}
+header .lede{font-size:1.2rem;margin:2rem 0 0;max-width:54ch;line-height:1.58}
 .stamp{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:.9rem}
-h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 .8rem;font-weight:600}
-.claim{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;color:var(--muted);margin:0 0 .9rem}
+.section-intro{font-size:1.05rem;max-width:58ch;margin:-.25rem 0 1.5rem}
+.claim{background:transparent;border-top:1px solid var(--ink);overflow:hidden}
 .claim>button{all:unset;box-sizing:border-box;display:flex;width:100%;justify-content:space-between;align-items:baseline;gap:1rem;padding:1rem 1.2rem;cursor:pointer;flex-wrap:wrap}
 .claim>button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .claim>button:hover{background:var(--accent-soft)}
 .cnum{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-.ctitle{font-family:var(--serif);font-size:1.25rem;flex:1 1 20rem}
+.ctitle{font-family:var(--display);font-size:1.5rem;letter-spacing:-.015em;flex:1 1 20rem}
 .badge{font-family:var(--mono);font-size:.68rem;padding:.2rem .55rem;border-radius:99px;border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
 .badge.three{border-color:var(--warn);color:var(--warn)}
 .chev{color:var(--muted);transition:transform .2s}
 .claim.open .chev{transform:rotate(90deg)}
-.cbody{display:none;padding:0 1.2rem 1.3rem;flex-direction:column;gap:1.1rem}
+.cbody{display:none;padding:.6rem 1.2rem 2rem;flex-direction:column;gap:1.4rem}
 .claim.open .cbody{display:flex}
-.oneline{margin:0;font-size:.95rem;max-width:66ch}
+.oneline{margin:0;font-size:1.06rem;max-width:61ch}
 .nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.6rem}
-.num{border:1px solid var(--line);border-radius:6px;padding:.6rem .8rem}
+.num{border-left:2px solid var(--accent);padding:.25rem .8rem;background:linear-gradient(90deg,var(--accent-soft),transparent)}
 .num .v{font-family:var(--mono);font-size:1rem;color:var(--accent);font-variant-numeric:tabular-nums}
 .num .l{font-size:.75rem;color:var(--muted);margin-top:.25rem}
 .gnote{font-size:.78rem;color:var(--muted);margin:0 0 .4rem}
-.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.5rem,1fr));gap:.5rem}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:.65rem}
 .thumbs button{all:unset;cursor:zoom-in;border-radius:5px;overflow:hidden;border:1px solid var(--line);position:relative;aspect-ratio:1;background:#090b10}
 .thumbs button:focus-visible{outline:2px solid var(--accent)}
 .thumbs img{width:100%;height:100%;object-fit:cover;display:block}
@@ -130,12 +185,13 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;color:var(--mu
 .bar .fill{height:100%;background:var(--accent);border-radius:5px}
 .bar.low .fill{background:var(--crit)}
 .bar .pct{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
-.plotimg{width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+.plotimg{width:100%;border:1px solid var(--line);background:#fff}
+figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.78rem;color:var(--muted);line-height:1.45}figcaption strong{color:var(--ink);font-family:var(--sans)}
 .quote{border-left:3px solid var(--accent);padding:.2rem 0 .2rem .9rem;margin:0 0 .7rem;font-size:.85rem}
 .quote .who{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.25rem}
 .cavs{font-size:.78rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:.6rem;margin:0}
 .cavs b{color:var(--warn)}
-.evo{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:1.2rem}
+.evo{background:var(--panel);border:1px solid var(--line);padding:1.5rem}
 .evo .frame{display:grid;place-items:center;background:#090b10;border-radius:6px;overflow:hidden;margin:.8rem 0 .5rem}
 .evo img{max-width:100%;max-height:24rem;display:block}
 .evo input{width:100%;accent-color:var(--accent)}
@@ -149,13 +205,38 @@ td{padding:.55rem .6rem .55rem 0;border-bottom:1px solid var(--line);vertical-al
 .tablewrap{overflow-x:auto}
 .links{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.88rem}
 a{color:var(--live)}
+.claim-tree{border-top:4px solid var(--ink);padding-top:1.4rem}
+.tree-node{display:grid;grid-template-columns:3.4rem 1fr;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--line)}
+.tree-node.child{margin-left:2.2rem;padding:.72rem 0}.tree-id{font:700 .7rem var(--mono);color:var(--muted)}
+.tree-copy{font-size:.95rem}.tree-copy p{margin:0}.tree-evidence{font:400 .72rem var(--sans);color:var(--muted);margin-top:.3rem!important}
+.status{font:700 .62rem var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-left:.45rem}.status.evidenced{color:#386a51}.status.partial{color:var(--warn)}.status.open{color:#77828c}.status.todo{color:var(--crit)}
+.unresolved{margin-top:2.5rem;background:var(--ink);color:var(--ground);padding:1.6rem 1.8rem}.unresolved h3{font:400 1.5rem var(--display);margin:0 0 .8rem}.unresolved ol{margin:0;padding-left:1.2rem}.unresolved li{padding:.3rem 0;font-size:.88rem}
 #lightbox{position:fixed;inset:0;background:#090b10e6;display:none;place-items:center;z-index:10;cursor:zoom-out;padding:2rem}
 #lightbox.on{display:grid}
 #lightbox img{max-width:min(92vw,50rem);max-height:80vh;border-radius:6px}
 #lightbox .lcap{color:#e7e6df;font-family:var(--mono);font-size:.78rem;text-align:center;margin-top:.8rem;max-width:60ch}
-@media (prefers-reduced-motion: reduce){.chev{transition:none}}
+@media(max-width:900px){.page-shell{grid-template-columns:1fr;gap:2rem}.toc{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.toc .mark,.toc h2,.toc .legend{grid-column:1/-1}.toc .legend{display:none}header{padding-top:0}}
+@media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.chev{transition:none}}
 </style>
 
+<div class="page-shell">
+<aside class="toc" aria-label="Contents">
+  <div class="mark">Cultural<br>Selection</div>
+  <h2>Contents</h2>
+  <a href="#orientation">Orientation</a>
+  <a href="#claims">The findings</a>
+  <a href="#claim-tree">Claim tree</a>
+  <a href="#evo">A lineage evolves</a>
+  <a href="#retractions">Retractions</a>
+  <a href="#method">Method</a>
+  <div class="legend">
+    <span class="ev"><i></i>✓ evidenced</span>
+    <span class="pa"><i></i>◐ partial</span>
+    <span class="op"><i></i>○ open</span>
+    <span class="td"><i></i>TODO blocking</span>
+  </div>
+</aside>
 <main>
   <header>
     <div class="kicker" id="kicker"></div>
@@ -163,7 +244,17 @@ a{color:var(--live)}
     <p class="lede" id="lede"></p>
     <div class="stamp" id="stamp"></div>
   </header>
+  <section id="orientation">
+    <h2>How to read this research</h2>
+    <p class="section-intro">This is a causal sandbox, not a general theory of beauty. Identical models make culture unusually easy to isolate; model judges, synthetic societies and small replicate counts make human extrapolation unusually easy to overstate. The page separates what the runs directly show from what they merely suggest.</p>
+  </section>
   <section id="claims"></section>
+  <section class="claim-tree" id="claim-tree">
+    <h2>Where the argument stands</h2>
+    <p class="section-intro">Each leaf is written so that a sceptical reader can ask “show me” and be pointed to a number or an explicit missing experiment.</p>
+    <div id="tree"></div>
+    <div class="unresolved"><h3>Unresolved / TODO</h3><ol id="unresolved"></ol></div>
+  </section>
   <section class="evo" id="evo">
     <h2 id="evo-title"></h2>
     <p class="gnote" id="evo-note"></p>
@@ -171,17 +262,18 @@ a{color:var(--live)}
     <input type="range" id="evo-range" min="0" value="0" step="1" aria-label="artwork version slider">
     <div class="fcap" id="evo-cap"></div>
   </section>
-  <section>
+  <section id="retractions">
     <h2>The retractions ledger</h2>
     <p class="gnote" id="retr-intro"></p>
     <div class="tablewrap"><table class="retr"><thead><tr><th>Withdrawn claim</th><th>Why it was wrong</th><th>Caught by</th></tr></thead><tbody id="retr"></tbody></table></div>
   </section>
-  <section>
+  <section id="method">
     <h2>Method</h2>
     <div class="tablewrap"><table class="method"><tbody id="method"></tbody></table></div>
   </section>
   <section class="links" id="links"></section>
 </main>
+</div>
 
 <div id="lightbox" role="dialog" aria-label="enlarged artwork"><div><img id="lb-img" alt=""><div class="lcap" id="lb-cap"></div></div></div>
 
@@ -207,25 +299,31 @@ function bars(rows){
     `<div class="bar ${v<45?'low':''}"><span>${l}</span><span class="track"><span class="fill" style="width:${v}%"></span></span><span class="pct">${v}%</span></div>`).join('') + '</div>';
 }
 const plotAsset = id => ASSETS.assets.find(a => a.id === id) || byGroup('plots').find(a => a.id.includes(id.replace('plot-','')));
-$('claims').innerHTML = D.claims.map(c => `
+$('claims').innerHTML = '<h2>The findings</h2><p class="section-intro">Five claims survived the latest audit. Open each one for its evidence, images and limiting conditions.</p>' + D.claims.map((c,ci) => `
   <div class="claim" id="${c.id}" style="margin-bottom:.8rem">
     <button aria-expanded="false">
       <span class="cnum">${c.num}</span>
       <span class="ctitle">${c.title}</span>
-      <span class="badge ${c.verdict.includes('THREE')?'three':''}">${c.verdict} · ${c.prior}</span>
+      <span class="badge ${c.verdict.includes('MIXED')||c.verdict.includes('PARTIAL')?'three':''}">${c.verdict} · ${c.prior}</span>
       <span class="chev">›</span>
     </button>
     <div class="cbody">
       <p class="oneline">${c.one_liner}</p>
       <div class="nums">${c.numbers.map(n => `<div class="num"><div class="v">${n.v}</div><div class="l">${n.l}</div></div>`).join('')}</div>
       ${c.bars ? bars(c.bars) : ''}
-      ${c.gallery ? `<div><p class="gnote">${c.galleryNote}</p>${thumbs(c.gallery)}</div>` : ''}
-      ${c.gallery2 ? `<div><p class="gnote">${c.gallery2Note}</p>${thumbs(c.gallery2)}</div>` : ''}
-      ${c.plot && plotAsset(c.plot) ? `<img class="plotimg" loading="lazy" src="${plotAsset(c.plot).b64}" alt="chart for ${c.title}">` : ''}
+      ${c.gallery ? `<figure>${thumbs(c.gallery)}<figcaption><strong>Figure ${ci+1}a.</strong> ${c.galleryNote}</figcaption></figure>` : ''}
+      ${c.gallery2 ? `<figure>${thumbs(c.gallery2)}<figcaption><strong>Figure ${ci+1}b.</strong> ${c.gallery2Note}</figcaption></figure>` : ''}
+      ${c.plot && plotAsset(c.plot) ? `<figure><img class="plotimg" loading="lazy" src="${plotAsset(c.plot).b64}" alt="chart for ${c.title}"><figcaption><strong>Figure ${ci+1}${c.gallery?'b':'a'}.</strong> ${plotAsset(c.plot).caption}</figcaption></figure>` : ''}
       ${c.quotes ? '<div>' + ASSETS.quotes.map(q => `<div class="quote">“${q.text || q.quote}”<div class="who">an agent's private reasoning · ${q.world} · turn ${q.turn}</div></div>`).join('') + '</div>' : ''}
       <p class="cavs"><b>Fine print:</b> ${c.caveats}</p>
     </div>
   </div>`).join('');
+const statusLabel = {evidenced:'✓ evidenced',partial:'◐ partial',open:'○ open',todo:'TODO'};
+function treeNode(n, child=false){
+  return `<div class="tree-node ${child?'child':''}"><div class="tree-id">${n.id}</div><div class="tree-copy"><p>${n.claim} <span class="status ${n.status}">${statusLabel[n.status]}</span></p>${n.evidence?`<p class="tree-evidence">Evidence: ${n.evidence}</p>`:''}</div></div>`;
+}
+$('tree').innerHTML = D.claim_tree.map(n => treeNode(n) + n.children.map(c => treeNode(c,true)).join('')).join('');
+$('unresolved').innerHTML = D.unresolved.map(x => `<li>${x}</li>`).join('');
 document.querySelectorAll('.claim > button').forEach(b => b.addEventListener('click', () => {
   const c = b.parentElement; c.classList.toggle('open');
   b.setAttribute('aria-expanded', c.classList.contains('open'));
