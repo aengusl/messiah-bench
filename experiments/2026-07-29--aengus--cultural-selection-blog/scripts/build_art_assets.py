@@ -490,10 +490,8 @@ def add_degenerate():
 
 def add_plots():
     plots = [
-        ("culture_signal.png", "Culture differences dwarfed repeat-run noise",
-         "Between-culture variation divided by variation among independent repeats."),
-        ("revision_regimes.png", "Two cultures occupied clearly different revision regimes",
-         "Repeat worlds show shallow cave lineages and unusually broad psychedelic variation."),
+        ("blind_classification.png", "Every anonymous artwork was matched to its culture",
+         "All 36 shuffled works were assigned correctly; random guessing would average six."),
     ]
     for fname, label, caption in plots:
         p = RESULTS / fname

@@ -1,101 +1,74 @@
-"""Build claim-first figures used in the public essay."""
+"""Build the single quantitative figure used in the public essay."""
 
-import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import ListedColormap
 
 BASE = Path(__file__).resolve().parent.parent
 RESULTS = BASE / "results"
 GROUND, INK, MUTED, LINE = "#f3f0e8", "#1e211d", "#66675f", "#cbc5b7"
-RUST, TEAL = "#9b3f28", "#245c62"
+RUST, PALE = "#9b3f28", "#e4ded2"
 
 
-def save(fig, name):
-    fig.savefig(RESULTS / name, dpi=190, facecolor=GROUND, bbox_inches="tight")
+def blind_classification():
+    cultures = ["Ascetic", "Baroque", "Nihilist", "Ancestor", "Futurist", "Control"]
+    matrix = np.eye(6, dtype=int) * 6
+    fig = plt.figure(figsize=(12, 7.2), facecolor=GROUND)
+    grid = fig.add_gridspec(1, 2, width_ratios=[1.5, .72], left=.10, right=.96,
+                            top=.76, bottom=.20, wspace=.30)
+
+    ax = fig.add_subplot(grid[0, 0])
+    ax.set_facecolor(GROUND)
+    ax.imshow(matrix > 0, cmap=ListedColormap([PALE, RUST]), vmin=0, vmax=1,
+              aspect="equal")
+    for row in range(6):
+        for col in range(6):
+            value = matrix[row, col]
+            ax.text(col, row, str(value), ha="center", va="center",
+                    color="white" if value else MUTED, fontsize=13,
+                    fontweight="bold" if value else "normal")
+    ax.set_xticks(range(6), cultures, rotation=40, ha="right", fontsize=10, color=INK)
+    ax.set_yticks(range(6), cultures, fontsize=10, color=INK)
+    ax.set_xlabel("Classifier's answer", fontsize=11, color=MUTED, labelpad=10)
+    ax.set_ylabel("Culture that made the artwork", fontsize=11, color=MUTED, labelpad=10)
+    ax.set_xticks(np.arange(-.5, 6, 1), minor=True)
+    ax.set_yticks(np.arange(-.5, 6, 1), minor=True)
+    ax.grid(which="minor", color=GROUND, linewidth=3)
+    ax.tick_params(which="both", length=0)
+    ax.spines[:].set_visible(False)
+
+    score = fig.add_subplot(grid[0, 1])
+    score.set_facecolor(GROUND)
+    score.barh([1, 0], [36, 6], color=[RUST, PALE], height=.52)
+    score.text(34.8, 1, "36 / 36", ha="right", va="center", color="white",
+               fontsize=17, fontweight="bold")
+    score.text(7.2, 0, "6 / 36", ha="left", va="center", color=MUTED,
+               fontsize=14, fontweight="bold")
+    score.set_yticks([1, 0], ["Observed", "Random guessing"], fontsize=11, color=INK)
+    score.set_xlim(0, 38)
+    score.set_xlabel("Correct answers", fontsize=11, color=MUTED, labelpad=10)
+    score.set_xticks([0, 6, 12, 18, 24, 30, 36])
+    score.tick_params(axis="x", colors=MUTED)
+    score.tick_params(axis="y", length=0)
+    score.grid(axis="x", color=LINE, linewidth=.7)
+    score.spines[:].set_visible(False)
+
+    fig.suptitle("Every anonymous artwork was matched to its culture", x=.10, y=.94,
+                 ha="left", fontsize=22, fontweight="bold", color=INK)
+    fig.text(.10, .86, "A fresh classifier sorted 36 shuffled works into six known cultural labels.",
+             fontsize=12, color=MUTED)
+    fig.text(.10, .07,
+             "Six works per culture: two from each of three independently run worlds. The classifier saw art, not filenames or world labels.",
+             fontsize=9.5, color=MUTED)
+    fig.text(.10, .035,
+             "The test shows a visible culture signature; creed and founding image changed together, so it cannot separate their effects.",
+             fontsize=9.5, color=MUTED)
+    fig.savefig(RESULTS / "blind_classification.png", dpi=190, facecolor=GROUND,
+                bbox_inches="tight")
     plt.close(fig)
 
 
-def culture_signal():
-    labels = ["Artwork structure", "Artwork length", "Palette size"]
-    values = [449, 212, 90]  # audited v2 results
-    fig, ax = plt.subplots(figsize=(10, 5.8), facecolor=GROUND)
-    ax.set_facecolor(GROUND)
-    y = np.arange(3)
-    ax.hlines(y, 1, values, color=LINE, linewidth=3)
-    ax.scatter(values, y, s=170, color=RUST, edgecolor=GROUND, linewidth=2, zorder=3)
-    ax.axvline(1, color=INK, linewidth=1.2, alpha=.75)
-    for yi, value in zip(y, values):
-        ax.text(value * 1.12, yi, f"{value}×", va="center", fontsize=18,
-                fontweight="bold", color=RUST)
-    ax.text(1, 2.62, "repeat-run noise", ha="center", va="top", fontsize=9, color=MUTED)
-    ax.set_xscale("log")
-    ax.set_xlim(.65, 900)
-    ax.set_yticks(y, labels, fontsize=13, color=INK)
-    ax.invert_yaxis()
-    ax.set_xlabel("Between-culture variation ÷ variation among repeated worlds",
-                  fontsize=11, color=MUTED, labelpad=13)
-    ax.tick_params(axis="x", colors=MUTED)
-    ax.grid(axis="x", color=LINE, linewidth=.7, alpha=.65)
-    ax.spines[:].set_visible(False)
-    fig.suptitle("Culture differences dwarfed repeat-run noise", x=.11, y=.98,
-                 ha="left", fontsize=21, fontweight="bold", color=INK)
-    fig.text(.11, .90, "The same model varied far more between inherited traditions than within them.",
-             fontsize=11, color=MUTED)
-    fig.text(.11, .045,
-             "Structure = drawable HTML/SVG elements · length = HTML source bytes · palette = distinct rendered colours.",
-             fontsize=9, color=MUTED)
-    fig.text(.11, .015,
-             "18 worlds (six cultures × three repeats). 1× means culture differences equal repeat variation; creed and seed image varied together.",
-             fontsize=9, color=MUTED)
-    fig.subplots_adjust(left=.25, right=.91, top=.79, bottom=.24)
-    save(fig, "culture_signal.png")
-
-
-def revision_regimes():
-    raw = json.loads((RESULTS / "_depth_breadth_raw.json").read_text())
-    charters = ["botanical", "brutalist", "cave", "psychedelic", "quilt", "ukiyo"]
-    depth, variation = [], []
-    for charter in charters:
-        worlds = raw["charter_stats"][charter]["reps"]
-        depth.append([raw["world_stats"][w]["mean_depth"] for w in worlds])
-        variation.append([100 * raw["world_stats"][w]["mean_cv"] for w in worlds])
-    fig, axes = plt.subplots(1, 2, figsize=(11.5, 6.7), sharey=True, facecolor=GROUND)
-    highlights = {"cave": RUST, "psychedelic": TEAL}
-    panels = [(depth, "How long lineages kept revising", "Accepted versions per lineage"),
-              (variation, "How widely the artworks varied", "Relative variation in size, structure and palette (%)")]
-    for ax, (data, title, xlabel) in zip(axes, panels):
-        ax.set_facecolor(GROUND)
-        for i, (charter, pair) in enumerate(zip(charters, data)):
-            color = highlights.get(charter, "#87877f")
-            ax.plot(pair, [i, i], color=color, linewidth=2.4, alpha=.55)
-            ax.scatter(pair, [i, i], s=82, color=color, edgecolor=GROUND, linewidth=1.5, zorder=2)
-        ax.set_title(title, loc="left", fontsize=14, fontweight="bold", color=INK, pad=12)
-        ax.set_xlabel(xlabel, fontsize=10, color=MUTED, labelpad=10)
-        ax.grid(axis="x", color=LINE, linewidth=.7, alpha=.7)
-        ax.tick_params(axis="x", colors=MUTED)
-        ax.tick_params(axis="y", length=0)
-        ax.spines[:].set_visible(False)
-    axes[0].set_yticks(np.arange(6), [c.title() for c in charters], fontsize=11, color=INK)
-    axes[0].invert_yaxis()
-    axes[0].annotate("shallow", (3.0, 2), xytext=(4.5, 2.35), color=RUST, fontsize=9,
-                     arrowprops={"arrowstyle": "-", "color": RUST})
-    axes[1].annotate("broad", (59.4, 3), xytext=(39, 3.4), color=TEAL, fontsize=9,
-                     arrowprops={"arrowstyle": "-", "color": TEAL})
-    fig.suptitle("Two cultures occupied clearly different revision regimes", x=.10, y=.99,
-                 ha="left", fontsize=20, fontweight="bold", color=INK)
-    fig.text(.10, .925, "The extremes repeat; the four cultures in the middle overlap.", fontsize=11, color=MUTED)
-    fig.text(.10, .045,
-             "Revision length = mean accepted versions in each lineage. Variation = mean SD ÷ mean for source bytes, elements and colours.",
-             fontsize=8.7, color=MUTED)
-    fig.text(.10, .015,
-             "Two dots = two independent worlds per culture. Exploratory: n=12 worlds; cave-r1 contains five accepted works.",
-             fontsize=8.7, color=MUTED)
-    fig.subplots_adjust(left=.18, right=.98, top=.82, bottom=.20, wspace=.17)
-    save(fig, "revision_regimes.png")
-
-
 if __name__ == "__main__":
-    culture_signal()
-    revision_regimes()
+    blind_classification()

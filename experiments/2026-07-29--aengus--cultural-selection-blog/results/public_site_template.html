@@ -54,9 +54,9 @@
       "gallery": "v2-final",
       "caption_title": "The same kind of artist inherited a different visual world.",
       "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it.",
-      "plot": "plot-culture_signal",
-      "plotCaption_title": "Culture differences dwarfed repeat-run noise.",
-      "plotCaption": "Each ratio compares variation between six cultures with variation among three repeated worlds of the same culture. Artwork structure is the number of drawable HTML/SVG elements; artwork length is HTML source bytes; palette size is the number of distinct colours in the rendered image. A value of 1 would mean culture differences were no larger than repeat noise. Values of 90–449 therefore show a strong culture-level signature, while the bundled creed and founding image prevent us from assigning that signature to either channel alone."
+      "plot": "plot-blind_classification",
+      "plotCaption_title": "Every anonymous artwork was matched to its culture.",
+      "plotCaption": "A fresh classifier saw 36 shuffled, wordless artworks and sorted them among six known cultural labels. Rows show the culture that produced each work; columns show the classifier’s answer. Every work falls on the correct diagonal, six per culture. Random guessing would average six correct answers, not 36. This shows that the cultural signature was visible in the finished art; because creed and founding image changed together, it does not tell us which channel produced that signature."
     },
     {
       "num": "05", "title": "Finding two: culture shaped the room for variation",
@@ -67,10 +67,7 @@
       ],
       "gallery": "new-aesthetics",
       "caption_title": "Different cultures may permit different distances from tradition.",
-      "caption": "One mechanically selected late work from each of twelve newer worlds. The extremes repeat, but the evidence supports overlapping revision regimes—not six sealed genres.",
-      "plot": "plot-revision_regimes",
-      "plotCaption_title": "The extremes repeated; the middle cultures overlapped.",
-      "plotCaption": "Each dot is one independently run world. Revision length is the mean number of accepted canonical versions in each lineage. Visual variation is the average coefficient of variation—standard deviation divided by the mean—across HTML source length, drawable-element count and rendered colour count within that world. Both cave worlds revised relatively shallowly; both psychedelic worlds varied much more widely. The four middle cultures overlap, so the figure supports two repeated extremes rather than six distinct regimes."
+      "caption": "One mechanically selected late work from each of twelve newer worlds. Compare the two cave works with the two psychedelic works: the contrast motivates a hypothesis about conformity and expressive range, but does not by itself identify the cause."
     },
     {
       "num": "06", "title": "The emerging answer: distributed authorship",
@@ -141,7 +138,6 @@
         {"v": "extremes only", "l": "cave and psychedelic separate clearly; four middle cultures overlap"}
       ],
       "gallery": "new-aesthetics", "galleryNote": "One late canonical work from each replicate, selected mechanically rather than ranked for beauty.",
-      "plot": "plot-revision_regimes",
       "caveats": "This is descriptive, not an identified conformity effect. Six cultures with two replicates each is a small sample; cave-r1 contains five canonical works."
     },
     {
@@ -321,10 +317,10 @@ figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.8rem;color:var(--muted);
 .trace-tabs{display:flex;gap:.45rem;flex-wrap:wrap;margin:1rem 0}
 .trace-tabs button{border:1px solid var(--line);background:transparent;padding:.55rem .8rem;font:700 .68rem var(--mono);text-transform:uppercase;cursor:pointer;color:var(--muted)}
 .trace-tabs button.on,.trace-tabs button:hover,.trace-tabs button:focus-visible{background:var(--ink);border-color:var(--ink);color:var(--ground)}
-.trace-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(16rem,.9fr);gap:1.5rem;align-items:start}
-.trace-image{background:#090b10;min-height:24rem;display:grid;place-items:center;cursor:zoom-in;overflow:hidden}
-.trace-image img{display:block;max-width:100%;max-height:32rem}
-.trace-note{border-top:4px solid var(--accent);padding-top:1rem}
+.trace-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(16rem,.9fr);gap:1.5rem;align-items:stretch;height:34rem}
+.trace-image{background:#090b10;height:100%;display:grid;place-items:center;cursor:zoom-in;overflow:hidden}
+.trace-image img{display:block;width:100%;height:100%;object-fit:contain}
+.trace-note{border-top:4px solid var(--accent);padding:1rem .35rem 0 0;height:100%;overflow-y:auto;scrollbar-color:var(--line) transparent;scrollbar-width:thin}
 .trace-meta{font:700 .67rem var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
 .trace-note h3{font:400 1.8rem/1.08 var(--display);margin:.55rem 0 1rem}
 .trace-note blockquote{font-size:1rem;line-height:1.55;margin:0 0 1rem;padding-left:1rem;border-left:1px solid var(--line)}
@@ -354,7 +350,7 @@ a{color:var(--live)}
 #lightbox img{max-width:min(92vw,50rem);max-height:80vh;border-radius:6px}
 #lightbox .lcap{color:#e7e6df;font-family:var(--mono);font-size:.78rem;text-align:center;margin-top:.8rem;max-width:60ch}
 @media(max-width:900px){.page-shell{grid-template-columns:1fr;gap:2rem}.toc{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.toc .mark,.toc h2,.toc .legend{grid-column:1/-1}.toc .legend{display:none}header{padding-top:0}}
-@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.church-sequence{grid-template-columns:1fr}.claim-purpose,.trace-stage{grid-template-columns:1fr}.trace-image{min-height:15rem}.trace-steps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.church-sequence{grid-template-columns:1fr}.claim-purpose,.trace-stage{grid-template-columns:1fr}.trace-stage{height:auto}.trace-image{height:22rem}.trace-note{height:30rem}.trace-steps{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.essay-head{grid-template-columns:2rem 1fr}.essay-copy{margin-left:0}.essay-copy p{font-size:1.03rem}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.chev{transition:none}}
 </style>
