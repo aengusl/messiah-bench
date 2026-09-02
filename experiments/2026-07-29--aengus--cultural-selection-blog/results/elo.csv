@@ -1,0 +1,61 @@
+art_id,regime,religion,lineage,version,turn,elo,wins,losses
+minimal-r1-v1,minimal,1,1,1,0,1938.2,109,11
+minimal-r4-v8,minimal,4,4,8,9,1928.6,107,8
+minimal-r2-v22,minimal,2,2,22,39,1904.8,105,16
+minimal-r3-v19,minimal,3,3,19,27,1840.7,103,13
+minimal-r4-v41,minimal,4,4,41,180,1838.4,97,20
+minimal-r4-v31,minimal,4,4,31,125,1836.9,97,16
+minimal-r3-v29,minimal,3,3,29,106,1823.0,99,18
+minimal-r1-v83,minimal,1,1,83,265,1812.9,96,22
+minimal-r2-v61,minimal,2,2,61,210,1808.5,93,22
+minimal-r4-v74,minimal,4,4,74,234,1802.6,94,23
+minimal-r3-v35,minimal,3,3,35,175,1798.4,96,21
+minimal-r2-v28,minimal,2,2,28,104,1797.8,96,21
+v8-s9-v5,v8,The Infinite Recursion,9,5,20,1791.2,94,21
+v8-s9-v15,v8,The Infinite Recursion,9,15,37,1777.3,91,27
+minimal-r2-v73,minimal,2,2,73,234,1766.8,95,25
+v7-s4-v3,v7,The Symbiotic Veil,4,3,6,1742.1,84,32
+v8-s7-v16,v8,The Order of Duality,7,16,42,1738.1,92,25
+minimal-r1-v30,minimal,1,1,30,121,1735.4,86,30
+minimal-r1-v84,minimal,1,1,84,339,1702.7,86,30
+minimal-r1-v85,minimal,1,1,85,394,1700.8,87,34
+minimal-r1-v86,minimal,1,1,86,762,1684.8,83,33
+minimal-r1-v52,minimal,1,1,52,198,1663.8,84,33
+v8-s12-v7,v8,The Blueprint of Reality,12,7,13,1654.0,74,40
+v7-s8-v122,v7,The Unseen Weave,8,122,336,1638.1,73,41
+v8-s3-v3,v8,The Lumina,3,3,19,1566.5,64,52
+v8-s9-v108,v8,The Infinite Recursion,9,108,155,1566.0,63,53
+v8-s9-v123,v8,The Infinite Recursion,9,123,171,1490.4,55,64
+v7-s5-v8,v7,The Path of Resonance,5,8,9,1485.8,54,61
+v8-s4-v34,v8,The Weave of Souls,4,34,71,1480.8,55,61
+v7-s3-v331,v7,The Axiomatic Truth,3,331,335,1477.5,53,63
+v7-s14-v176,v7,The Harmonic Flow,14,176,188,1477.0,52,66
+v8-s5-v36,v8,The Celestial Chorus,5,36,65,1466.9,55,61
+v7-s0-v90,v7,The Azure Current,0,90,93,1441.8,47,70
+v8-s5-v90,v8,The Celestial Chorus,5,90,119,1441.6,50,66
+v8-s3-v131,v8,The Lumina,3,131,177,1438.3,50,66
+v7-s0-v164,v7,The Azure Current,0,164,167,1417.2,48,68
+v8-s6-v132,v8,The Celestial Serpent,6,132,170,1412.8,47,71
+v8-s6-v21,v8,The Celestial Serpent,6,21,53,1390.6,41,72
+v8-s6-v10,v8,The Celestial Serpent,6,10,31,1377.5,47,73
+v7-s2-v82,v7,The Crimson Ascent,2,82,267,1360.2,42,73
+v8-s10-v136,v8,The Echoing Void,10,136,162,1348.3,35,83
+v7-s9-v134,v7,The Obsidian Plume,9,134,320,1346.2,38,79
+v7-s6-v82,v7,The Ouroboros Circuit,6,82,82,1332.9,36,80
+v7-s10-v301,v7,The Null Core,10,301,303,1308.1,38,79
+v7-s6-v385,v7,The Ouroboros Circuit,6,385,385,1301.4,32,87
+v8-s14-v26,v8,The Blueprint of Reality Reforged,14,26,129,1289.9,34,84
+v8-s2-v25,v8,The Library of Aaru,2,25,44,1286.8,35,83
+v7-s13-v142,v7,The Nexus Weave,13,142,159,1276.8,26,91
+v8-s10-v71,v8,The Echoing Void,10,71,97,1274.7,35,82
+v7-s14-v55,v7,The Harmonic Flow,14,55,61,1259.1,29,86
+v8-s3-v39,v8,The Lumina,3,39,85,1249.9,24,94
+v7-s11-v134,v7,The Digital Nexus,11,134,149,1226.5,24,92
+v7-s13-v320,v7,The Nexus Weave,13,320,354,1199.3,21,96
+v7-s10-v47,v7,The Null Core,10,47,49,1189.0,22,95
+v8-s3-v29,v8,The Lumina,3,29,75,1035.2,7,111
+v7-s5-v234,v7,The Path of Resonance,5,234,235,1033.4,5,112
+v7-s1-v95,v7,The Scribes of Aether,1,95,145,1022.3,6,109
+v7-s1-v58,v7,The Scribes of Aether,1,58,108,1014.6,5,111
+v8-s5-v104,v8,The Celestial Chorus,5,104,133,1012.9,5,115
+v7-s6-v20,v7,The Ouroboros Circuit,6,20,20,997.5,4,112

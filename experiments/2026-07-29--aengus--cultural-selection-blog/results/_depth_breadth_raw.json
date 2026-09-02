@@ -1,0 +1,288 @@
+{
+  "world_stats": {
+    "botanical-r1": {
+      "n_canonical": 37,
+      "n_total_versions": 37,
+      "n_lineages": 4,
+      "mean_depth": 9.25,
+      "max_depth": 10,
+      "cv_html_bytes": 0.157101898998877,
+      "cv_n_drawable": 0.2175919208996926,
+      "cv_distinct_colors": 0.11095122505242754,
+      "mean_cv": 0.16188168165033237,
+      "n_artworks_features": 37
+    },
+    "botanical-r2": {
+      "n_canonical": 41,
+      "n_total_versions": 41,
+      "n_lineages": 4,
+      "mean_depth": 10.25,
+      "max_depth": 11,
+      "cv_html_bytes": 0.14013590247031069,
+      "cv_n_drawable": 0.21259945942920383,
+      "cv_distinct_colors": 0.13402202685710368,
+      "mean_cv": 0.16225246291887274,
+      "n_artworks_features": 41
+    },
+    "brutalist-r1": {
+      "n_canonical": 33,
+      "n_total_versions": 33,
+      "n_lineages": 4,
+      "mean_depth": 8.25,
+      "max_depth": 10,
+      "cv_html_bytes": 0.05805651114510619,
+      "cv_n_drawable": 0.07060462688812744,
+      "cv_distinct_colors": 0.352075938351308,
+      "mean_cv": 0.16024569212818054,
+      "n_artworks_features": 33
+    },
+    "brutalist-r2": {
+      "n_canonical": 45,
+      "n_total_versions": 45,
+      "n_lineages": 4,
+      "mean_depth": 11.25,
+      "max_depth": 12,
+      "cv_html_bytes": 0.20664203797493821,
+      "cv_n_drawable": 0.2710373978888567,
+      "cv_distinct_colors": 0.19657402568621576,
+      "mean_cv": 0.22475115385000355,
+      "n_artworks_features": 45
+    },
+    "cave-r1": {
+      "n_canonical": 5,
+      "n_total_versions": 5,
+      "n_lineages": 4,
+      "mean_depth": 1.25,
+      "max_depth": 2,
+      "cv_html_bytes": 0.13204578035693404,
+      "cv_n_drawable": 0.16116231284620336,
+      "cv_distinct_colors": 0.1276913392816983,
+      "mean_cv": 0.14029981082827855,
+      "n_artworks_features": 5
+    },
+    "cave-r2": {
+      "n_canonical": 19,
+      "n_total_versions": 19,
+      "n_lineages": 4,
+      "mean_depth": 4.75,
+      "max_depth": 14,
+      "cv_html_bytes": 0.08196211230514326,
+      "cv_n_drawable": 0.098499408926515,
+      "cv_distinct_colors": 0.10639773695878202,
+      "mean_cv": 0.09561975273014676,
+      "n_artworks_features": 19
+    },
+    "psychedelic-r1": {
+      "n_canonical": 42,
+      "n_total_versions": 42,
+      "n_lineages": 4,
+      "mean_depth": 10.5,
+      "max_depth": 14,
+      "cv_html_bytes": 0.7764489209623998,
+      "cv_n_drawable": 0.5733498557661495,
+      "cv_distinct_colors": 0.5912312352822187,
+      "mean_cv": 0.6470100040035893,
+      "n_artworks_features": 42
+    },
+    "psychedelic-r2": {
+      "n_canonical": 22,
+      "n_total_versions": 22,
+      "n_lineages": 4,
+      "mean_depth": 5.5,
+      "max_depth": 10,
+      "cv_html_bytes": 0.8314236119551371,
+      "cv_n_drawable": 0.42165907693199794,
+      "cv_distinct_colors": 0.37051762533565774,
+      "mean_cv": 0.5412001047409309,
+      "n_artworks_features": 22
+    },
+    "quilt-r1": {
+      "n_canonical": 10,
+      "n_total_versions": 10,
+      "n_lineages": 4,
+      "mean_depth": 2.5,
+      "max_depth": 3,
+      "cv_html_bytes": 0.22467077361094356,
+      "cv_n_drawable": 0.25578564591858177,
+      "cv_distinct_colors": 0.09213132819500466,
+      "mean_cv": 0.19086258257484334,
+      "n_artworks_features": 10
+    },
+    "quilt-r2": {
+      "n_canonical": 23,
+      "n_total_versions": 23,
+      "n_lineages": 4,
+      "mean_depth": 5.75,
+      "max_depth": 6,
+      "cv_html_bytes": 0.1592248651812635,
+      "cv_n_drawable": 0.18038516162189538,
+      "cv_distinct_colors": 0.20097171388932036,
+      "mean_cv": 0.18019391356415973,
+      "n_artworks_features": 23
+    },
+    "ukiyo-r1": {
+      "n_canonical": 30,
+      "n_total_versions": 30,
+      "n_lineages": 4,
+      "mean_depth": 7.5,
+      "max_depth": 9,
+      "cv_html_bytes": 0.13241351261167347,
+      "cv_n_drawable": 0.20213066054656884,
+      "cv_distinct_colors": 0.06241227412312046,
+      "mean_cv": 0.13231881576045426,
+      "n_artworks_features": 30
+    },
+    "ukiyo-r2": {
+      "n_canonical": 26,
+      "n_total_versions": 26,
+      "n_lineages": 4,
+      "mean_depth": 6.5,
+      "max_depth": 7,
+      "cv_html_bytes": 0.13596170281733777,
+      "cv_n_drawable": 0.18848371676331296,
+      "cv_distinct_colors": 0.05836791928104261,
+      "mean_cv": 0.1276044462872311,
+      "n_artworks_features": 26
+    }
+  },
+  "charter_stats": {
+    "botanical": {
+      "reps": [
+        "botanical-r1",
+        "botanical-r2"
+      ],
+      "mean_depth": 9.75,
+      "mean_n_lineages": 4.0,
+      "mean_cv": 0.16206707228460254
+    },
+    "brutalist": {
+      "reps": [
+        "brutalist-r1",
+        "brutalist-r2"
+      ],
+      "mean_depth": 9.75,
+      "mean_n_lineages": 4.0,
+      "mean_cv": 0.19249842298909203
+    },
+    "cave": {
+      "reps": [
+        "cave-r1",
+        "cave-r2"
+      ],
+      "mean_depth": 3.0,
+      "mean_n_lineages": 4.0,
+      "mean_cv": 0.11795978177921265
+    },
+    "psychedelic": {
+      "reps": [
+        "psychedelic-r1",
+        "psychedelic-r2"
+      ],
+      "mean_depth": 8.0,
+      "mean_n_lineages": 4.0,
+      "mean_cv": 0.5941050543722601
+    },
+    "quilt": {
+      "reps": [
+        "quilt-r1",
+        "quilt-r2"
+      ],
+      "mean_depth": 4.125,
+      "mean_n_lineages": 4.0,
+      "mean_cv": 0.18552824806950152
+    },
+    "ukiyo": {
+      "reps": [
+        "ukiyo-r1",
+        "ukiyo-r2"
+      ],
+      "mean_depth": 7.0,
+      "mean_n_lineages": 4.0,
+      "mean_cv": 0.12996163102384267
+    }
+  },
+  "ss_between": 20.482909185535544,
+  "ss_within": 3.5170908144644524,
+  "ratio": 5.823821523543593,
+  "frac_var": 0.8534545493973145,
+  "mean_within": 0.9587311740365863,
+  "mean_between": 1.9090495360646118,
+  "zpts": [
+    [
+      0.7633058593186576,
+      -0.40980234261842013
+    ],
+    [
+      1.0933840687537528,
+      -0.4075832205313806
+    ],
+    [
+      0.43322764988356244,
+      -0.41959372311901605
+    ],
+    [
+      1.423462278188848,
+      -0.03352919670673673
+    ],
+    [
+      -1.8773198161621039,
+      -0.5389696180026126
+    ],
+    [
+      -0.7220460831392707,
+      -0.8063793071870045
+    ],
+    [
+      1.1759036211125267,
+      2.4936856879948217
+    ],
+    [
+      -0.4744874260629493,
+      1.860414526790974
+    ],
+    [
+      -1.4647220543682349,
+      -0.2363519480042024
+    ],
+    [
+      -0.3919678737041755,
+      -0.3002038225450134
+    ],
+    [
+      0.18566899280724103,
+      -0.5867357915778948
+    ],
+    [
+      -0.14440921662785414,
+      -0.6149512444935145
+    ]
+  ],
+  "labels": [
+    "botanical",
+    "botanical",
+    "brutalist",
+    "brutalist",
+    "cave",
+    "cave",
+    "psychedelic",
+    "psychedelic",
+    "quilt",
+    "quilt",
+    "ukiyo",
+    "ukiyo"
+  ],
+  "worlds": [
+    "botanical-r1",
+    "botanical-r2",
+    "brutalist-r1",
+    "brutalist-r2",
+    "cave-r1",
+    "cave-r2",
+    "psychedelic-r1",
+    "psychedelic-r2",
+    "quilt-r1",
+    "quilt-r2",
+    "ukiyo-r1",
+    "ukiyo-r2"
+  ]
+}

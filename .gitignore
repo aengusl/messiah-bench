@@ -19,3 +19,18 @@ runs/*/sim.log
 runs/*/world_state.json
 runs/*/index.html
 runs/*/WATCHDOG.md
+
+# Ephemeral logs at repo root and in run dirs
+# (run data under runs/ and experiments/ is NOT ignored; experiment logs
+#  already tracked in git stay tracked)
+/*.log
+runs/*/*.log
+
+# Raw run data from the minimal-cultural-selection engine (~600MB, never committed)
+outputs/
+
+# Agent worktrees
+.claude/worktrees/
+
+# Auto-created by engine imports during tests
+src/runs/

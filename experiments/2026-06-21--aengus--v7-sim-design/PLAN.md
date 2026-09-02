@@ -2,9 +2,9 @@
 
 **Author:** Aengus Lynch · **Date:** 2026-06-21 · **Status:** ready to build
 **Scale:** 100 agents, run in parallel.
-**Consolidates:** the technical fixes in `/v7-plan.md` + the structural redesign decided in the
+**Consolidates:** the technical fixes in `docs/archive/v7-plan.md` + the structural redesign decided in the
 2026-06-21 design session. This doc is the authoritative v7 spec; where it conflicts with the old
-`/v7-plan.md`, this wins.
+`docs/archive/v7-plan.md`, this wins.
 
 ---
 
@@ -112,7 +112,7 @@ makes agents optimize for the curator's eye instead of spamming. (Without it, go
 
 ---
 
-## 7. Technical MUSTs (carried from /v7-plan.md, both confirmed by the v6 analysis)
+## 7. Technical MUSTs (carried from docs/archive/v7-plan.md, both confirmed by the v6 analysis)
 
 **7a. Rendering constraints** — enforce in a validator after each edit:
 
@@ -158,7 +158,7 @@ Also keep v6's good logging: full per-tick `agent_thoughts`, per-tick population
 3. **Model:** all Gemini 2.5 Flash (cheap, proven, ~$50) vs mixed families. *Recommend all-Flash* for
    v7 to isolate the structural changes; vary model later.
 4. **Run length:** ~400 ticks (v6 was 378 and still evolving). 
-5. **Mortality / Heidegger experiment** (from /v7-plan.md): *defer* — orthogonal to the locked-messiah +
+5. **Mortality / Heidegger experiment** (from docs/archive/v7-plan.md): *defer* — orthogonal to the locked-messiah +
    war thesis. Run it as v7.1 once the structural changes are validated.
 6. **Art-only communication** (no language beyond a minimal enum): *defer to v8* — high risk, needs a
    comprehension reward or it produces noise. Not in v7.

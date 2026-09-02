@@ -38,6 +38,8 @@ Messiahs can't duel civilians. They can only die through war. To kill a rival me
 
 The interesting question: what strategies do goal-directed AI agents develop when placed in a living ecology and told to win through persuasion?
 
+That was v1–v3. From v5 on the population is 100 agents, all Gemini 2.5 Flash, and each version changes one rule to see what the change does to the culture. Eight versions so far, plus a minimal two-verb engine that strips the game to *make* and *choose*.
+
 ## What we observed
 
 **V1: The Void Convergence.** 85 religions founded, 76 used "void" as their sacred color. Total memetic collapse into a single aesthetic. Gemini agents dominated through prophecy accuracy (98%). Haiku agents became artisan monks producing 60% of all sacraments. GPT-4o-mini agents free-rode, creating 7 sacraments in 720 ticks. Nobody died.
@@ -46,22 +48,39 @@ The interesting question: what strategies do goal-directed AI agents develop whe
 
 **Messiah Bench: The race.** Herald took an early lead with 5 followers by tick 14. Five messiahs competing for the souls of 100 civilians, each developing different conversion strategies without being told how to play.
 
+**v6: The art was the argument.** 1,390 reasoning passages cite sacrament quality as the reason for choosing a religion. Agents joined religions because the art was better. Messiahs invested in visual quality as recruitment strategy.
+
+**v7: Pluralism.** Lock messiahs to the religion they founded and the winner-take-all collapse stops: 12 religions survive, 9 of 10 messiahs survive, nobody wins.
+
+**v8: Governed art.** Artwork edits go through proposal-and-review instead of highest-soul-wins. The governance worked and the art stayed composed. The war kill-bonus meant to restart the contest did not — zero wars, and the messiahs died out.
+
+**The minimal engine.** Strip it to two verbs. *Make* creates a possible world, *choose* decides which ones become real. 24 agents, 1,000 turns, and a culture converges on one lineage anyway.
+
 ## Run it yourself
 
 ```bash
 git clone https://github.com/aengusl/messiah-bench
 cd messiah-bench
-cp .env.example .env  # add your API keys
 uv sync
-uv run python sim.py --debug --ticks=3  # 3-tick test
-uv run python sim.py                     # full 24h run
+printf 'GOOGLE_API_KEY=...\nANTHROPIC_API_KEY=...\nOPENAI_API_KEY=...\n' > .env
+
+uv run python src/sim.py --debug --ticks=3   # 3-tick smoke test
+bash scripts/launch_v8.sh                    # full v8 run, detached in tmux
+uv run pytest tests/ -q                      # tests
 ```
 
-API keys needed: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`
+`GOOGLE_API_KEY` is the one that matters from v5 on — every agent is Gemini Flash.
+`ANTHROPIC_API_KEY` and `OPENAI_API_KEY` are only needed for the mixed-model v1–v4 runs.
+
+## Layout
+
+`src/` the engines · `scripts/` launch, publish and build · `experiments/` dated
+experiment directories, where new work starts · `runs/` and `outputs/` raw run data ·
+`docs/` design docs and the archive. See [MAP.md](MAP.md) for the full tour.
 
 ## Cost
 
-A full 24-hour Religion & The Machine run (12 agents, 720 ticks) costs about $22. Messiah Bench (105 agents) costs more but stays under $100. All models are the cheapest tier: Haiku, GPT-4o-mini, Gemini Flash.
+A full 24-hour Religion & The Machine run (12 agents, 720 ticks) costs about $22. A 100-agent Messiah Bench run costs $65–$100. The minimal 1,000-turn run came in under $10. All models are the cheapest tier: Gemini Flash, Haiku, GPT-4o-mini.
 
 ## The exhibition
 

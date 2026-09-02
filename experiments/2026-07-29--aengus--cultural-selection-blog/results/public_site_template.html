@@ -1,0 +1,480 @@
+<title>Why Are Churches Beautiful? — Cultural Selection</title>
+<div id="assets" hidden>__ASSETS__</div>
+<div id="data" hidden>{
+  "updated": "2026-09-01",
+  "hero_kicker": "An eight-minute field report · Cultural selection",
+  "hero_title": "Why are churches beautiful?",
+  "hero_body": "Where does great art come from? We usually answer with artists: talent, taste, obsession. But a church is more than one person's imagination. It is inherited form, shared belief, patronage, rivalry and craft accumulating across generations. This project asks what culture contributes—and tries to separate those forces in a world where every artist begins with the same mind.",
+  "tldr": [
+    {"label":"Culture changes what the same mind creates","text":"Change a society's creed and visual inheritance, and otherwise identical agents make recognisably different art. A blind classifier identified 36 of 36 works correctly."},
+    {"label":"A tradition can have authors without one designer","text":"Each revision has a maker and a reason. No agent chooses the culture-level endpoint. Coherent styles accumulate from many local acts of copying, modification and adoption."},
+    {"label":"The deepest distinction is still open","text":"The runs combine explicit creeds, inherited images and social selection. They show that culture matters, but not yet how much guidance is articulated, tacit or embedded in what already exists."}
+  ],
+  "essay": [
+    {
+      "num": "01", "title": "The problem is larger than the artist",
+      "paragraphs": [
+        "Stand inside a great church and the usual story of art—one gifted person expressing an idea—feels incomplete. The building carries decisions made by people who never met: a plan inherited, symbols repeated, techniques taught, failures discarded and ambitions financed. No single maker contains the whole explanation.",
+        "That is the problem this research studies. What are the cultural forces behind art? Why do some forms persist, why do some traditions become distinctive, and when does competition improve a canon rather than simply narrowing it? Churches make the question vivid, but it applies to any art made inside a living tradition."
+      ]
+    },
+    {
+      "num": "02", "title": "Who designed the tradition?",
+      "paragraphs": [
+        "Some artistic decisions are explicit. A patron commissions a chapel. A manifesto rejects ornament. An artist decides to add another arch. Other constraints are harder to name. Makers inherit a sense of what looks finished, which departures feel possible and which forms belong together. A tradition may be highly ordered even when nobody designed that order as a whole.",
+        "This is the larger idea behind Joseph Henrich's <a href=\"https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/\" target=\"_blank\" rel=\"noopener\"><em>The WEIRDest People in the World</em></a>. Henrich argues that institutions can reshape psychology and social life over generations, producing consequences far beyond any original rule-maker's plan. His book is not a theory of church aesthetics. It supplies a useful frame: culture is not only what people consciously believe; it is also a historical process that changes the people doing the choosing.",
+        "For art, the resulting question is precise: how much of a style comes from decisions its makers can state, and how much comes from inherited examples, tacit expectations and the accumulated survival of earlier choices?"
+      ]
+    },
+    {
+      "num": "03", "title": "A small world where inheritance can be changed",
+      "paragraphs": [
+        "Human history cannot supply a clean control. So I built a deliberately small causal sandbox. Each society contains 24 copies of the same AI model, operating with the same settings and rules. Agents propose, adopt and revise artworks over hundreds of turns. Between societies, I change the founding creed and visual ancestor. The society—not the individual agent—is the experimental unit.",
+        "The agents do make explicit decisions. Their charters are visible, and their revision notes sometimes cite them directly. But no agent plans the final style of its world. Each sees a local inheritance, proposes a change and reacts to what others accept. This lets us observe how stated reasons and accumulated artifacts compose a result at a higher level than any one decision.",
+        "That distinction matters. These runs can show that culture causes divergence and that a global style can emerge from distributed choices. They cannot yet tell us what fraction of the effect is verbal doctrine, visual imitation, tacit convention or selection after the fact."
+      ],
+      "gallery": "v2-seeds",
+      "caption_title": "The experiment begins with ancestry, not a blank canvas.",
+      "caption": "The six founding images given to the second fleet. Later works are descendants of these seeds, allowing the experiment to measure cultural revision rather than pretend creation starts from nothing."
+    },
+    {
+      "num": "04", "title": "Finding one: culture became visible",
+      "paragraphs": [
+        "After 300 turns, six cultures still made different kinds of objects. Ascetic worlds converged on sparse black geometry. Baroque worlds built crimson and gold rosettes. Futurist worlds retained grids, pyramids and starfields. An independent classifier saw 36 anonymised artworks and assigned every one to the correct culture. Chance would be expected to identify six.",
+        "The important word is <em>inheritance</em>. An earlier experiment gave every culture the same circular seed. Their doctrines diverged, but their compositions kept returning to the circle. Once creed and visual ancestry varied together, the structural distance between cultures became 449 times the variation among repeated worlds of the same culture. Culture did not conjure style from pure ideas; it coordinated what to preserve while revising what came before.",
+        "This is the most consequential result because it bears directly on the origin of style. It says that variation between traditions need not begin with different kinds of minds. A common intelligence, placed inside a different inheritance, can learn to extend a different visual world. Artists and historians of style have the most to inspect here; the images matter more than the model-judge ranking."
+      ],
+      "gallery": "v2-final",
+      "caption_title": "The same kind of artist inherited a different visual world.",
+      "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it.",
+      "plot": "plot-culture_signal",
+      "plotCaption_title": "Culture differences dwarfed repeat-run noise.",
+      "plotCaption": "Across eighteen worlds, differences between inherited traditions were 90 to 449 times the variation among repeats of the same culture. Creed and founding image changed together."
+    },
+    {
+      "num": "05", "title": "Finding two: culture shaped the room for variation",
+      "paragraphs": [
+        "A second fleet suggests that traditions shape not only what art looks like, but how freely it moves. Cave worlds changed relatively shallowly. Psychedelic worlds ranged much more widely in colour, size and structure. Across twelve worlds, charter identity described 85.3 percent of the measured variation in accepted revision depth and visual dispersion; repeated worlds with the same charter sat about twice as close as worlds with different charters.",
+        "This looks like a spectrum between conformity and expressivity: some traditions preserve a narrow grammar, while others license larger departures. But that interpretation is not yet causal. The charters themselves explicitly differ—the cave creed says to draw only what has been hunted or feared; the psychedelic creed says a picture that lets the viewer rest has failed. There are only two worlds per charter, and the four cultures between the extremes overlap.",
+        "The result is interesting because it suggests a better experimental program. Instead of changing aesthetic content, hold the founding art fixed and vary the social structure: reward conformity or novelty; centralize patronage or distribute adoption; isolate native populations or allow migration and cultural mixing. Then ask what kinds of traditions—and what kinds of art—arise."
+      ],
+      "gallery": "new-aesthetics",
+      "caption_title": "Different cultures may permit different distances from tradition.",
+      "caption": "One mechanically selected late work from each of twelve newer worlds. The extremes repeat, but the evidence supports overlapping revision regimes—not six sealed genres.",
+      "plot": "plot-revision_regimes",
+      "plotCaption_title": "The extremes repeated; the middle cultures overlapped.",
+      "plotCaption": "Cave lineages stopped sooner, while psychedelic art varied much more widely. Each dot is one world. With two repeats per culture, this motivates the next experiment rather than settling a taxonomy."
+    },
+    {
+      "num": "06", "title": "The emerging answer: distributed authorship",
+      "paragraphs": [
+        "Where does art come from? The strongest answer here is not ‘the artist’ or ‘the culture,’ but a loop between them. Artists make explicit local choices inside an inheritance they did not choose. Their work becomes part of the inheritance facing the next maker. Selection—attention, adoption, patronage, conformity—decides which parts of that history remain available.",
+        "The result is <strong>distributed authorship</strong>. Every artifact has makers, but the tradition has no single designer. This is the level at which culture can be more involved than we notice: it shapes the option set, the visual grammar and the standard of a plausible next move before any artist begins explaining a decision.",
+        "The experiment does not yet measure how much of that guidance is tacit. Its explicit charters are a major causal input. The next decisive study should cross verbal rules, visual ancestors and social structures independently, then ask agents what they intended and compare those accounts with what the lineages actually inherited. That is how we move from ‘culture matters’ to a quantitative account of how culture thinks through artists."
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1", "num": "Claim 1",
+      "title": "Culture became visible in the work",
+      "why": "This is the foundational result: it establishes culture as a causal input to style, rather than merely a label applied after art exists.",
+      "audience": "Artists, art historians, cultural-evolution researchers and anyone interested in where style comes from.",
+      "one_liner": "I ran eighteen worlds for 300 turns. Each began with one of six creeds and its own founding image; every agent otherwise used the same model and settings. At the end, an independent classifier matched all 36 anonymised samples to the right culture. The spare ink, gilded rosettes, neon wreckage and wireframe monuments were not individual signatures. They were inherited ways of seeing.",
+      "verdict": "CONFIRMED", "prior": "36/36 blind test",
+      "numbers": [
+        {"v": "36/36", "l": "blind culture classification of anonymized artworks; chance is 1 in 6"},
+        {"v": "F = 449", "l": "between-culture vs within-culture variance in artwork structure (a shared-seed control run scored 0.74 — the founding image is heritable)"},
+        {"v": "4.7–51×", "l": "how much more each world uses its own creed's vocabulary than a creed-less control world does"}
+      ],
+      "gallery": "v2-final", "galleryNote": "Final-generation artworks, three per culture — click to enlarge.",
+      "gallery2": "v2-seeds", "gallery2Note": "The founding DNA each culture inherited at turn 0.",
+      "quotes": true,
+      "caveats": "Three replicate worlds per creed at temperature 0.9. An earlier fleet that shared one seed artwork diverged in language but not in composition — every world kept the same circle. Ancestry matters as much as ideology."
+    },
+    {
+      "id": "c2", "num": "Claim 2",
+      "title": "The tradition had many authors but no central designer",
+      "why": "This is the bridge from individual intention to culture-level order. It explains how coherent styles can be real without being anyone's complete plan.",
+      "audience": "People interested in emergence, collective intelligence, institutions and the limits of individualist explanations of art.",
+      "one_liner": "Twenty-four agents made local proposals, gave reasons and adopted one another's revisions. No role specified the final form of a culture. Yet repeated worlds developed coherent, recognisable styles. The endpoint was not inexplicable, but it was distributed across a sequence of choices no participant controlled as a whole.",
+      "verdict": "SUPPORTED", "prior": "inspect the lineage",
+      "numbers": [
+        {"v": "24 agents", "l": "independent local decision-makers in each society"},
+        {"v": "300 turns", "l": "over which proposals, adoptions and revisions accumulated"},
+        {"v": "36/36", "l": "the resulting culture-level signature remained perfectly classifiable"}
+      ],
+      "quotes": true,
+      "caveats": "This supports distributed authorship, not unconscious authorship. Agents often state explicit aesthetic reasons and can see their charter. The emergent object is the culture-level trajectory, not necessarily each local choice."
+    },
+    {
+      "id": "c3", "num": "Claim 3",
+      "title": "How much cultural guidance was unspoken remains unknown",
+      "why": "This is the deep unresolved question. Answering it would distinguish direct instruction from inherited taste, tacit convention and selection.",
+      "audience": "Cognitive scientists, anthropologists, artists and researchers of tacit knowledge or cultural transmission.",
+      "one_liner": "The experiment deliberately combines a written creed, a visible founding image and a history of accepted work. Agents sometimes cite the creed explicitly; they also preserve visual structures that were never stated as rules. We know the bundle changes art. We have not yet identified the contribution of each channel.",
+      "verdict": "OPEN QUESTION", "prior": "not identified",
+      "numbers": [
+        {"v": "explicit", "l": "agents can read the charter and sometimes cite it in revision notes"},
+        {"v": "inherited", "l": "a shared circular seed persisted across otherwise different first-fleet cultures"},
+        {"v": "unmeasured", "l": "the share attributable to tacit convention or unarticulated visual learning"}
+      ],
+      "caveats": "Private model reasoning is not a transparent measure of cognition, and absence from a written reason would not prove an influence was unconscious. A factorial intervention is needed, not a stronger interpretation of the current traces."
+    },
+    {
+      "id": "c4", "num": "Claim 4",
+      "title": "Cultures may set different balances of conformity and expression",
+      "why": "This moves beyond visual genre toward a theory of cultural creativity: traditions may shape how far a legitimate revision is allowed to travel.",
+      "audience": "Artists, creative organizations, cultural sociologists and researchers studying innovation versus conformity.",
+      "one_liner": "In the newer fleet, cave worlds revised shallowly while psychedelic worlds ranged widely across colour, size and structure. Replicates of the same culture tended to sit closer together. The extremes are suggestive; the middle cultures overlap, and the charters explicitly encode different attitudes toward deviation.",
+      "verdict": "PARTIAL", "prior": "2 replicates each",
+      "numbers": [
+        {"v": "85.3%", "l": "descriptive depth/dispersion variance associated with charter identity"},
+        {"v": "0.96 vs 1.91", "l": "within-charter versus between-charter distance"},
+        {"v": "extremes only", "l": "cave and psychedelic separate clearly; four middle cultures overlap"}
+      ],
+      "gallery": "new-aesthetics", "galleryNote": "One late canonical work from each replicate, selected mechanically rather than ranked for beauty.",
+      "plot": "plot-revision_regimes",
+      "caveats": "This is descriptive, not an identified conformity effect. Six cultures with two replicates each is a small sample; cave-r1 contains five canonical works."
+    },
+    {
+      "id": "c5", "num": "Claim 5",
+      "title": "The next test changes social structure, not aesthetic content",
+      "why": "This experiment would reveal whether institutions generate artistic character rather than merely transmitting a supplied style.",
+      "audience": "Researchers of institutions, governance, cultural mixing, organizational creativity and AI-agent societies.",
+      "one_liner": "Hold the visual ancestor and creed fixed, then independently vary conformity pressure, hierarchy and population mixing. Compare centralized patronage with distributed adoption; cultural isolation with migration; rewards for canonical fidelity with rewards for novelty. Inspect both the art and the revision traces.",
+      "verdict": "TODO", "prior": "research agenda",
+      "numbers": [
+        {"v": "conformity", "l": "reward canonical fidelity ↔ reward surprising deviation"},
+        {"v": "hierarchy", "l": "central patron/curator ↔ distributed adoption"},
+        {"v": "population", "l": "isolated native traditions ↔ migration and cultural mixing"}
+      ],
+      "caveats": "This is a proposed factorial fleet, not a completed result. It should use identical founding art and doctrine across cells so institutional effects are interpretable."
+    }
+  ],
+  "claim_tree": [
+    {"id":"C1","status":"partial","claim":"Culture causally changes what otherwise identical makers produce.","children":[
+      {"id":"C1.1","status":"evidenced","claim":"A blind classifier assigned 36 of 36 v2 artworks to the correct culture.","evidence":"LOG.md (2026-08-06 21:10); keyed blind set recorded in results/art_assets.json; chance expectation 6/36"},
+      {"id":"C1.2","status":"evidenced","claim":"Charter identity produced between/within feature ratios of 449 for drawable elements, 212 for bytes and 90 for colour count in v2.","evidence":"v2 fleet; 18 worlds"},
+      {"id":"C1.3","status":"partial","claim":"An earlier shared-seed fleet retained the same circular composition across different creeds, showing that visual ancestry constrains doctrine.","evidence":"v1 versus v2 structural comparison; n_drawable F-ratio 0.74 versus 449"}]},
+    {"id":"C2","status":"partial","claim":"Coherent culture-level styles can arise from distributed local choices without a central designer.","children":[
+      {"id":"C2.1","status":"evidenced","claim":"Each world accumulated proposals and adoptions from 24 agents; no role selected a target final style.","evidence":"simulation rules and accepted-version histories"},
+      {"id":"C2.2","status":"evidenced","claim":"Matched Open Circuit lineages visibly diverged inside ascetic, baroque and charter-free worlds.","evidence":"interactive trace reader; six accepted snapshots per world"},
+      {"id":"C2.3","status":"partial","claim":"The culture-level trajectory was unplanned even when individual revisions cited explicit aesthetic reasons.","evidence":"accepted-version reasons in outputs/2026-08-06-twin-worlds-v2"}]},
+    {"id":"C3","status":"open","claim":"Some artistic guidance is transmitted without being explicitly represented by the maker.","children":[
+      {"id":"C3.1","status":"evidenced","claim":"The present design bundles a written charter, visible ancestor and adoption history, so their separate effects are not identified.","evidence":"v2 design and preregistration"},
+      {"id":"C3.2","status":"open","claim":"The fraction of artistic divergence caused by explicit doctrine versus visual inheritance or tacit convention is unknown.","evidence":"Requires factorial ablation; traces alone cannot identify it"},
+      {"id":"C3.3","status":"todo","claim":"Cross charter presence, visual ancestor and access to lineage history independently.","evidence":"Proposed 2×2×2 causal design"}]},
+    {"id":"C4","status":"partial","claim":"Cultures may create different balances between conformity and expressive range.","children":[
+      {"id":"C4.1","status":"partial","claim":"Charter identity accounts descriptively for 85.3% of accepted-depth and visual-dispersion variance across 12 worlds.","evidence":"results/depth_breadth_summary.md"},
+      {"id":"C4.2","status":"partial","claim":"Cave and psychedelic worlds separate at the extremes while four middle cultures overlap.","evidence":"two replicates per culture; cave-r1 is sparse"},
+      {"id":"C4.3","status":"todo","claim":"Hold aesthetics fixed and manipulate conformity rewards to test whether the social rule causes expressive range.","evidence":"Proposed fleet"}]},
+    {"id":"C5","status":"todo","claim":"Hierarchy and population structure may generate distinct artistic traditions.","children":[
+      {"id":"C5.1","status":"todo","claim":"Compare centralized patronage with distributed proposal and adoption.","evidence":"Proposed hierarchy intervention"},
+      {"id":"C5.2","status":"todo","claim":"Compare isolated native populations with migration and cultural mixing.","evidence":"Proposed population intervention"},
+      {"id":"C5.3","status":"open","claim":"Human viewers recognise, value and explain the resulting differences.","evidence":"Requires blinded human study"}]}
+  ],
+  "unresolved": [
+    "Factor verbal charter, visual ancestor and lineage-history access independently to identify explicit versus inherited guidance.",
+    "Run the social-structure fleet: conformity versus novelty, centralized patronage versus distributed adoption, isolation versus migration.",
+    "Add replicates before treating conformity/expressivity regimes as inferential rather than descriptive.",
+    "Run a blinded human recognisability study, followed by interviews about which visual cues people used."
+  ],
+  "evolution": {
+    "title": "Watch one culture's art evolve",
+    "note": "One lineage, founding seed to final form, three hundred turns of descent with modification. Drag the slider.",
+    "group": "v2-evolution"
+  },
+  "method": [
+    {"k": "The machinery", "v": "33 simulated societies (24 agents each, all Gemini 2.5 Flash), 6,400+ blind pairwise judgments by a two-model panel, independent audit agents, pre-registered designs"},
+    {"k": "The perfect control", "v": "every agent is the same model, same weights, same seed — culture is the only variable"}
+  ],
+  "links": [
+    {"label": "Joseph Henrich — The WEIRDest People in the World", "url": "https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/"},
+    {"label": "Cultural evolution—of the arts", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13150773/"},
+    {"label": "Twin Worlds — full evidence deep-dive", "url": "/cultural-selection/twin-worlds/"},
+    {"label": "Messiah Bench — earlier civilizations & galleries", "url": "/messiah-bench/"},
+    {"label": "Code & data", "url": "https://github.com/aengusl/messiah-bench"}
+  ]
+}</div>
+
+<style>
+:root {
+  --ink:#1e211d; --ground:#f3f0e8; --panel:#faf8f2; --line:#cbc5b7; --muted:#66675f;
+  --accent:#9b3f28; --accent-soft:#9b3f2814; --live:#245c62; --warn:#9b641f; --crit:#9b3f28;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+  --display:'Bodoni 72','Didot','Iowan Old Style',Georgia,serif;
+  --sans:'Avenir Next','Gill Sans',Candara,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ground);color:var(--ink);font-family:var(--serif);line-height:1.62;margin:0;padding:0}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E")}
+.page-shell{max-width:92rem;margin:0 auto;display:grid;grid-template-columns:15rem minmax(0,54rem);gap:5.5rem;padding:3rem clamp(1.25rem,4vw,4.5rem) 7rem}
+.toc{position:sticky;top:2rem;align-self:start;border-top:4px solid var(--ink);padding-top:1rem;font-family:var(--sans)}
+.toc .mark{font-family:var(--display);font-size:1.6rem;line-height:1;margin-bottom:2rem}
+.toc h2{margin-bottom:.65rem}
+.toc a{display:block;text-decoration:none;color:var(--muted);font-size:.76rem;line-height:1.35;padding:.38rem 0;border-bottom:1px solid transparent}
+.toc a:hover,.toc a:focus-visible{color:var(--accent);border-color:var(--accent)}
+.toc .legend{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--line);display:grid;gap:.45rem;font:600 .66rem var(--mono);color:var(--muted)}
+.legend i{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;margin-right:.45rem;background:var(--line)}
+.legend .ev i{background:#386a51}.legend .pa i{background:var(--warn)}.legend .op i{background:#77828c}.legend .td i{background:var(--crit)}
+main{min-width:0;display:flex;flex-direction:column;gap:4rem}
+.kicker{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.16em;color:var(--accent)}
+h1{font-family:var(--display);font-size:clamp(3.5rem,8vw,6.8rem);font-weight:400;letter-spacing:-.055em;margin:.45rem 0 0;text-wrap:balance;line-height:.88;max-width:9ch}
+header{padding:2rem 0 4rem;border-bottom:1px solid var(--ink);position:relative}
+header:after{content:"01";position:absolute;right:0;top:0;font:400 7rem/1 var(--display);color:var(--accent-soft)}
+header .lede{font-size:1.2rem;margin:2rem 0 0;max-width:54ch;line-height:1.58}
+.stamp{font-family:var(--mono);font-size:.72rem;color:var(--muted);margin-top:.9rem}
+h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;color:var(--muted);margin:0 0 .9rem}
+.section-intro{font-size:1.05rem;max-width:58ch;margin:-.25rem 0 1.5rem}
+.brief{background:var(--ink);color:var(--ground);padding:clamp(1.4rem,4vw,2.4rem);position:relative;overflow:hidden}
+.brief:after{content:"03";position:absolute;right:-.25rem;bottom:-1.6rem;font:400 8rem/1 var(--display);color:#ffffff0b}
+.brief h2{color:#d8d2c5}.brief-intro{font:400 clamp(1.45rem,3vw,2.1rem)/1.15 var(--display);max-width:26ch;margin:.2rem 0 1.6rem}
+.brief-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;position:relative;z-index:1}
+.brief-item{border-top:1px solid #f3f0e850;padding-top:.8rem}.brief-num{font:700 .65rem var(--mono);color:#d48a70}
+.brief-item h3{font:500 .92rem/1.25 var(--sans);margin:.45rem 0;color:#fff}.brief-item p{font-size:.84rem;line-height:1.5;color:#d8d2c5;margin:0}
+.essay{border-top:4px solid var(--ink);padding-top:1.4rem}
+.essay-chapter{padding:1.2rem 0 3.6rem;border-bottom:1px solid var(--line)}
+.essay-chapter:last-child{border-bottom:0;padding-bottom:0}
+.essay-head{display:grid;grid-template-columns:3rem 1fr;gap:1rem;align-items:start;margin-bottom:1.2rem}
+.essay-roman{font:700 .7rem var(--mono);color:var(--accent);padding-top:.45rem}
+.essay h3{font:400 clamp(1.8rem,4vw,2.65rem)/1.05 var(--display);letter-spacing:-.025em;margin:0;max-width:18ch}
+.essay-copy{max-width:43rem;margin-left:4rem}
+.essay-copy p{font-size:1.08rem;line-height:1.72;margin:0 0 1.15rem}
+.essay-copy p:first-child:first-letter{font:400 3.5rem/.8 var(--display);float:left;color:var(--accent);padding:.14rem .38rem 0 0}
+.essay-figure{margin:2rem 0 0}
+.essay-figure .thumbs{grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+.essay-figure .thumbs button{border-radius:0}
+.essay-figure figcaption{max-width:67ch;margin-top:1rem}
+.essay-figure figcaption strong{display:block;font:600 .9rem/1.35 var(--sans);color:var(--ink);margin-bottom:.2rem}
+.paged-gallery{border-top:1px solid var(--line);padding-top:.8rem}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
+.gallery-grid button{all:unset;cursor:zoom-in;overflow:hidden;border:1px solid var(--line);position:relative;aspect-ratio:1;background:#090b10}
+.gallery-grid button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gallery-grid img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.gallery-grid button:hover img{transform:scale(1.025)}
+.gallery-grid .cap{position:absolute;inset:auto 0 0 0;background:#090b10cc;color:#e7e6df;font-size:.62rem;padding:.28rem .4rem;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gallery-controls{display:flex;align-items:center;justify-content:flex-end;gap:.65rem;margin-bottom:.7rem;font:600 .68rem var(--mono);color:var(--muted)}
+.gallery-controls button{border:1px solid var(--line);background:transparent;color:var(--ink);width:2rem;height:2rem;cursor:pointer;font-size:1rem}
+.gallery-controls button:hover:not(:disabled),.gallery-controls button:focus-visible{border-color:var(--accent);color:var(--accent)}
+.gallery-controls button:disabled{opacity:.25;cursor:default}.gallery-position{min-width:5rem;text-align:center;font-variant-numeric:tabular-nums}
+.claim{background:transparent;border-top:1px solid var(--ink);overflow:hidden}
+.claim>button{all:unset;box-sizing:border-box;display:flex;width:100%;justify-content:space-between;align-items:baseline;gap:1rem;padding:1rem 1.2rem;cursor:pointer;flex-wrap:wrap}
+.claim>button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.claim>button:hover{background:var(--accent-soft)}
+.cnum{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.ctitle{font-family:var(--display);font-size:1.5rem;letter-spacing:-.015em;flex:1 1 20rem}
+.badge{font-family:var(--mono);font-size:.68rem;padding:.2rem .55rem;border-radius:99px;border:1px solid var(--accent);color:var(--accent);white-space:nowrap}
+.badge.three{border-color:var(--warn);color:var(--warn)}
+.chev{color:var(--muted);transition:transform .2s}
+.claim.open .chev{transform:rotate(90deg)}
+.cbody{display:none;padding:.6rem 1.2rem 2rem;flex-direction:column;gap:1.4rem}
+.claim.open .cbody{display:flex}
+.oneline{margin:0;font-size:1.06rem;max-width:61ch}
+.claim-purpose{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.claim-purpose div{border-top:1px solid var(--line);padding-top:.6rem;font-size:.8rem;line-height:1.5;color:var(--muted)}
+.claim-purpose b{display:block;font:700 .62rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.6rem}
+.num{border-left:2px solid var(--accent);padding:.25rem .8rem;background:linear-gradient(90deg,var(--accent-soft),transparent)}
+.num .v{font-family:var(--mono);font-size:1rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.num .l{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+.gnote{font-size:.78rem;color:var(--muted);margin:0 0 .4rem}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:.65rem}
+.thumbs button{all:unset;cursor:zoom-in;border-radius:5px;overflow:hidden;border:1px solid var(--line);position:relative;aspect-ratio:1;background:#090b10}
+.thumbs button:focus-visible{outline:2px solid var(--accent)}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.thumbs .cap{position:absolute;inset:auto 0 0 0;background:#090b10cc;color:#e7e6df;font-size:.62rem;padding:.2rem .35rem;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{display:flex;flex-direction:column;gap:.35rem}
+.bar{display:grid;grid-template-columns:7.5rem 1fr 3rem;gap:.6rem;align-items:center;font-size:.8rem}
+.bar .track{height:10px;background:var(--accent-soft);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:5px}
+.bar.low .fill{background:var(--crit)}
+.bar .pct{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.plotimg{width:100%;border:1px solid var(--line);background:#fff}
+figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.8rem;color:var(--muted);line-height:1.5}figcaption strong{color:var(--ink);font-family:var(--sans)}
+.quote{border-left:3px solid var(--accent);padding:.2rem 0 .2rem .9rem;margin:0 0 .7rem;font-size:.85rem}
+.quote .who{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.25rem}
+.cavs{font-size:.78rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:.6rem;margin:0}
+.cavs b{color:var(--warn)}
+.evo{background:var(--panel);border:1px solid var(--line);padding:1.5rem}
+.evo .frame{display:grid;place-items:center;background:#090b10;border-radius:6px;overflow:hidden;margin:.8rem 0 .5rem}
+.evo img{max-width:100%;max-height:24rem;display:block}
+.evo input{width:100%;accent-color:var(--accent)}
+.evo .fcap{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:center;margin-top:.3rem}
+.trace-reader{background:var(--panel);border:1px solid var(--line);padding:clamp(1.2rem,3vw,2rem)}
+.trace-tabs{display:flex;gap:.45rem;flex-wrap:wrap;margin:1rem 0}
+.trace-tabs button{border:1px solid var(--line);background:transparent;padding:.55rem .8rem;font:700 .68rem var(--mono);text-transform:uppercase;cursor:pointer;color:var(--muted)}
+.trace-tabs button.on,.trace-tabs button:hover,.trace-tabs button:focus-visible{background:var(--ink);border-color:var(--ink);color:var(--ground)}
+.trace-stage{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(16rem,.9fr);gap:1.5rem;align-items:start}
+.trace-image{background:#090b10;min-height:24rem;display:grid;place-items:center;cursor:zoom-in;overflow:hidden}
+.trace-image img{display:block;max-width:100%;max-height:32rem}
+.trace-note{border-top:4px solid var(--accent);padding-top:1rem}
+.trace-meta{font:700 .67rem var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+.trace-note h3{font:400 1.8rem/1.08 var(--display);margin:.55rem 0 1rem}
+.trace-note blockquote{font-size:1rem;line-height:1.55;margin:0 0 1rem;padding-left:1rem;border-left:1px solid var(--line)}
+.trace-guide{font:600 .83rem/1.5 var(--sans);background:var(--accent-soft);padding:.75rem .85rem;margin:0 0 1rem}.trace-guide b{color:var(--accent)}
+.trace-doctrine{font-size:.78rem;color:var(--muted);line-height:1.5}
+.trace-disclosure{font:400 .7rem/1.5 var(--sans);color:var(--muted);border-top:1px dashed var(--line);padding-top:.7rem;margin-top:1rem}
+.trace-steps{display:grid;grid-template-columns:repeat(6,1fr);gap:.45rem;margin-top:1rem}
+.trace-steps button{all:unset;cursor:pointer;border:2px solid transparent;position:relative;background:#090b10;aspect-ratio:1;overflow:hidden}
+.trace-steps button.on{border-color:var(--accent)}.trace-steps button:focus-visible{outline:2px solid var(--accent)}
+.trace-steps img{width:100%;height:100%;object-fit:cover;display:block;opacity:.72}.trace-steps button.on img,.trace-steps button:hover img{opacity:1}
+.trace-steps span{position:absolute;right:.2rem;bottom:.15rem;color:#fff;background:#090b10cc;font:700 .6rem var(--mono);padding:.08rem .25rem}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--line)}
+td{padding:.55rem .6rem .55rem 0;border-bottom:1px solid var(--line);vertical-align:top}
+.method td:first-child{color:var(--muted);white-space:nowrap;padding-right:1.2rem}
+.tablewrap{overflow-x:auto}
+.links{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.88rem}
+a{color:var(--live)}
+.claim-tree{border-top:4px solid var(--ink);padding-top:1.4rem}
+.tree-node{display:grid;grid-template-columns:3.4rem 1fr;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--line)}
+.tree-node.child{margin-left:2.2rem;padding:.72rem 0}.tree-id{font:700 .7rem var(--mono);color:var(--muted)}
+.tree-copy{font-size:.95rem}.tree-copy p{margin:0}.tree-evidence{font:400 .72rem var(--sans);color:var(--muted);margin-top:.3rem!important}
+.status{font:700 .62rem var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-left:.45rem}.status.evidenced{color:#386a51}.status.partial{color:var(--warn)}.status.open{color:#77828c}.status.todo{color:var(--crit)}
+.unresolved{margin-top:2.5rem;background:var(--ink);color:var(--ground);padding:1.6rem 1.8rem}.unresolved h3{font:400 1.5rem var(--display);margin:0 0 .8rem}.unresolved ol{margin:0;padding-left:1.2rem}.unresolved li{padding:.3rem 0;font-size:.88rem}
+#lightbox{position:fixed;inset:0;background:#090b10e6;display:none;place-items:center;z-index:10;cursor:zoom-out;padding:2rem}
+#lightbox.on{display:grid}
+#lightbox img{max-width:min(92vw,50rem);max-height:80vh;border-radius:6px}
+#lightbox .lcap{color:#e7e6df;font-family:var(--mono);font-size:.78rem;text-align:center;margin-top:.8rem;max-width:60ch}
+@media(max-width:900px){.page-shell{grid-template-columns:1fr;gap:2rem}.toc{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.toc .mark,.toc h2,.toc .legend{grid-column:1/-1}.toc .legend{display:none}header{padding-top:0}}
+@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.claim-purpose,.trace-stage{grid-template-columns:1fr}.trace-image{min-height:15rem}.trace-steps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.essay-head{grid-template-columns:2rem 1fr}.essay-copy{margin-left:0}.essay-copy p{font-size:1.03rem}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.chev{transition:none}}
+</style>
+
+<div class="page-shell">
+<aside class="toc" aria-label="Contents">
+  <div class="mark">Cultural<br>Selection</div>
+  <h2>Contents</h2>
+  <a href="#brief">In brief · 1 min</a>
+  <a href="#essay">The argument · 6 min</a>
+  <a href="#evo">Read a culture inside</a>
+  <a href="/cultural-selection/claim-tree/">Claim tree ↗</a>
+  <a href="#method">Method</a>
+</aside>
+<main>
+  <header>
+    <div class="kicker" id="kicker"></div>
+    <h1 id="title"></h1>
+    <p class="lede" id="lede"></p>
+    <div class="stamp" id="stamp"></div>
+  </header>
+  <section class="brief" id="brief">
+    <h2>In brief · one minute</h2>
+    <p class="brief-intro">Art is made by people. But what gets made, finished and remembered is also shaped by culture.</p>
+    <div class="brief-grid" id="brief-grid"></div>
+  </section>
+  <article class="essay" id="essay">
+    <h2>The argument · six minutes</h2>
+    <p class="section-intro">Start with the human question, then build the experiment one mechanism at a time. Figures appear only where they carry part of the argument.</p>
+    <div id="essay-body"></div>
+  </article>
+  <section class="trace-reader" id="evo">
+    <h2>Read a culture from the inside</h2>
+    <p class="section-intro">The same named lineage—The Open Circuit—developed inside three cultural worlds. Switch worlds, move through accepted revisions, and compare what the image inherits with what its maker says it changed.</p>
+    <div class="trace-tabs" id="trace-tabs" role="tablist" aria-label="choose cultural world"></div>
+    <div class="trace-stage">
+      <div class="trace-image" id="trace-image"><img id="trace-img" alt="accepted artwork revision"></div>
+      <div class="trace-note">
+        <div class="trace-meta" id="trace-meta"></div>
+        <h3 id="trace-title"></h3>
+        <p class="trace-guide" id="trace-guide"></p>
+        <blockquote id="trace-reason"></blockquote>
+        <div class="trace-doctrine" id="trace-doctrine"></div>
+        <p class="trace-disclosure">These are public reasons stored with accepted versions, edited only by truncation for display—not hidden chain-of-thought. A stated reason shows explicit intent; the image lets you inspect what was inherited beyond that statement.</p>
+      </div>
+    </div>
+    <div class="trace-steps" id="trace-steps" aria-label="accepted revisions"></div>
+  </section>
+  <section id="method">
+    <h2>Method</h2>
+    <div class="tablewrap"><table class="method"><tbody id="method"></tbody></table></div>
+  </section>
+  <section class="links" id="links"></section>
+</main>
+</div>
+
+<div id="lightbox" role="dialog" aria-label="enlarged artwork"><div><img id="lb-img" alt=""><div class="lcap" id="lb-cap"></div></div></div>
+
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const ASSETS = JSON.parse(document.getElementById('assets').textContent);
+const byGroup = g => ASSETS.assets.filter(a => a.group === g);
+const $ = id => document.getElementById(id);
+$('kicker').textContent = D.hero_kicker;
+$('title').textContent = D.hero_title;
+$('lede').textContent = D.hero_body;
+$('stamp').textContent = 'updated ' + D.updated + ' · every number links to code and data on GitHub';
+$('brief-grid').innerHTML = D.tldr.map((x,i) => `<div class="brief-item"><span class="brief-num">0${i+1}</span><h3>${x.label}</h3><p>${x.text}</p></div>`).join('');
+const lb = $('lightbox');
+function openLB(a){ $('lb-img').src = a.b64; $('lb-img').alt = a.label; $('lb-cap').textContent = a.label + ' — ' + a.caption; lb.classList.add('on'); }
+lb.addEventListener('click', () => lb.classList.remove('on'));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+function thumbs(group){
+  return '<div class="thumbs">' + byGroup(group).map((a,i) =>
+    `<button data-g="${group}" data-i="${i}" aria-label="enlarge ${a.label}"><img loading="lazy" src="${a.b64}" alt="${a.label}"><span class="cap">${a.label}</span></button>`).join('') + '</div>';
+}
+let pagerId = 0;
+function galleryPager(group, size=6){
+  const id = `gallery-${++pagerId}`;
+  return `<div class="paged-gallery" id="${id}" data-group="${group}" data-page="0" data-size="${size}"><div class="gallery-controls"><button class="gallery-prev" aria-label="previous artworks">←</button><span class="gallery-position" aria-live="polite"></span><button class="gallery-next" aria-label="next artworks">→</button></div><div class="gallery-grid"></div></div>`;
+}
+function renderPager(el){
+  const items = byGroup(el.dataset.group), size = +el.dataset.size;
+  const pages = Math.max(1, Math.ceil(items.length / size));
+  const page = Math.max(0, Math.min(+el.dataset.page, pages - 1));
+  el.dataset.page = page;
+  const start = page * size;
+  el.querySelector('.gallery-grid').innerHTML = items.slice(start,start+size).map((a,i) => `<button data-i="${start+i}" aria-label="enlarge ${a.label}"><img loading="lazy" src="${a.b64}" alt="${a.label}"><span class="cap">${a.label}</span></button>`).join('');
+  el.querySelector('.gallery-position').textContent = `${page+1} / ${pages}`;
+  el.querySelector('.gallery-prev').disabled = page === 0;
+  el.querySelector('.gallery-next').disabled = page === pages - 1;
+  el.querySelectorAll('.gallery-grid button').forEach(b => b.addEventListener('click', () => openLB(items[+b.dataset.i])));
+}
+function wirePagers(){
+  document.querySelectorAll('.paged-gallery').forEach(el => {
+    el.querySelector('.gallery-prev').addEventListener('click', () => { el.dataset.page = +el.dataset.page - 1; renderPager(el); });
+    el.querySelector('.gallery-next').addEventListener('click', () => { el.dataset.page = +el.dataset.page + 1; renderPager(el); });
+    renderPager(el);
+  });
+}
+function bars(rows){
+  return '<div class="bars">' + rows.map(([l,v]) =>
+    `<div class="bar ${v<45?'low':''}"><span>${l}</span><span class="track"><span class="fill" style="width:${v}%"></span></span><span class="pct">${v}%</span></div>`).join('') + '</div>';
+}
+const plotAsset = id => ASSETS.assets.find(a => a.id === id) || byGroup('plots').find(a => a.id.includes(id.replace('plot-','')));
+let essayFigure = 0;
+$('essay-body').innerHTML = D.essay.map(s => {
+  const gallery = s.gallery ? (() => { essayFigure++; return `<figure class="essay-figure">${galleryPager(s.gallery)}<figcaption><strong>Figure ${essayFigure}: ${s.caption_title}</strong>${s.caption}</figcaption></figure>`; })() : '';
+  const plot = s.plot && plotAsset(s.plot) ? (() => { essayFigure++; const a=plotAsset(s.plot); return `<figure class="essay-figure"><img class="plotimg" loading="lazy" src="${a.b64}" alt="${s.title}"><figcaption><strong>Figure ${essayFigure}: ${s.plotCaption_title || s.caption_title}</strong>${s.plotCaption || s.caption || a.caption}</figcaption></figure>`; })() : '';
+  return `<section class="essay-chapter"><div class="essay-head"><span class="essay-roman">${s.num}</span><h3>${s.title}</h3></div><div class="essay-copy">${s.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>${gallery}${plot}</section>`;
+}).join('');
+wirePagers();
+document.querySelectorAll('.thumbs button').forEach(b => b.addEventListener('click', e => {
+  e.stopPropagation(); openLB(byGroup(b.dataset.g)[+b.dataset.i]);
+}));
+const assetById = id => ASSETS.assets.find(a => a.id === id);
+let traceIndex = 0, traceStep = 0;
+function shortReason(s, max=430){ return s.length > max ? s.slice(0,max).replace(/\s+\S*$/, '') + '…' : s; }
+function renderTrace(){
+  const trace = ASSETS.traces[traceIndex], frame = trace.frames[traceStep], a = assetById(frame.asset_id);
+  $('trace-img').src = a.b64; $('trace-img').alt = `${trace.charter} culture, turn ${frame.turn}`;
+  $('trace-meta').textContent = `${trace.charter} world · turn ${frame.turn} · version ${frame.version}`;
+  $('trace-title').textContent = frame.agent === 'founding culture' ? 'The inherited starting point' : `${frame.agent}'s accepted revision`;
+  $('trace-guide').innerHTML = `<b>What to look for:</b> ${trace.guide}`;
+  $('trace-reason').textContent = shortReason(frame.reason);
+  $('trace-doctrine').textContent = `Canonical doctrine at this step: “${frame.doctrine}”`;
+  document.querySelectorAll('#trace-tabs button').forEach((b,i)=>b.classList.toggle('on',i===traceIndex));
+  $('trace-steps').innerHTML = trace.frames.map((f,i)=>{const x=assetById(f.asset_id);return `<button class="${i===traceStep?'on':''}" data-step="${i}" aria-label="show turn ${f.turn}"><img src="${x.b64}" alt=""><span>${f.turn}</span></button>`}).join('');
+  document.querySelectorAll('#trace-steps button').forEach(b=>b.addEventListener('click',()=>{traceStep=+b.dataset.step;renderTrace()}));
+}
+$('trace-tabs').innerHTML = ASSETS.traces.map((t,i)=>`<button role="tab" data-trace="${i}">${t.charter}</button>`).join('');
+document.querySelectorAll('#trace-tabs button').forEach(b=>b.addEventListener('click',()=>{traceIndex=+b.dataset.trace;traceStep=0;renderTrace()}));
+$('trace-image').addEventListener('click',()=>openLB(assetById(ASSETS.traces[traceIndex].frames[traceStep].asset_id)));
+renderTrace();
+$('method').innerHTML = D.method.map(m => `<tr><td>${m.k}</td><td>${m.v}</td></tr>`).join('');
+$('links').innerHTML = D.links.map(l => `<a href="${l.url}">${l.label}</a>`).join('');
+</script>

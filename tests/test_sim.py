@@ -1,4 +1,4 @@
-"""Tests for sim.py -- Religion & The Machine v2."""
+"""Tests for src/sim.py -- Religion & The Machine v2."""
 
 import copy
 import json
@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 # Ensure project root is importable
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import sim
 

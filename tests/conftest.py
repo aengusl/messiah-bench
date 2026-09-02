@@ -2,12 +2,18 @@
 
 import copy
 import json
+import sys
+from pathlib import Path
+
 import pytest
 from unittest.mock import patch, MagicMock
 
+# Engines live in src/ -- make them importable by bare module name.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
 
 # ---------------------------------------------------------------------------
-# sim.py fixtures
+# src/sim.py fixtures
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -20,7 +26,7 @@ def mock_state():
 
 
 # ---------------------------------------------------------------------------
-# messiah_bench.py fixtures
+# src/messiah_bench.py fixtures
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
