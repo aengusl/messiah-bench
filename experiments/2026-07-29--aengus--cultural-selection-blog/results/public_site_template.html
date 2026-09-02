@@ -1,10 +1,10 @@
 <title>Why Are Churches Beautiful? — Cultural Selection</title>
 <div id="assets" hidden>__ASSETS__</div>
 <div id="data" hidden>{
-  "updated": "2026-09-01",
+  "updated": "2026-09-02",
   "hero_kicker": "An eight-minute field report · Cultural selection",
   "hero_title": "Why are churches beautiful?",
-  "hero_body": "Where does great art come from? We usually answer with artists: talent, taste, obsession. But a church is more than one person's imagination. It is inherited form, shared belief, patronage, rivalry and craft accumulating across generations. This project asks what culture contributes—and tries to separate those forces in a world where every artist begins with the same mind.",
+  "hero_body": "Where does great art come from? We usually answer with artists: talent, taste, obsession. But a church is more than one person's imagination. It is inherited form, shared belief, patronage and craft accumulating across generations. This experiment isolates one part of that larger mystery: what culture changes when every artist begins with the same mind.",
   "tldr": [
     {"label":"Culture changes what the same mind creates","text":"Change a society's creed and visual inheritance, and otherwise identical agents make recognisably different art. A blind classifier identified 36 of 36 works correctly."},
     {"label":"A tradition can have authors without one designer","text":"Each revision has a maker and a reason. No agent chooses the culture-level endpoint. Coherent styles accumulate from many local acts of copying, modification and adoption."},
@@ -15,23 +15,23 @@
       "num": "01", "title": "The problem is larger than the artist",
       "paragraphs": [
         "Stand inside a great church and the usual story of art—one gifted person expressing an idea—feels incomplete. The building carries decisions made by people who never met: a plan inherited, symbols repeated, techniques taught, failures discarded and ambitions financed. No single maker contains the whole explanation.",
-        "That is the problem this research studies. What are the cultural forces behind art? Why do some forms persist, why do some traditions become distinctive, and when does competition improve a canon rather than simply narrowing it? Churches make the question vivid, but it applies to any art made inside a living tradition."
+        "That leaves a question the usual story cannot answer: why do whole traditions become distinctive? Churches make the question vivid, but it applies to any art made inside a living tradition. This experiment does not measure greatness or explain every reason people create. It asks a narrower question first: can culture itself change what the same kind of maker produces?"
       ]
     },
     {
       "num": "02", "title": "Who designed the tradition?",
       "paragraphs": [
         "Some artistic decisions are explicit. A patron commissions a chapel. A manifesto rejects ornament. An artist decides to add another arch. Other constraints are harder to name. Makers inherit a sense of what looks finished, which departures feel possible and which forms belong together. A tradition may be highly ordered even when nobody designed that order as a whole.",
-        "This is the larger idea behind Joseph Henrich's <a href=\"https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/\" target=\"_blank\" rel=\"noopener\"><em>The WEIRDest People in the World</em></a>. Henrich argues that institutions can reshape psychology and social life over generations, producing consequences far beyond any original rule-maker's plan. His book is not a theory of church aesthetics. It supplies a useful frame: culture is not only what people consciously believe; it is also a historical process that changes the people doing the choosing.",
+        "Joseph Henrich's <a href=\"https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/\" target=\"_blank\" rel=\"noopener\"><em>The WEIRDest People in the World</em></a> supplies a useful frame. Institutions can reshape psychology and social life across generations, with consequences no original rule-maker planned. For art, culture may therefore be more than a set of beliefs: it may change the people doing the choosing and the choices that feel available.",
         "For art, the resulting question is precise: how much of a style comes from decisions its makers can state, and how much comes from inherited examples, tacit expectations and the accumulated survival of earlier choices?"
       ]
     },
     {
       "num": "03", "title": "A small world where inheritance can be changed",
       "paragraphs": [
-        "Human history cannot supply a clean control. So I built a deliberately small causal sandbox. Each society contains 24 copies of the same AI model, operating with the same settings and rules. Agents propose, adopt and revise artworks over hundreds of turns. Between societies, I change the founding creed and visual ancestor. The society—not the individual agent—is the experimental unit.",
+        "Human history cannot supply a clean control, so I built a small artificial world. Each society contains 24 copies of the same AI model, using the same settings and rules. Agents propose, adopt and revise artworks over 300 turns. Only the founding creed and visual ancestor change between societies. The society—not the individual agent—is the experimental unit.",
         "The agents do make explicit decisions. Their charters are visible, and their revision notes sometimes cite them directly. But no agent plans the final style of its world. Each sees a local inheritance, proposes a change and reacts to what others accept. This lets us observe how stated reasons and accumulated artifacts compose a result at a higher level than any one decision.",
-        "That distinction matters. These runs can show that culture causes divergence and that a global style can emerge from distributed choices. They cannot yet tell us what fraction of the effect is verbal doctrine, visual imitation, tacit convention or selection after the fact."
+        "The design can test whether the cultural bundle causes divergence and whether local choices accumulate into a global style. It cannot separate verbal doctrine, visual imitation, tacit convention and selection after the fact. That limit determines how far the conclusions below can go."
       ],
       "gallery": "v2-seeds",
       "caption_title": "The experiment begins with ancestry, not a blank canvas.",
@@ -42,7 +42,7 @@
       "paragraphs": [
         "After 300 turns, six cultures still made different kinds of objects. Ascetic worlds converged on sparse black geometry. Baroque worlds built crimson and gold rosettes. Futurist worlds retained grids, pyramids and starfields. An independent classifier saw 36 anonymised artworks and assigned every one to the correct culture. Chance would be expected to identify six.",
         "The important word is <em>inheritance</em>. An earlier experiment gave every culture the same circular seed. Their doctrines diverged, but their compositions kept returning to the circle. Once creed and visual ancestry varied together, the structural distance between cultures became 449 times the variation among repeated worlds of the same culture. Culture did not conjure style from pure ideas; it coordinated what to preserve while revising what came before.",
-        "This is the most consequential result because it bears directly on the origin of style. It says that variation between traditions need not begin with different kinds of minds. A common intelligence, placed inside a different inheritance, can learn to extend a different visual world. Artists and historians of style have the most to inspect here; the images matter more than the model-judge ranking."
+        "Variation between traditions, then, need not begin with different kinds of minds. A common intelligence placed inside a different inheritance can learn to extend a different visual world. The images are the primary evidence: the classifier confirms that the pattern is legible, but does not make the art good."
       ],
       "gallery": "v2-final",
       "caption_title": "The same kind of artist inherited a different visual world.",
@@ -54,9 +54,9 @@
     {
       "num": "05", "title": "Finding two: culture shaped the room for variation",
       "paragraphs": [
-        "A second fleet suggests that traditions shape not only what art looks like, but how freely it moves. Cave worlds changed relatively shallowly. Psychedelic worlds ranged much more widely in colour, size and structure. Across twelve worlds, charter identity described 85.3 percent of the measured variation in accepted revision depth and visual dispersion; repeated worlds with the same charter sat about twice as close as worlds with different charters.",
+        "Culture may shape not only what art looks like, but how far a legitimate revision is allowed to move. Cave lineages stopped after relatively few accepted changes. Psychedelic worlds ranged much more widely in colour, size and structure. Those two extremes appeared in both repeated worlds.",
         "This looks like a spectrum between conformity and expressivity: some traditions preserve a narrow grammar, while others license larger departures. But that interpretation is not yet causal. The charters themselves explicitly differ—the cave creed says to draw only what has been hunted or feared; the psychedelic creed says a picture that lets the viewer rest has failed. There are only two worlds per charter, and the four cultures between the extremes overlap.",
-        "The result is interesting because it suggests a better experimental program. Instead of changing aesthetic content, hold the founding art fixed and vary the social structure: reward conformity or novelty; centralize patronage or distribute adoption; isolate native populations or allow migration and cultural mixing. Then ask what kinds of traditions—and what kinds of art—arise."
+        "To test conformity rather than merely describe it, the next experiment must hold aesthetic content fixed and change the social structure: reward conformity or novelty; centralize patronage or distribute adoption; isolate populations or allow migration and cultural mixing. Only then can we ask whether institutions themselves create different kinds of artistic freedom."
       ],
       "gallery": "new-aesthetics",
       "caption_title": "Different cultures may permit different distances from tradition.",
@@ -193,7 +193,6 @@
     {"label": "Joseph Henrich — The WEIRDest People in the World", "url": "https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/"},
     {"label": "Cultural evolution—of the arts", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13150773/"},
     {"label": "Twin Worlds — full evidence deep-dive", "url": "/cultural-selection/twin-worlds/"},
-    {"label": "Messiah Bench — earlier civilizations & galleries", "url": "/messiah-bench/"},
     {"label": "Code & data", "url": "https://github.com/aengusl/messiah-bench"}
   ]
 }</div>
