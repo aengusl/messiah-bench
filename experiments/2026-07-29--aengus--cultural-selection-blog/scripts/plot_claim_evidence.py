@@ -43,10 +43,13 @@ def culture_signal():
                  ha="left", fontsize=21, fontweight="bold", color=INK)
     fig.text(.11, .90, "The same model varied far more between inherited traditions than within them.",
              fontsize=11, color=MUTED)
-    fig.text(.11, .015,
-             "18 worlds: six cultures × three repeats. Descriptive ratios; creed and founding image varied together.",
+    fig.text(.11, .045,
+             "Structure = drawable HTML/SVG elements · length = HTML source bytes · palette = distinct rendered colours.",
              fontsize=9, color=MUTED)
-    fig.subplots_adjust(left=.25, right=.91, top=.79, bottom=.22)
+    fig.text(.11, .015,
+             "18 worlds (six cultures × three repeats). 1× means culture differences equal repeat variation; creed and seed image varied together.",
+             fontsize=9, color=MUTED)
+    fig.subplots_adjust(left=.25, right=.91, top=.79, bottom=.24)
     save(fig, "culture_signal.png")
 
 
@@ -83,10 +86,13 @@ def revision_regimes():
     fig.suptitle("Two cultures occupied clearly different revision regimes", x=.10, y=.99,
                  ha="left", fontsize=20, fontweight="bold", color=INK)
     fig.text(.10, .925, "The extremes repeat; the four cultures in the middle overlap.", fontsize=11, color=MUTED)
+    fig.text(.10, .045,
+             "Revision length = mean accepted versions in each lineage. Variation = mean SD ÷ mean for source bytes, elements and colours.",
+             fontsize=8.7, color=MUTED)
     fig.text(.10, .015,
-             "Two dots = two worlds per culture. Exploratory: n=12 worlds; cave-r1 contains only five accepted works.",
-             fontsize=9, color=MUTED)
-    fig.subplots_adjust(left=.18, right=.98, top=.82, bottom=.18, wspace=.17)
+             "Two dots = two independent worlds per culture. Exploratory: n=12 worlds; cave-r1 contains five accepted works.",
+             fontsize=8.7, color=MUTED)
+    fig.subplots_adjust(left=.18, right=.98, top=.82, bottom=.20, wspace=.17)
     save(fig, "revision_regimes.png")
 
 

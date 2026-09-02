@@ -6,10 +6,13 @@ Writes a full HTML document to aengusl.github.io/cultural-selection/index.html.
 import html
 import json
 import re
+import shutil
 from pathlib import Path
 
 results = Path(__file__).resolve().parents[1] / "results"
 site = Path("/home/aenguslynch/projects/aengusl.github.io/cultural-selection")
+
+shutil.copytree(results / "churches", site / "churches", dirs_exist_ok=True)
 
 assets = json.loads((results / "art_assets.json").read_text())
 template = (results / "public_site_template.html").read_text()

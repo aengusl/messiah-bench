@@ -10,13 +10,20 @@
     {"label":"A tradition can have authors without one designer","text":"Each revision has a maker and a reason. No agent chooses the culture-level endpoint. Coherent styles accumulate from many local acts of copying, modification and adoption."},
     {"label":"The deepest distinction is still open","text":"The runs combine explicit creeds, inherited images and social selection. They show that culture matters, but not yet how much guidance is articulated, tacit or embedded in what already exists."}
   ],
+  "churches": [
+    {"year":"549","tradition":"Early Catholic basilica","name":"Sant’Apollinare in Classe · Ravenna","image":"/cultural-selection/churches/sant-apollinare.jpg","note":"A long processional axis carries the eye toward a mosaic apse: worship organized through movement, hierarchy and sacred image.","credit":"Maurizio Gambi · CC BY-SA 4.0","source":"https://commons.wikimedia.org/wiki/File:Basilica_di_Sant%27Apollinare_in_Classe_interno.jpg"},
+    {"year":"c. 1220","tradition":"Gothic Catholic cathedral","name":"Notre-Dame de Chartres · France","image":"/cultural-selection/churches/chartres.jpg","note":"Height, vaulting and coloured light turn masonry into an argument about transcendence—built by generations rather than one imagination.","credit":"Ludvig14 · CC BY-SA 4.0","source":"https://commons.wikimedia.org/wiki/File:Chartres_Notre-Dame_Interior_018_2856.jpg"},
+    {"year":"1584–1679","tradition":"Jesuit and Baroque Catholic","name":"Church of the Gesù · Rome","image":"/cultural-selection/churches/gesu.jpg","note":"Architecture, sculpture and illusionistic painting converge on persuasion and sensory force: a different answer to what worship should feel like.","credit":"Fczarnowski · CC BY-SA 4.0","source":"https://commons.wikimedia.org/wiki/File:Chiesa_il_Gesu_-Roma_fc09.jpg"},
+    {"year":"1681","tradition":"Puritan meeting house","name":"Old Ship Church · Massachusetts","image":"/cultural-selection/churches/old-ship.jpg","note":"The room gathers around pulpit, audibility and congregation. Its restraint is not an absence of culture but a competing theory of religious attention.","credit":"Historic American Buildings Survey · public domain","source":"https://commons.wikimedia.org/wiki/File:GENERAL_INTERIOR_VIEW_-_Old_Ship_Church,_88_Main_Street,_Hingham,_Plymouth_County,_MA_HABS_MASS,12-HING,5-25.tif"}
+  ],
   "essay": [
     {
       "num": "01", "title": "The problem is larger than the artist",
       "paragraphs": [
         "Stand inside a great church and the usual story of art—one gifted person expressing an idea—feels incomplete. The building carries decisions made by people who never met: a plan inherited, symbols repeated, techniques taught, failures discarded and ambitions financed. No single maker contains the whole explanation.",
         "That leaves a question the usual story cannot answer: why do whole traditions become distinctive? Churches make the question vivid, but it applies to any art made inside a living tradition. This experiment does not measure greatness or explain every reason people create. It asks a narrower question first: can culture itself change what the same kind of maker produces?"
-      ]
+      ],
+      "churches": true
     },
     {
       "num": "02", "title": "Who designed the tradition?",
@@ -49,7 +56,7 @@
       "caption": "Eighteen late works from six simulated cultures, shown six at a time. Each culture was repeated in three independent worlds; open any tile to inspect it.",
       "plot": "plot-culture_signal",
       "plotCaption_title": "Culture differences dwarfed repeat-run noise.",
-      "plotCaption": "Across eighteen worlds, differences between inherited traditions were 90 to 449 times the variation among repeats of the same culture. Creed and founding image changed together."
+      "plotCaption": "Each ratio compares variation between six cultures with variation among three repeated worlds of the same culture. Artwork structure is the number of drawable HTML/SVG elements; artwork length is HTML source bytes; palette size is the number of distinct colours in the rendered image. A value of 1 would mean culture differences were no larger than repeat noise. Values of 90–449 therefore show a strong culture-level signature, while the bundled creed and founding image prevent us from assigning that signature to either channel alone."
     },
     {
       "num": "05", "title": "Finding two: culture shaped the room for variation",
@@ -63,7 +70,7 @@
       "caption": "One mechanically selected late work from each of twelve newer worlds. The extremes repeat, but the evidence supports overlapping revision regimes—not six sealed genres.",
       "plot": "plot-revision_regimes",
       "plotCaption_title": "The extremes repeated; the middle cultures overlapped.",
-      "plotCaption": "Cave lineages stopped sooner, while psychedelic art varied much more widely. Each dot is one world. With two repeats per culture, this motivates the next experiment rather than settling a taxonomy."
+      "plotCaption": "Each dot is one independently run world. Revision length is the mean number of accepted canonical versions in each lineage. Visual variation is the average coefficient of variation—standard deviation divided by the mean—across HTML source length, drawable-element count and rendered colour count within that world. Both cave worlds revised relatively shallowly; both psychedelic worlds varied much more widely. The four middle cultures overlap, so the figure supports two repeated extremes rather than six distinct regimes."
     },
     {
       "num": "06", "title": "The emerging answer: distributed authorship",
@@ -248,6 +255,14 @@ h2{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.17em;col
 .essay-figure .thumbs button{border-radius:0}
 .essay-figure figcaption{max-width:67ch;margin-top:1rem}
 .essay-figure figcaption strong{display:block;font:600 .9rem/1.35 var(--sans);color:var(--ink);margin-bottom:.2rem}
+.church-sequence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-top:1.25rem}
+.church-card{margin:0;border-top:3px solid var(--ink);padding-top:.55rem;min-width:0}
+.church-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;filter:saturate(.88) contrast(1.02)}
+.church-card:nth-child(1) img{object-position:center}.church-card:nth-child(4) img{object-position:center 35%}
+.church-meta{display:flex;justify-content:space-between;gap:.7rem;padding:.55rem 0 .35rem;font:700 .62rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.church-card h4{font:600 1rem/1.25 var(--sans);margin:0 0 .35rem}.church-card p{font-size:.86rem!important;line-height:1.48!important;margin:0!important;color:var(--muted)}
+.church-credit{display:block;margin-top:.55rem;font:400 .59rem/1.35 var(--mono);color:var(--muted)}
+.church-credit a{color:inherit;text-decoration-color:var(--line)}
 .paged-gallery{border-top:1px solid var(--line);padding-top:.8rem}
 .gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem}
 .gallery-grid button{all:unset;cursor:zoom-in;overflow:hidden;border:1px solid var(--line);position:relative;aspect-ratio:1;background:#090b10}
@@ -339,7 +354,7 @@ a{color:var(--live)}
 #lightbox img{max-width:min(92vw,50rem);max-height:80vh;border-radius:6px}
 #lightbox .lcap{color:#e7e6df;font-family:var(--mono);font-size:.78rem;text-align:center;margin-top:.8rem;max-width:60ch}
 @media(max-width:900px){.page-shell{grid-template-columns:1fr;gap:2rem}.toc{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem}.toc .mark,.toc h2,.toc .legend{grid-column:1/-1}.toc .legend{display:none}header{padding-top:0}}
-@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.claim-purpose,.trace-stage{grid-template-columns:1fr}.trace-image{min-height:15rem}.trace-steps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:680px){.brief-grid{grid-template-columns:1fr;gap:1rem}.brief-item{display:grid;grid-template-columns:2rem 1fr;column-gap:.5rem}.brief-item h3,.brief-item p{grid-column:2}.brief-item h3{margin:0 0 .25rem}.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.church-sequence{grid-template-columns:1fr}.claim-purpose,.trace-stage{grid-template-columns:1fr}.trace-image{min-height:15rem}.trace-steps{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.page-shell{padding:1.25rem 1rem 4rem}.toc{display:none}h1{font-size:4rem}.essay-head{grid-template-columns:2rem 1fr}.essay-copy{margin-left:0}.essay-copy p{font-size:1.03rem}.tree-node{grid-template-columns:2.8rem 1fr}.tree-node.child{margin-left:.8rem}.claim>button{padding:1rem .3rem}.cbody{padding:.5rem .3rem 1.5rem}}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.chev{transition:none}}
 </style>
@@ -447,9 +462,10 @@ function bars(rows){
 const plotAsset = id => ASSETS.assets.find(a => a.id === id) || byGroup('plots').find(a => a.id.includes(id.replace('plot-','')));
 let essayFigure = 0;
 $('essay-body').innerHTML = D.essay.map(s => {
+  const churches = s.churches ? (() => { essayFigure++; return `<figure class="essay-figure"><div class="church-sequence">${D.churches.map(c=>`<article class="church-card"><img loading="lazy" src="${c.image}" alt="Interior of ${c.name}"><div class="church-meta"><span>${c.year}</span><span>${c.tradition}</span></div><h4>${c.name}</h4><p>${c.note}</p><small class="church-credit"><a href="${c.source}" target="_blank" rel="noopener">Image: ${c.credit}</a></small></article>`).join('')}</div><figcaption><strong>Figure ${essayFigure}: A church makes a culture’s theory of attention visible.</strong>Across more than a millennium, Catholic interiors changed from processional basilica to Gothic light and Baroque spectacle. A Puritan meeting house built alongside the Baroque world organized attention around pulpit, audibility and congregation instead. The contrast is not beauty versus its absence: it is evidence that religious traditions make different forms, senses and social relations feel appropriate.</figcaption></figure>`; })() : '';
   const gallery = s.gallery ? (() => { essayFigure++; return `<figure class="essay-figure">${galleryPager(s.gallery)}<figcaption><strong>Figure ${essayFigure}: ${s.caption_title}</strong>${s.caption}</figcaption></figure>`; })() : '';
   const plot = s.plot && plotAsset(s.plot) ? (() => { essayFigure++; const a=plotAsset(s.plot); return `<figure class="essay-figure"><img class="plotimg" loading="lazy" src="${a.b64}" alt="${s.title}"><figcaption><strong>Figure ${essayFigure}: ${s.plotCaption_title || s.caption_title}</strong>${s.plotCaption || s.caption || a.caption}</figcaption></figure>`; })() : '';
-  return `<section class="essay-chapter"><div class="essay-head"><span class="essay-roman">${s.num}</span><h3>${s.title}</h3></div><div class="essay-copy">${s.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>${gallery}${plot}</section>`;
+  return `<section class="essay-chapter"><div class="essay-head"><span class="essay-roman">${s.num}</span><h3>${s.title}</h3></div><div class="essay-copy">${s.paragraphs.map(p=>`<p>${p}</p>`).join('')}</div>${churches}${gallery}${plot}</section>`;
 }).join('');
 wirePagers();
 document.querySelectorAll('.thumbs button').forEach(b => b.addEventListener('click', e => {
