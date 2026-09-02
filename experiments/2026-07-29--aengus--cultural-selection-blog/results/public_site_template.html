@@ -185,21 +185,13 @@
     "note": "One lineage, founding seed to final form, three hundred turns of descent with modification. Drag the slider.",
     "group": "v2-evolution"
   },
-  "retractions": [
-    {"claim": "Our first headline: one society's art 'won' a cross-civilization beauty tournament", "why": "The tournament was measuring emptiness, not aesthetics — most of the losing societies' art was genuinely blank, and the winner's embedded legible text the judges cited.", "caught_by": "An independent audit agent noticed render success was perfectly monotonic with the ranking."},
-    {"claim": "The follow-up story: 'the renderer was blanking the art'", "why": "Ground truth said otherwise — the art is blank at the source, cut off mid-generation. The instrument was fine; the art was missing.", "caught_by": "Cross-checking against the simulation's own independent renders."},
-    {"claim": "'The adoption gate protects quality'", "why": "Rejected proposals were exactly as complete as accepted ones. The gate filtered nothing.", "caught_by": "Comparing all 339 proposals against the canon."}
-  ],
-  "retr_intro": "Every number above survived an adversarial audit. These didn't — published, then withdrawn, in the open. The retractions are why you can trust the rest.",
   "method": [
     {"k": "The machinery", "v": "33 simulated societies (24 agents each, all Gemini 2.5 Flash), 6,400+ blind pairwise judgments by a two-model panel, independent audit agents, pre-registered designs"},
-    {"k": "The perfect control", "v": "every agent is the same model, same weights, same seed — culture is the only variable"},
-    {"k": "Chapters", "v": "Experiment IX (the make/choose society this page previously chronicled) is preserved in full at the link below"}
+    {"k": "The perfect control", "v": "every agent is the same model, same weights, same seed — culture is the only variable"}
   ],
   "links": [
     {"label": "Joseph Henrich — The WEIRDest People in the World", "url": "https://us.macmillan.com/books/9780374710453/theweirdestpeopleintheworld/"},
     {"label": "Cultural evolution—of the arts", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13150773/"},
-    {"label": "Experiment IX — the long-run collapse chronicle", "url": "/cultural-selection/experiment-ix/"},
     {"label": "Twin Worlds — full evidence deep-dive", "url": "/cultural-selection/twin-worlds/"},
     {"label": "Messiah Bench — earlier civilizations & galleries", "url": "/messiah-bench/"},
     {"label": "Code & data", "url": "https://github.com/aengusl/messiah-bench"}
@@ -333,8 +325,6 @@ figure{margin:0}figcaption{margin:.65rem 0 0;font-size:.8rem;color:var(--muted);
 table{width:100%;border-collapse:collapse;font-size:.84rem}
 th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--line)}
 td{padding:.55rem .6rem .55rem 0;border-bottom:1px solid var(--line);vertical-align:top}
-.retr td:first-child{color:var(--crit);text-decoration:line-through;text-decoration-thickness:1px}
-.retr .by{color:var(--muted);font-size:.78rem}
 .method td:first-child{color:var(--muted);white-space:nowrap;padding-right:1.2rem}
 .tablewrap{overflow-x:auto}
 .links{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.88rem}
@@ -363,7 +353,6 @@ a{color:var(--live)}
   <a href="#essay">The argument · 6 min</a>
   <a href="#evo">Read a culture inside</a>
   <a href="/cultural-selection/claim-tree/">Claim tree ↗</a>
-  <a href="#retractions">Retractions</a>
   <a href="#method">Method</a>
 </aside>
 <main>
@@ -399,11 +388,6 @@ a{color:var(--live)}
       </div>
     </div>
     <div class="trace-steps" id="trace-steps" aria-label="accepted revisions"></div>
-  </section>
-  <section id="retractions">
-    <h2>The retractions ledger</h2>
-    <p class="gnote" id="retr-intro"></p>
-    <div class="tablewrap"><table class="retr"><thead><tr><th>Withdrawn claim</th><th>Why it was wrong</th><th>Caught by</th></tr></thead><tbody id="retr"></tbody></table></div>
   </section>
   <section id="method">
     <h2>Method</h2>
@@ -491,8 +475,6 @@ $('trace-tabs').innerHTML = ASSETS.traces.map((t,i)=>`<button role="tab" data-tr
 document.querySelectorAll('#trace-tabs button').forEach(b=>b.addEventListener('click',()=>{traceIndex=+b.dataset.trace;traceStep=0;renderTrace()}));
 $('trace-image').addEventListener('click',()=>openLB(assetById(ASSETS.traces[traceIndex].frames[traceStep].asset_id)));
 renderTrace();
-$('retr-intro').textContent = D.retr_intro;
-$('retr').innerHTML = D.retractions.map(r => `<tr><td>${r.claim}</td><td>${r.why}</td><td class="by">${r.caught_by}</td></tr>`).join('');
 $('method').innerHTML = D.method.map(m => `<tr><td>${m.k}</td><td>${m.v}</td></tr>`).join('');
 $('links').innerHTML = D.links.map(l => `<a href="${l.url}">${l.label}</a>`).join('');
 </script>
